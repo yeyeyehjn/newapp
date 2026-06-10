@@ -1,0 +1,6 @@
+{
+  "name": "小程序仲裁员管理系统",
+  "description": "小程序端的仲裁员管理系统，实现仲裁员案件查阅、待办事项处理及案件统计分析功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

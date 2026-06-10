@@ -1,6 +1,0 @@
-{
-  "files": ["index.html"],
-  "insertBefore": "<!-- impeccable-live-inject -->",
-  "commentSyntax": "html",
-  "cspChecked": true
-}

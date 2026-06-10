@@ -34,8 +34,8 @@ export default function CaseList({
   const statusTabs: { label: string; value: CaseStatus | 'all' }[] = [
     { label: '全部', value: 'all' },
     { label: '审理中', value: '审理中' },
-    { label: '待开庭', value: '待开庭' },
-    { label: '待签名', value: '待签名' },
+    { label: '待排庭', value: '待排庭' },
+    { label: '待签发', value: '待签发' },
     { label: '已结案', value: '已结案' },
   ];
 
@@ -174,7 +174,7 @@ export default function CaseList({
 
             const statusColorClass = c.status === '审理中' ? 'text-indigo-600 bg-indigo-50/60 border-indigo-100' :
                                      c.status === '已结案' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' :
-                                     c.status === '待开庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
+                                     c.status === '待排庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
                                      'text-rose-500 bg-rose-50 border-rose-100';
 
             return (

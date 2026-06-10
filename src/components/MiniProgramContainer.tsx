@@ -85,9 +85,18 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
               </div>
             </div>
 
-            {/* WeChat Mini Program Navigation Bar */}
-            <div className="h-11 bg-slate-900 flex items-center justify-center px-4 z-40 select-none relative">
-              <span className="text-[15px] font-bold text-white">仲裁智能工作台</span>
+            {/* WeChat Header / Title Capsular */}
+            <div className="h-12 bg-slate-900 flex items-center justify-between px-4 z-40 select-none">
+              <div className="flex items-center space-x-2">
+                <span className="text-[13px] font-black text-white tracking-tight">仲裁智能工作台</span>
+              </div>
+              
+              {/* 改成消息通知 (Message notification capsule as requested in annotation) */}
+              <div className="flex items-center bg-white/10 hover:bg-white/15 border border-white/10 rounded-full h-7 px-3 py-1 space-x-1.5 ml-auto shadow-sm transition-all cursor-pointer">
+                <i className="fa-solid fa-bell text-amber-400 text-[10.5px] animate-bounce"></i>
+                <span className="text-[10px] font-black text-slate-200">消息通知</span>
+                <span className="h-1.5 w-1.5 bg-rose-500 rounded-full"></span>
+              </div>
             </div>
 
             {/* Inside Scrollable Screen */}

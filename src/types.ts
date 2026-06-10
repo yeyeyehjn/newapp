@@ -1,8 +1,8 @@
-export type CaseStatus = '审理中' | '待开庭' | '已结案' | '待签名';
+export type CaseStatus = '审理中' | '待排庭' | '已结案' | '待签发';
 
 export type CaseCategory = '国际贸易纠纷' | '股权投资纠纷' | '建设工程纠纷' | '知识产权纠纷' | '金融借款合同' | '海商海事纠纷';
 
-export type ArbitratorRole = '首席' | '独任' | '边裁';
+export type ArbitratorRole = '首席仲裁员' | '独任仲裁员' | '旁听/边仲';
 
 export interface TimelineNode {
   title: string;
@@ -26,7 +26,7 @@ export interface HearingSchedule {
   id: string;
   hearingTime: string;
   location: string;
-  status: '待开庭' | '已结束';
+  status: '未开始' | '已结束';
   notes?: string;
 }
 

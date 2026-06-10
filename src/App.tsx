@@ -73,7 +73,7 @@ export default function App() {
 
   // Triggered when a user clicks "Process with High urgency" in homeostasis
   const handleSelectTaskDirect = (task: Task) => {
-    setActiveTab(2); // Jump to 待办 (index 2)
+    setActiveTab(1); // Jump to 待办 (index 1)
   };
 
   return (
@@ -94,15 +94,6 @@ export default function App() {
         )}
 
         {activeTab === 1 && (
-          <CaseList
-            cases={cases}
-            onFilterStatus={setSelectedStatusFilter}
-            selectedStatusFilter={selectedStatusFilter}
-            onSelectCase={setSelectedCase}
-          />
-        )}
-
-        {activeTab === 2 && (
           <TaskCenter
             tasks={tasks}
             cases={cases}
@@ -112,7 +103,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 3 && (
+        {activeTab === 2 && (
           <CaseStats
             cases={cases}
             onNavigateToTab={setActiveTab}
@@ -133,12 +124,11 @@ export default function App() {
       <div className="h-14 bg-white border-t border-slate-100 flex items-center justify-around select-none z-40 flex-shrink-0">
         {[
           { label: '首页', icon: 'fa-house', index: 0 },
-          { label: '案卷', icon: 'fa-folder-open', index: 1 },
-          { label: '待办', icon: 'fa-square-check', index: 2 },
-          { label: '统计', icon: 'fa-chart-pie', index: 3 }
+          { label: '待办', icon: 'fa-square-check', index: 1 },
+          { label: '我的', icon: 'fa-user', index: 2 }
         ].map((tab) => {
           const isActive = activeTab === tab.index;
-          const pendingCount = tab.index === 2 ? tasks.filter(t => t.status === 'pending').length : 0;
+          const pendingCount = tab.index === 1 ? tasks.filter(t => t.status === 'pending').length : 0;
 
           return (
             <button

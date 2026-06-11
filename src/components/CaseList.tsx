@@ -34,8 +34,8 @@ export default function CaseList({
   const statusTabs: { label: string; value: CaseStatus | 'all' }[] = [
     { label: '全部', value: 'all' },
     { label: '审理中', value: '审理中' },
-    { label: '待排庭', value: '待排庭' },
-    { label: '待签发', value: '待签发' },
+    { label: '待开庭', value: '待开庭' },
+    { label: '待签名', value: '待签名' },
     { label: '已结案', value: '已结案' },
   ];
 
@@ -75,7 +75,7 @@ export default function CaseList({
   }, [cases, selectedStatusFilter, selectedCategory, searchQuery]);
 
   return (
-    <div className="flex-1 bg-slate-50 flex flex-col pb-20 overflow-hidden relative">
+    <div className="flex-1 bg-slate-50 flex flex-col  overflow-hidden relative">
       
       {/* Search & Tabs Stick Area */}
       <div className="bg-white border-b border-indigo-50 p-3 space-y-3 flex-shrink-0 shadow-sm z-10 w-full">
@@ -168,20 +168,20 @@ export default function CaseList({
         {filteredCases.length > 0 ? (
           filteredCases.map((c) => {
             // Define active colored tags
-            const roleColorClass = c.role === '首席仲裁员' ? 'text-indigo-600 bg-indigo-50 border border-indigo-100/80' : 
-                                   c.role === '独任仲裁员' ? 'text-purple-600 bg-purple-50 border border-purple-100/80' :
+            const roleColorClass = c.role === '首席' ? 'text-indigo-600 bg-indigo-50 border border-indigo-100/80' : 
+                                   c.role === '独任' ? 'text-purple-600 bg-purple-50 border border-purple-100/80' :
                                    'text-slate-500 bg-slate-50 border border-slate-100';
 
             const statusColorClass = c.status === '审理中' ? 'text-indigo-600 bg-indigo-50/60 border-indigo-100' :
                                      c.status === '已结案' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' :
-                                     c.status === '待排庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
+                                     c.status === '待开庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
                                      'text-rose-500 bg-rose-50 border-rose-100';
 
             return (
               <div
                 key={c.id}
                 onClick={() => onSelectCase(c)}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 hover:shadow-md hover:border-slate-200 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+                className="bg-white rounded-xl border border-slate-100  p-4  hover:border-slate-200 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
               >
                 {/* Card Title Bar */}
                 <div className="flex items-center justify-between">
@@ -191,25 +191,49 @@ export default function CaseList({
                   </span>
                   
                   {/* Status Badge */}
-                  <span className={`text-[10px] p-0.5 px-1.5 rounded-lg font-bold border ${statusColorClass}`}>
+                  <span className={`text-[10px] p-0.5 px-1.5 rounded font-bold border ${statusColorClass}`}>
                     ● {c.status}
                   </span>
                 </div>
 
-                {/* Case Title */}
-                <h4 className="text-xs font-bold text-slate-700 line-clamp-2 leading-snug tracking-tight">
-                  {c.title}
-                </h4>
+                
 
-                {/* Dispute amounts & properties */}
-                <div className="flex items-center justify-between text-[11px] border-t border-dashed border-slate-100 pt-3 text-slate-500">
+                {/* Dispute amounts & properties (6 fields form) */}
+                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-[11px] text-slate-500">
                   <div className="flex flex-col space-y-0.5">
-                    <span className="text-[9px] text-slate-400 font-medium">诉求争议标的额</span>
-                    <strong className="text-slate-700 font-extrabold">{formatCNY(c.disputeAmount)}</strong>
+                    <span className="text-[9px] text-slate-400 font-medium flex items-center gap-1">
+                      <i className="fa-solid fa-user-tie text-emerald-600 text-[10px]"></i>
+                      <span>申请人</span>
+                    </span>
+                    <span className="text-slate-800 font-bold truncate text-left">{c.claimant}</span>
                   </div>
-                  <div className="flex flex-col items-end space-y-0.5">
-                    <span className="text-[9px] text-slate-400 font-medium font-sans">立案时间</span>
-                    <span className="font-mono text-slate-500 font-semibold">{c.startDate}</span>
+                  
+                  <div className="flex flex-col space-y-0.5">
+                    <span className="text-[9px] text-slate-400 font-medium flex items-center gap-1">
+                      <i className="fa-solid fa-user text-red-500/80 text-[10px]"></i>
+                      <span>被申请人</span>
+                    </span>
+                    <span className="text-slate-800 font-bold truncate text-left">{c.respondent}</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 text-left">
+                    <div className="flex flex-col space-y-0.5">
+                      <span className="text-[9px] text-slate-400 font-medium">争议金额</span>
+                      <span className="font-mono text-slate-700 font-semibold">{formatCNY(c.disputeAmount)}</span>
+                    </div>
+                    <div className="flex flex-col space-y-0.5">
+                      <span className="text-[9px] text-slate-400 font-medium font-sans">办案秘书</span>
+                      <span className="font-mono text-slate-700 font-semibold">{c.secretary || '—'}</span>
+                    </div>
+                    <div className="flex flex-col space-y-0.5">
+                      <span className="text-[9px] text-slate-400 font-medium font-sans">立案时间</span>
+                      <span className="font-mono text-slate-700 font-semibold">{c.startDate}</span>
+                    </div>
+                    <div className="flex flex-col space-y-0.5">
+                      <span className="text-[9px] text-slate-400 font-medium font-sans">组庭时间</span>
+                      <span className="font-mono text-slate-700 font-semibold">{c.formationDate || '—'}</span>
+                    </div>
+                    
                   </div>
                 </div>
 
@@ -224,10 +248,7 @@ export default function CaseList({
                     </span>
                   </div>
                   
-                  <div className="text-xs font-bold text-indigo-600 flex items-center group-hover:translate-x-0.5 transition-transform">
-                    <span>处理 </span>
-                    <ChevronRight size={14} />
-                  </div>
+                 
                 </div>
 
               </div>

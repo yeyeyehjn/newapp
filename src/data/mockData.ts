@@ -8,7 +8,7 @@ export const mockArbitrator: ArbitratorProfile = {
   resolvedCount: 142,
   activeCount: 6,
   avgResolveDays: 85,
-  ranking: "资深仲裁员"
+  ranking: "仲裁员"
 };
 
 export const mockCases: Case[] = [
@@ -23,8 +23,10 @@ export const mockCases: Case[] = [
     disputeAmount: 18500000,
     status: "审理中",
     category: "股权投资纠纷",
-    role: "首席仲裁员",
+    role: "首席",
     startDate: "2026-01-15",
+    formationDate: "2026-02-10",
+    secretary: "李文浩",
     rules: "《广州仲裁委员会仲裁规则（2022年版）》",
     commission: "广州仲裁委员会",
     description: "申请人华夏科技与被申请人蓝海创于2024年4月签署《股权投资及转让协议》，约定被申请人投资1500万元认购申请人10%股权。后因被申请人未足额支付投资款，且私自对外转让股权，申请人遂提请仲裁，要求被申请人支付违约金并解除投资合同关系。",
@@ -55,10 +57,12 @@ export const mockCases: Case[] = [
     respondent: "沧州金桥钢铁商贸有限公司",
     respondentAgent: "中伦律师事务所 - 赵雪律师",
     disputeAmount: 4200000,
-    status: "待签发",
+    status: "待签名",
     category: "国际贸易纠纷",
-    role: "独任仲裁员",
+    role: "独任",
     startDate: "2026-02-05",
+    formationDate: "2026-02-28",
+    secretary: "李文浩",
     rules: "《广州仲裁委员会仲裁规则（2022年版）》",
     commission: "广州仲裁委员会",
     description: "申请人新加坡吉隆航运要求被申请人金桥钢铁支付滞期费以及货款尾款。被申请人抗辩称船只未按约定时间到达锚地，属违约滞港。独任仲裁判案，双方经两次网络开庭已查清基本事实，裁决书初稿已起草，现需要独任仲裁员完成电子签章。",
@@ -88,10 +92,12 @@ export const mockCases: Case[] = [
     respondent: "润物高新科技产业园有限公司",
     respondentAgent: "天同律师事务所 - 周晓杰律师",
     disputeAmount: 64100000,
-    status: "待排庭",
+    status: "待开庭",
     category: "建设工程纠纷",
-    role: "首席仲裁员",
+    role: "首席",
     startDate: "2026-03-10",
+    formationDate: "2026-04-20",
+    secretary: "李文浩",
     rules: "《广州仲裁委员会仲裁规则（2022年版）》",
     commission: "广州仲裁委员会",
     description: "本案涉及某高科产业园工程造价计算模式、工程进度延误责任索赔等复杂纠纷。纠纷标的额巨大，技术材料众多。双方对开庭时间有争议，秘书已经草拟了3个推荐开庭时段，需要首席仲裁员协调另外两名仲裁员后，最终勾选并确认排庭期。",
@@ -105,7 +111,9 @@ export const mockCases: Case[] = [
       { id: "e3_1", name: "施工蓝图及变更签证单汇编.pdf", submitter: "申请人-宏图中建", time: "2026-03-10 15:00", size: "24.5 MB", ext: "pdf" },
       { id: "e3_2", name: "第三方工程进度及质量司法鉴定报告.pdf", submitter: "仲裁庭指定鉴定机构", time: "2026-05-08 14:15", size: "12.8 MB", ext: "pdf" }
     ],
-    hearings: []
+    hearings: [
+      { id: "h3_1", hearingTime: "2026-06-11 14:00 至 16:30", location: "广州仲裁委员会第三数字开庭室", status: "待开庭", notes: "主体建设工程价款及延误违约金纠纷第一次开庭。" }
+    ]
   },
   {
     id: "4",
@@ -118,8 +126,10 @@ export const mockCases: Case[] = [
     disputeAmount: 2500000,
     status: "已结案",
     category: "知识产权纠纷",
-    role: "独任仲裁员",
+    role: "独任",
     startDate: "2025-10-18",
+    formationDate: "2025-11-05",
+    secretary: "刘秘书",
     closeDate: "2026-03-22",
     rules: "《广州仲裁委员会仲裁规则（2022年版）》",
     commission: "广州仲裁委员会",
@@ -150,8 +160,10 @@ export const mockCases: Case[] = [
     disputeAmount: 125000000,
     status: "审理中",
     category: "金融借款合同",
-    role: "旁听/边仲",
+    role: "边裁",
     startDate: "2026-02-18",
+    formationDate: "2026-03-12",
+    secretary: "李文浩",
     rules: "《广州仲裁委员会仲裁规则（2022年版）》",
     commission: "广州仲裁委员会",
     description: "本案件系乾坤置业1.25亿借本付息纠纷案件。标的额较大，张明先生作为边仲席位参与并参与仲裁合议。目前本案处于第二次证据反驳交换中。",
@@ -190,7 +202,7 @@ export const mockTasks: Task[] = [
     caseNo: "(2026)穗仲案字第0521号",
     caseTitle: "关于宏图建筑与润物高科园区主体建设纠纷案",
     type: "schedule",
-    title: "开庭时间勾选及排庭确认",
+    title: "声明承诺书签署",
     description: "被申请人与申请人就开庭意愿冲突。请您从推荐的3个开庭时段中做出勾选推荐（须协同另外两位仲裁员的选择）。",
     deadline: "2026-06-12",
     status: "pending",

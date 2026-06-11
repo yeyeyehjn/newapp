@@ -53,7 +53,7 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
           <span className={`text-[10px] p-0.5 px-2 rounded-lg font-bold border ${
             caseItem.status === '已结案' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/25' :
             caseItem.status === '审理中' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/25 animate-pulse' :
-            caseItem.status === '待排庭' ? 'bg-amber-500/20 text-amber-300 border-amber-500/25' :
+            caseItem.status === '待开庭' ? 'bg-amber-500/20 text-amber-300 border-amber-500/25' :
             'bg-rose-500/20 text-rose-300 border-rose-500/25'
           }`}>
             ● {caseItem.status}

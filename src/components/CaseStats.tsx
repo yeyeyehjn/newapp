@@ -26,16 +26,16 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
   // Statistics aggregates
   const totalCases = cases.length + 138; // Add real historic count: total 143 cases
   const inTrialCount = cases.filter(c => c.status === '审理中').length;
-  const pendingHearingCount = cases.filter(c => c.status === '待排庭').length;
-  const pendingAwardCount = cases.filter(c => c.status === '待签发').length;
+  const pendingHearingCount = cases.filter(c => c.status === '待开庭').length;
+  const pendingAwardCount = cases.filter(c => c.status === '待签名').length;
   const closedCount = cases.filter(c => c.status === '已结案').length + 138; // Include legacy records
 
   // Status breakdown array for circle chart with indigo accent
   const statusData = [
     { label: '已结案', value: closedCount, color: '#10B981', statusType: '已结案' as CaseStatus },
     { label: '审理中', value: inTrialCount, color: '#6366F1', statusType: '审理中' as CaseStatus },
-    { label: '待排庭', value: pendingHearingCount, color: '#F59E0B', statusType: '待排庭' as CaseStatus },
-    { label: '待签发', value: pendingAwardCount, color: '#EF4444', statusType: '待签发' as CaseStatus },
+    { label: '待开庭', value: pendingHearingCount, color: '#F59E0B', statusType: '待开庭' as CaseStatus },
+    { label: '待签名', value: pendingAwardCount, color: '#EF4444', statusType: '待签名' as CaseStatus },
   ];
 
   // Category statistics from cases (realistic historical aggregates)
@@ -264,11 +264,11 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           </div>
 
           <div
-            onClick={() => handleStatusCardClick('待排庭')}
+            onClick={() => handleStatusCardClick('待开庭')}
             className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:bg-indigo-50/10 hover:border-indigo-100 transition-all"
           >
             <div className="flex justify-between items-center text-slate-400 mb-1">
-              <span className="text-xs font-bold text-slate-500">待排庭期</span>
+              <span className="text-xs font-bold text-slate-500">待开庭期</span>
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             </div>
             <div className="text-2xl font-extrabold text-slate-800 tracking-tight">{pendingHearingCount}</div>
@@ -276,7 +276,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           </div>
 
           <div
-            onClick={() => handleStatusCardClick('待签发')}
+            onClick={() => handleStatusCardClick('待签名')}
             className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:bg-rose-50/10 hover:border-rose-100 transition-all"
           >
             <div className="flex justify-between items-center text-slate-400 mb-1">

@@ -86,7 +86,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
         {/* Banner Background Image with Light Blue Gradient Wash */}
         <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 overflow-hidden shadow-inner">
           <img
-            src="/tu/Image.png"
+            src={import.meta.env.BASE_URL + "tu/Image.png"}
             alt="Banner"
             className="w-full h-full object-cover"
           />

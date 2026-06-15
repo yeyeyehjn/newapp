@@ -147,7 +147,7 @@ export default function Workbench({
       <div className="relative h-48 overflow-visible">
         {/* Background image - 干净展示，不加遮罩 */}
         <img
-          src="/tu/new-banner.png"
+          src={import.meta.env.BASE_URL + "tu/new-banner.png"}
           alt="Banner Background"
           className="absolute inset-0 w-full h-full object-cover"
         />

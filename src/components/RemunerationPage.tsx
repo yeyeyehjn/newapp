@@ -59,7 +59,7 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white px-4 py-3 border-b border-slate-100">
+      <div className="bg-white px-4 py-3 border-b border-slate-100 shadow-sm shadow-slate-900/5">
         {/* Search Box */}
         <div className="relative mb-3">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />

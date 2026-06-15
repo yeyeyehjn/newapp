@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles } from 'lucide-react';
 import { Case } from '../types';
 
@@ -37,6 +37,35 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
   const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials'>('basic');
   const [viewingMaterial, setViewingMaterial] = useState<MaterialItem | null>(null);
   const [materialSearch, setMaterialSearch] = useState('');
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    // Save original overflow styles
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyPosition = document.body.style.position;
+    const originalBodyTop = document.body.style.top;
+    const originalBodyWidth = document.body.style.width;
+    const originalScrollTop = window.scrollY;
+
+    // Prevent scrolling by multiple methods
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${originalScrollTop}px`;
+    document.body.style.width = '100%';
+
+    // Restore scrolling on cleanup
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.position = originalBodyPosition;
+      document.body.style.top = originalBodyTop;
+      document.body.style.width = originalBodyWidth;
+      // Restore scroll position
+      window.scrollTo(0, originalScrollTop);
+    };
+  }, []);
 
   // Mock data for parties
   const parties: PartyInfo[] = [

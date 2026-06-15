@@ -78,34 +78,21 @@ export default function CaseList({
     <div className="flex-1 bg-slate-50 flex flex-col  overflow-hidden relative">
       
       {/* Search & Tabs Stick Area */}
-      <div className="bg-white border-b border-indigo-50 px-4 py-2 space-y-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
+      <div className="bg-white border-b border-indigo-50 px-4 py-3 space-y-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
         {/* Search Input and Filter Toggle */}
-        <div className="flex items-center space-x-2 mb-1">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="搜索案号、当事人、案件关键词..."
-              className="w-full bg-slate-50 text-sm text-slate-800 p-2.5 pl-9 rounded-xl border-none ring-1 ring-slate-200/60 focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-500"
-            />
-          </div>
-          {/* <button
-            onClick={() => setShowFilterDrawer(!showFilterDrawer)}
-            className={`p-2.5 rounded-xl border border-slate-200 text-slate-500 cursor-pointer flex items-center gap-1 hover:bg-slate-50 transition-colors ${
-              selectedCategory !== 'all' ? 'bg-indigo-50 border-indigo-200 text-indigo-500' : ''
-            }`}
-            aria-label="筛选案件"
-            aria-expanded={showFilterDrawer}
-          >
-            <SlidersHorizontal size={15} aria-hidden="true" />
-            <span className="text-sm font-bold hidden sm:inline">筛选</span>
-          </button> */}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="搜索案号、当事人、案件关键词..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
+          />
         </div>
 
         {/* Tab Controllers */}
-        <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-1 max-w-full">
+        <div className="flex gap-2">
           {statusTabs.map((tab) => {
             const isActive = selectedStatusFilter === tab.value;
             // Get count of cases under this tab
@@ -117,14 +104,16 @@ export default function CaseList({
               <button
                 key={tab.value}
                 onClick={() => onFilterStatusChange(tab.value)}
-                className={`py-1.5 px-3 rounded-lg text-xs  whitespace-nowrap cursor-pointer transition-all flex items-center space-x-1 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center gap-1 ${
                   isActive 
                     ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/40' 
                     : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                <span className="text-sm">{tab.label}</span>
-                <span className={`text-sm px-1.5 rounded-full ${isActive ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200/80 text-slate-500'}`}>
+                <span>{tab.label}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                  isActive ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200/80 text-slate-500'
+                }`}>
                   {count}
                 </span>
               </button>

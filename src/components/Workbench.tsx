@@ -332,7 +332,7 @@ export default function Workbench({
                       onClick={() => {
                         if (matchedCase) onSelectCase(matchedCase);
                       }}
-                      className="relative bg-white rounded-2xl border border-slate-100/80 hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 p-5 shadow-xs transition-all flex flex-col gap-3 cursor-pointer"
+                      className="relative bg-white rounded-2xl border border-slate-100/80 hover:border-indigo-200 hover:shadow-md hover:-translate-y-0.5 p-4 shadow-xs transition-all flex flex-col gap-3 cursor-pointer"
                     >
                       {/* Timeline Node Ring & Dot */}
                       <div className="absolute -left-[24.5px] top-6 flex items-center justify-center">
@@ -349,13 +349,11 @@ export default function Workbench({
                             {hearing.caseNo}
                           </span>
                         </div>
-                        {/* <span className="shrink-0 text-xs bg-slate-50 text-slate-600 border border-slate-100 px-2 py-1 rounded tracking-wider" >
-                          {hearing.role}
-                        </span> */}
+                        
                       </div>
 
                       {/* Timeline Details Box - Label 标签统一宽度 */}
-                      <div className="text-sm text-slate-500 space-y-3">
+                      <div className="text-sm text-slate-500 space-y-2">
                         <div className="flex items-start gap-2 min-w-0">
                           <i className="fa-solid fa-user-shield text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
                           <span className="flex min-w-0">

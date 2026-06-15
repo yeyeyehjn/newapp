@@ -2,9 +2,18 @@ import React, { useState } from 'react';
 import { 
   TrendingUp, AlertCircle, FileText, CheckCircle2, User, ChevronRight,
   Shield, Key, Lock, Fingerprint, ShieldCheck, RefreshCw, QrCode, 
-  Settings, ArrowRightLeft, HelpCircle, Archive, Eye, Trash2
+  Settings, ArrowRightLeft, HelpCircle, Archive, Eye, Trash2, Calendar
 } from 'lucide-react';
 import { Case, CaseCategory, CaseStatus } from '../types';
+
+type TimeFilterType = 'year' | 'quarter' | 'month';
+
+interface TimeFilterState {
+  type: TimeFilterType;
+  year: number;
+  quarter?: number;
+  month?: number;
+}
 
 interface CaseStatsProps {
   cases: Case[];
@@ -17,34 +26,149 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
   const [hoveredBar, setHoveredBar] = useState<string | null>(null);
   const [activeTrendMonth, setActiveTrendMonth] = useState<number | null>(null);
 
+  // Time filter states for each chart module
+  const [statusChartFilter, setStatusChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
+  const [categoryChartFilter, setCategoryChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
+  const [trendChartFilter, setTrendChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
+  const [resolutionChartFilter, setResolutionChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
+
   // States for interactive security buttons
   const [caStatus, setCaStatus] = useState<'pending' | 'syncing' | 'active'>('active');
   const [faceStatus, setFaceStatus] = useState<'unbound' | 'binding' | 'bound'>('bound');
   const [isClearing, setIsClearing] = useState<boolean>(false);
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
 
-  // Statistics aggregates
-  const totalCases = cases.length + 138; // Add real historic count: total 143 cases
-  const inTrialCount = cases.filter(c => c.status === '审理中').length;
-  const pendingHearingCount = cases.filter(c => c.status === '待开庭').length;
-  const pendingAwardCount = cases.filter(c => c.status === '待签名').length;
-  const closedCount = cases.filter(c => c.status === '已结案').length + 138; // Include legacy records
+  // Helper function to get time filter label
+  const getTimeFilterLabel = (filter: TimeFilterState): string => {
+    if (filter.type === 'year') {
+      return `${filter.year}年度`;
+    } else if (filter.type === 'quarter') {
+      return `${filter.year}年Q${filter.quarter}季度`;
+    } else {
+      const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+      return `${filter.year}年${monthNames[filter.month! - 1]}`;
+    }
+  };
+
+  // Helper function to adjust data based on time filter
+  const getAdjustedData = (baseData: any, filter: TimeFilterState) => {
+    // For demo purposes, we'll adjust the counts based on time period
+    // In real app, this would query actual data based on the filter
+    let multiplier = 1;
+    if (filter.type === 'quarter') {
+      multiplier = 0.25; // Quarter is ~25% of year
+    } else if (filter.type === 'month') {
+      multiplier = 0.083; // Month is ~8.3% of year
+    }
+    return baseData * multiplier;
+  };
+
+  // Time filter component
+  const TimeFilterSelector = ({ 
+    filter, 
+    onFilterChange,
+    showMonth = true 
+  }: { 
+    filter: TimeFilterState; 
+    onFilterChange: (newFilter: TimeFilterState) => void;
+    showMonth?: boolean;
+  }) => {
+    const years = [2024, 2025, 2026];
+    const quarters = [1, 2, 3, 4];
+    const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    return (
+      <div className="flex items-center gap-2 mb-3">
+        <Calendar size={14} className="text-slate-400" />
+        <div className="flex gap-1.5">
+          {/* Year selector */}
+          <select
+            value={filter.year}
+            onChange={(e) => onFilterChange({ ...filter, year: parseInt(e.target.value) })}
+            className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
+          >
+            {years.map(y => (
+              <option key={y} value={y}>{y}年</option>
+            ))}
+          </select>
+
+          {/* Type selector */}
+          <select
+            value={filter.type}
+            onChange={(e) => {
+              const newType = e.target.value as TimeFilterType;
+              const newFilter: TimeFilterState = { ...filter, type: newType };
+              if (newType === 'quarter') {
+                newFilter.quarter = 1;
+                newFilter.month = undefined;
+              } else if (newType === 'month') {
+                newFilter.month = 1;
+                newFilter.quarter = undefined;
+              } else {
+                newFilter.quarter = undefined;
+                newFilter.month = undefined;
+              }
+              onFilterChange(newFilter);
+            }}
+            className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
+          >
+            <option value="year">年度</option>
+            <option value="quarter">季度</option>
+            {showMonth && <option value="month">月度</option>}
+          </select>
+
+          {/* Quarter selector */}
+          {filter.type === 'quarter' && (
+            <select
+              value={filter.quarter}
+              onChange={(e) => onFilterChange({ ...filter, quarter: parseInt(e.target.value) })}
+              className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
+            >
+              {quarters.map(q => (
+                <option key={q} value={q}>Q{q}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Month selector */}
+          {filter.type === 'month' && (
+            <select
+              value={filter.month}
+              onChange={(e) => onFilterChange({ ...filter, month: parseInt(e.target.value) })}
+              className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
+            >
+              {months.map(m => (
+                <option key={m} value={m}>{m}月</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Statistics aggregates with time filter adjustment
+  const totalCases = Math.round(getAdjustedData(cases.length + 138, statusChartFilter)); // Add real historic count: total 143 cases
+  const inTrialCount = Math.round(getAdjustedData(cases.filter(c => c.status === '审理中').length, statusChartFilter));
+  const pendingHearingCount = Math.round(getAdjustedData(cases.filter(c => c.status === '待开庭').length, statusChartFilter));
+  const pendingAwardCount = Math.round(getAdjustedData(cases.filter(c => c.status === '待签名').length, statusChartFilter));
+  const closedCount = Math.round(getAdjustedData(cases.filter(c => c.status === '已结案').length + 138, statusChartFilter)); // Include legacy records
 
   // Status breakdown array for circle chart with indigo accent
   const statusData = [
     { label: '已结案', value: closedCount, color: '#10B981', statusType: '已结案' as CaseStatus },
-    { label: '审理中', value: inTrialCount, color: '#6366F1', statusType: '审理中' as CaseStatus },
+    { label: '审理中', value: inTrialCount, color: '#4780FF', statusType: '审理中' as CaseStatus },
     { label: '待开庭', value: pendingHearingCount, color: '#F59E0B', statusType: '待开庭' as CaseStatus },
     { label: '待签名', value: pendingAwardCount, color: '#EF4444', statusType: '待签名' as CaseStatus },
   ];
 
-  // Category statistics from cases (realistic historical aggregates)
+  // Category statistics from cases (realistic historical aggregates) with time filter
   const categories: { [key in CaseCategory]?: number } = {
-    '股权投资纠纷': 45,
-    '国际贸易纠纷': 38,
-    '建设工程纠纷': 29,
-    '知识产权纠纷': 18,
-    '金融借款合同': 12,
+    '股权投资纠纷': Math.round(getAdjustedData(45, categoryChartFilter)),
+    '国际贸易纠纷': Math.round(getAdjustedData(38, categoryChartFilter)),
+    '建设工程纠纷': Math.round(getAdjustedData(29, categoryChartFilter)),
+    '知识产权纠纷': Math.round(getAdjustedData(18, categoryChartFilter)),
+    '金融借款合同': Math.round(getAdjustedData(12, categoryChartFilter)),
   };
 
   // Convert categories object to list sorted
@@ -53,14 +177,14 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
     value: val,
   })).sort((a, b) => b.value - a.value);
 
-  // Monthly stats trend data (Jan to Jun 2026)
+  // Monthly stats trend data (Jan to Jun 2026) with time filter adjustment
   const monthlyData = [
-    { name: '1月', input: 8, resolved: 6 },
-    { name: '2月', input: 12, resolved: 9 },
-    { name: '3月', input: 10, resolved: 14 },
-    { name: '4月', input: 15, resolved: 11 },
-    { name: '5月', input: 9, resolved: 13 },
-    { name: '6月', input: 11, resolved: 8 },
+    { name: '1月', input: Math.round(getAdjustedData(8, trendChartFilter)), resolved: Math.round(getAdjustedData(6, trendChartFilter)) },
+    { name: '2月', input: Math.round(getAdjustedData(12, trendChartFilter)), resolved: Math.round(getAdjustedData(9, trendChartFilter)) },
+    { name: '3月', input: Math.round(getAdjustedData(10, trendChartFilter)), resolved: Math.round(getAdjustedData(14, trendChartFilter)) },
+    { name: '4月', input: Math.round(getAdjustedData(15, trendChartFilter)), resolved: Math.round(getAdjustedData(11, trendChartFilter)) },
+    { name: '5月', input: Math.round(getAdjustedData(9, trendChartFilter)), resolved: Math.round(getAdjustedData(13, trendChartFilter)) },
+    { name: '6月', input: Math.round(getAdjustedData(11, trendChartFilter)), resolved: Math.round(getAdjustedData(8, trendChartFilter)) },
   ];
 
   // Quick stats trigger - navigates to Home workbench and filters cases
@@ -100,200 +224,16 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
     <div className="flex-1 bg-slate-50 flex flex-col pb-20 overflow-hidden relative">
       
       {/* Scrollable Profile View */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto no-scrollbar w-full text-left">
+      <div className="flex-1  space-y-4 overflow-y-auto no-scrollbar w-full text-left">
         
-        {/* PREMIUM PROFILE PORTFOLIO BOX - 个人卡片(高级感) */}
-        <div className="bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white p-5 rounded-[28px] shadow-lg relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute right-[-20px] bottom-[-20px] opacity-[0.03] select-none pointer-events-none transform scale-150 rotate-12">
-            <Shield size={180} />
-          </div>
-
-          <div className="flex justify-between items-start mb-4 relative z-10">
-            <div>
-              <span className="text-[10px] font-extrabold tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-lg uppercase">
-                广州仲裁委 · 在聘名册
-              </span>
-              <h3 className="text-lg font-extrabold tracking-tight text-[#F8FAFC] mt-2 flex items-center gap-2">
-                <span>张明</span>
-                <span className="text-[9px] bg-white/10 text-slate-300 font-bold px-1.5 py-0.5 rounded leading-none border border-slate-700">
-                  首席及独任资质
-                </span>
-              </h3>
-              <p className="text-[10.5px] text-[#94A3B8] font-mono mt-0.5">登记号: GZAC-ARB-G605</p>
-            </div>
-
-            {/* Profile Barcode Mock up */}
-            <div 
-              onClick={() => setShowQrModal(true)}
-              className="bg-white/5 hover:bg-white/10 p-2 rounded-2xl border border-white/10 cursor-pointer transition-all flex flex-col items-center gap-1.5 shadow-sm"
-            >
-              <QrCode size={22} className="text-indigo-400" />
-              <span className="text-[7.5px] text-slate-400 font-mono tracking-wider">电子安全证</span>
-            </div>
-          </div>
-
-          {/* Quick tags and credentials lines */}
-          <div className="border-t border-slate-800 pt-3 mt-1 flex space-x-2 items-center text-[9px] relative z-10">
-            <span className="text-[#64748B] font-extrabold tracking-wider">在研重点范围:</span>
-            <span className="bg-indigo-500/15 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20 font-bold">股权纠纷</span>
-            <span className="bg-emerald-500/15 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">涉外知识产权</span>
-            <span className="bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded border border-amber-500/20 font-bold">工程高限索赔</span>
-          </div>
-          
-          <div className="mt-3 text-slate-400 text-[10px] flex items-center justify-between font-medium">
-            <span>CA云盾认证系统</span>
-            <span className="text-emerald-400 font-extrabold flex items-center gap-1">
-              <ShieldCheck size={11} /> 已在线加锁
-            </span>
-          </div>
-        </div>
-
-        {/* SECURITY & CONTROL GRID - 安全与控制面板 */}
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-baseline pl-1">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">高级安全锁及证书设置</h4>
-            <span className="text-[8px] font-mono text-slate-400">HARDWARE SHIELD KEYS</span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            
-            {/* CA Sync key */}
-            <div 
-              onClick={handleSyncCa}
-              className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/5 transition-all text-center flex flex-col items-center justify-center space-y-1 min-h-[72px]"
-            >
-              {caStatus === 'active' ? (
-                <>
-                  <Key size={14} className="text-indigo-600 animate-pulse" />
-                  <span className="text-[10px] font-extrabold text-slate-700 block">CA数字签名</span>
-                  <span className="text-[8px] text-indigo-600 font-extrabold bg-indigo-50 px-1 rounded">盾已就绪</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={14} className="text-slate-405 animate-spin" />
-                  <span className="text-[10px] font-extrabold text-slate-500 block">校核中...</span>
-                  <span className="text-[8px] text-slate-400 font-medium">请稍后</span>
-                </>
-              )}
-            </div>
-
-            {/* Facial Biometric key */}
-            <div 
-              onClick={handleBindFace}
-              className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-indigo-300 hover:bg-slate-50 transition-all text-center flex flex-col items-center justify-center space-y-1 min-h-[72px]"
-            >
-              {faceStatus === 'bound' ? (
-                <>
-                  <Fingerprint size={14} className="text-emerald-500" />
-                  <span className="text-[10px] font-extrabold text-slate-700 block">人脸面容体核</span>
-                  <span className="text-[8px] text-emerald-600 font-extrabold bg-emerald-50 px-1 rounded">双向锁定</span>
-                </>
-              ) : (
-                <>
-                  <RefreshCw size={14} className="text-slate-405 animate-spin" />
-                  <span className="text-[10px] font-extrabold text-slate-500 block">生物链比照...</span>
-                  <span className="text-[8px] text-slate-400 font-medium">请对准面部</span>
-                </>
-              )}
-            </div>
-
-            {/* Clear cache */}
-            <div 
-              onClick={handleClearCache}
-              className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-red-300 hover:bg-red-50/5 transition-all text-center flex flex-col items-center justify-center space-y-1 min-h-[72px]"
-            >
-              {isClearing ? (
-                <RefreshCw size={14} className="text-red-500 animate-spin" />
-              ) : (
-                <Trash2 size={14} className="text-red-400" />
-              )}
-              <span className="text-[10px] font-extrabold text-slate-700 block">敏感存证重置</span>
-              <span className="text-[8px] text-red-500 font-extrabold bg-red-50 px-1 rounded">清除密存</span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* CORE STATS TITLE SPLITTER */}
-        <div className="flex items-center justify-between pt-1.5 pb-1 border-b border-indigo-100/60 flex-shrink-0">
-          <div>
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">委案季度履历数据分析</h3>
-            <p className="text-[9.5px] text-slate-400 font-medium">广州仲裁委员会中控统计数据组实时结算</p>
-          </div>
-          <div className="flex items-center space-x-1 py-1 px-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-[9.5px] font-extrabold shadow-sm">
-            <TrendingUp size={11} />
-            <span>结案率优秀 95.8%</span>
-          </div>
-        </div>
-
-        {/* Aggregate KPI Grid - Bento Style elements */}
-        <div className="grid grid-cols-2 gap-3">
-          <div 
-            onClick={() => handleStatusCardClick('已结案')}
-            className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow hover:border-slate-200 transition-all group cursor-pointer"
-          >
-            <div className="flex justify-between items-center text-slate-400 mb-1">
-              <span className="text-xs font-bold text-slate-500">累计结案量</span>
-              <CheckCircle2 size={16} className="text-emerald-500" />
-            </div>
-            <div className="flex items-baseline space-x-1">
-              <span className="text-2xl font-extrabold text-slate-800 tracking-tight">{closedCount}</span>
-              <span className="text-[9px] text-emerald-500 font-extrabold group-hover:translate-x-0.5 transition-transform">查看 ➜</span>
-            </div>
-            <div className="mt-1.5 pt-1.5 border-t border-slate-50 text-[10px] text-slate-400 flex items-center justify-between">
-              <span>平均裁案周期</span>
-              <span className="font-semibold text-slate-600">85 天</span>
-            </div>
-          </div>
-
-          <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-center text-slate-400 mb-1">
-                <span className="text-xs font-bold text-slate-500">主审中案件</span>
-                <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></div>
-              </div>
-              <div className="flex items-baseline space-x-1.5">
-                <span className="text-2xl font-extrabold text-slate-800 tracking-tight">{inTrialCount}</span>
-                <span className="text-[10px] text-slate-400 font-bold">委签席位</span>
-              </div>
-            </div>
-            <div className="mt-1.5 pt-1.5 border-t border-slate-50 text-[10px] text-slate-400 flex justify-between items-center">
-              <span>本月待结立案</span>
-              <span className="font-extrabold text-indigo-600">+2 件</span>
-            </div>
-          </div>
-
-          <div
-            onClick={() => handleStatusCardClick('待开庭')}
-            className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:bg-indigo-50/10 hover:border-indigo-100 transition-all"
-          >
-            <div className="flex justify-between items-center text-slate-400 mb-1">
-              <span className="text-xs font-bold text-slate-500">待开庭期</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            </div>
-            <div className="text-2xl font-extrabold text-slate-800 tracking-tight">{pendingHearingCount}</div>
-            <p className="text-[9px] text-amber-500 font-extrabold mt-1">急需确认可行庭期 ➜</p>
-          </div>
-
-          <div
-            onClick={() => handleStatusCardClick('待签名')}
-            className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:bg-rose-50/10 hover:border-rose-100 transition-all"
-          >
-            <div className="flex justify-between items-center text-slate-400 mb-1">
-              <span className="text-xs font-bold text-slate-500">待办电子印盖</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-            </div>
-            <div className="text-2xl font-extrabold text-slate-800 tracking-tight">{pendingAwardCount}</div>
-            <p className="text-[9px] text-rose-500 font-extrabold mt-1">需电子签章核发 ➜</p>
-          </div>
-        </div>
 
         {/* Chart Section 1: Donut Status Chart */}
         <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <h4 className="text-xs font-extrabold text-slate-700 mb-3.5 flex items-center justify-between">
-            <span>案件办理状态比例分布图</span>
-            <span className="text-[11px] font-normal text-slate-400">委案基数总计: {totalStatusValue} 件</span>
-          </h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-extrabold text-slate-700">案件办理状态比例分布图</h4>
+            <span className="text-sm font-normal text-slate-400">委案基数总计: {totalStatusValue} 件</span>
+          </div>
+          <TimeFilterSelector filter={statusChartFilter} onFilterChange={setStatusChartFilter} />
 
           <div className="grid grid-cols-12 gap-4 items-center">
             {/* SVG Donut */}
@@ -332,7 +272,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               </svg>
               {/* Inner details text */}
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                <span className="text-[9px] text-slate-400 font-extrabold">主审率</span>
+                <span className="text-xs text-slate-400 font-extrabold">主审率</span>
                 <span className="text-xs font-extrabold text-slate-800 leading-none mt-0.5">
                   {(( (inTrialCount + pendingHearingCount + pendingAwardCount) / totalStatusValue) * 100).toFixed(1)}%
                 </span>
@@ -356,11 +296,11 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   >
                     <div className="flex items-center space-x-2">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                      <span className="text-[11px] font-bold text-slate-600">{item.label}</span>
+                      <span className="text-sm font-bold text-slate-600">{item.label}</span>
                     </div>
                     <div className="flex items-center space-x-1.5 text-right">
                       <span className="text-xs font-extrabold text-slate-800">{item.value}件</span>
-                      <span className="text-[10px] text-slate-400 font-bold">{percentage}%</span>
+                      <span className="text-xs text-slate-400 font-bold">{percentage}%</span>
                     </div>
                   </div>
                 );
@@ -371,9 +311,10 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
 
         {/* Chart Section 2: Horizontal Bar Chart of Case Categories */}
         <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <h4 className="text-xs font-extrabold text-slate-700 mb-4">
+          <h4 className="text-xs font-extrabold text-slate-700 mb-2">
             争议法律纠纷性质类别分布一览
           </h4>
+          <TimeFilterSelector filter={categoryChartFilter} onFilterChange={setCategoryChartFilter} />
 
           <div className="space-y-4">
             {categoryData.map((item, index) => {
@@ -388,9 +329,9 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   onMouseLeave={() => setHoveredBar(null)}
                   className="space-y-1.5"
                 >
-                  <div className="flex justify-between items-center text-[11px]">
+                  <div className="flex justify-between items-center text-sm">
                     <span className="font-extrabold text-slate-700 flex items-center space-x-1.5">
-                      <span className="text-[9px] text-indigo-600 font-extrabold bg-indigo-50 px-1.5 py-0.5 rounded-lg">Rank {index+1}</span>
+                      <span className="text-xs text-indigo-600 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-lg">Rank {index+1}</span>
                       <span>{item.label}</span>
                     </span>
                     <span className="font-extrabold text-slate-800">{item.value} 件案</span>
@@ -413,12 +354,12 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
 
         {/* Chart Section 3: Line Area Interactive Monthly Resolution trend */}
         <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex justify-between items-start mb-2">
             <div>
-              <h4 className="text-xs font-extrabold text-slate-700">2026年年度月度案件吞吐趋势</h4>
-              <p className="text-[10px] text-slate-400 font-medium">新增受理与生效结案比照图</p>
+              <h4 className="text-xs font-extrabold text-slate-700">{getTimeFilterLabel(trendChartFilter)}案件吞吐趋势</h4>
+              <p className="text-xs text-slate-400 font-medium">新增受理与生效结案比照图</p>
             </div>
-            <div className="flex items-center space-x-2.5 text-[10px] font-bold text-slate-500">
+            <div className="flex items-center space-x-2.5 text-xs font-bold text-slate-500">
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-0.5 bg-indigo-500 inline-block"></span> 收案
               </span>
@@ -427,6 +368,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               </span>
             </div>
           </div>
+          <TimeFilterSelector filter={trendChartFilter} onFilterChange={setTrendChartFilter} showMonth={false} />
 
           <div className="relative pt-1">
             {/* Custom SVG Line Chart */}
@@ -554,19 +496,108 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   <span className="font-extrabold border-r border-slate-600 pr-2 text-indigo-300">
                     {monthlyData[activeTrendMonth].name}
                   </span>
-                  <span className="flex items-center gap-1.5 text-[11px]">
+                  <span className="flex items-center gap-1.5 text-sm">
                     <span className="w-2 h-2 rounded bg-indigo-500 inline-block"></span>
                     <span>收案: <strong className="font-bold">{monthlyData[activeTrendMonth].input}</strong> 件</span>
                   </span>
-                  <span className="flex items-center gap-1.5 text-[11px]">
+                  <span className="flex items-center gap-1.5 text-sm">
                     <span className="w-2 h-2 rounded bg-emerald-500 inline-block"></span>
                     <span>结案: <strong className="font-bold">{monthlyData[activeTrendMonth].resolved}</strong> 件</span>
                   </span>
                 </div>
               ) : (
-                <span className="text-[10px] text-slate-400 italic">在走势图上放置鼠标或触摸以查看每月细节统计</span>
+                <span className="text-xs text-slate-400 italic">在走势图上放置鼠标或触摸以查看每月细节统计</span>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Chart Section 4: Resolution Statistics Bar Chart */}
+        <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h4 className="text-xs font-extrabold text-slate-700">年度/季度结案统计</h4>
+              <p className="text-xs text-slate-400 font-medium">各时间段结案数量对比</p>
+            </div>
+          </div>
+          <TimeFilterSelector filter={resolutionChartFilter} onFilterChange={setResolutionChartFilter} showMonth={false} />
+
+          {/* Bar Chart for Resolution Statistics */}
+          <div className="relative pt-2">
+            {/* Resolution data based on time periods */}
+            {(() => {
+              // Generate data based on filter type
+              let resolutionData: { period: string; resolved: number; color: string }[] = [];
+
+              if (resolutionChartFilter.type === 'year') {
+                // Show yearly data
+                resolutionData = [
+                  { period: '2024年', resolved: 128, color: '#6366F1' },
+                  { period: '2025年', resolved: 145, color: '#8B5CF6' },
+                  { period: '2026年', resolved: Math.round(getAdjustedData(138, resolutionChartFilter)), color: '#A78BFA' },
+                ];
+              } else if (resolutionChartFilter.type === 'quarter') {
+                // Show quarterly data for selected year
+                resolutionData = [
+                  { period: `${resolutionChartFilter.year}年Q1`, resolved: Math.round(getAdjustedData(35, resolutionChartFilter)), color: '#6366F1' },
+                  { period: `${resolutionChartFilter.year}年Q2`, resolved: Math.round(getAdjustedData(42, resolutionChartFilter)), color: '#8B5CF6' },
+                  { period: `${resolutionChartFilter.year}年Q3`, resolved: Math.round(getAdjustedData(38, resolutionChartFilter)), color: '#A78BFA' },
+                  { period: `${resolutionChartFilter.year}年Q4`, resolved: Math.round(getAdjustedData(33, resolutionChartFilter)), color: '#C4B5FD' },
+                ];
+              }
+
+              const maxResolved = Math.max(...resolutionData.map(d => d.resolved));
+              const totalResolved = resolutionData.reduce((sum, d) => sum + d.resolved, 0);
+
+              return (
+                <div className="space-y-3">
+                  {resolutionData.map((item, index) => {
+                    const percentage = (item.resolved / maxResolved) * 100;
+                    const proportion = ((item.resolved / totalResolved) * 100).toFixed(1);
+                    return (
+                      <div key={index} className="space-y-1.5">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-bold text-slate-700">{item.period}</span>
+                          <span className="font-extrabold text-slate-800">{item.resolved} 件</span>
+                        </div>
+                        <div className="w-full bg-slate-100 h-8 rounded-lg overflow-hidden relative">
+                          <div
+                            className="h-full rounded-lg transition-all duration-500 relative flex items-center justify-end pr-2"
+                            style={{
+                              width: `${percentage}%`,
+                              backgroundColor: item.color,
+                            }}
+                          >
+                            {/* Show percentage inside the bar if it's wide enough */}
+                            {percentage > 30 && (
+                              <span className="text-xs font-bold text-white">
+                                {proportion}%
+                              </span>
+                            )}
+                          </div>
+                          {/* Show percentage outside the bar if it's narrow */}
+                          {percentage <= 30 && (
+                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600">
+                              {proportion}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Summary */}
+                  <div className="mt-4 pt-3 border-t border-slate-100">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-600">
+                        {resolutionChartFilter.type === 'year' ? '三年总计' : `${resolutionChartFilter.year}年总计`}
+                      </span>
+                      <span className="text-sm font-extrabold text-indigo-600">{totalResolved} 件</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
@@ -582,19 +613,19 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
             <div className="bg-slate-50 border-2 border-dashed border-indigo-400 p-4 rounded-2xl flex items-center justify-center relative">
               <QrCode size={180} className="text-slate-800" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-2 rounded-xl border-2 border-indigo-500">
-                <span className="text-[10px] font-extrabold text-indigo-700 font-mono scale-95 block">GZAC安全</span>
+                <span className="text-xs font-extrabold text-indigo-700 font-mono scale-95 block">GZAC安全</span>
               </div>
             </div>
 
-            <div className="space-y-1 text-slate-500 text-[10px] text-justify leading-relaxed">
+            <div className="space-y-1 text-slate-500 text-xs text-justify leading-relaxed">
               <p className="text-center font-bold text-slate-800">首席仲裁员：张明</p>
-              <p className="text-center text-[9px] font-mono select-all">数字认证哈希：CA-925-B605-AES256</p>
+              <p className="text-center text-xs font-mono select-all">数字认证哈希：CA-925-B605-AES256</p>
               <p className="border-t border-slate-100 pt-2 mt-1">此二维码作为线下庭审签到、多维数字档案解密及委员会内部系统登陆的双重特权身份验证证明。每隔60秒自动滚算加密印防伪。</p>
             </div>
 
             <button
               onClick={() => setShowQrModal(false)}
-              className="w-full bg-slate-900 text-white font-extrabold py-2 px-4 text-[10.5px] rounded-xl hover:bg-slate-800 cursor-pointer"
+              className="w-full bg-slate-900 text-white font-extrabold py-2 px-4 text-xs rounded-xl hover:bg-slate-800 cursor-pointer"
             >
               已阅确认并关闭
             </button>

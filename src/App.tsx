@@ -13,10 +13,23 @@ import TaskCenter from './components/TaskCenter';
 import CaseStats from './components/CaseStats';
 import CaseDetail from './components/CaseDetail';
 import MyProfile from './components/MyProfile';
+import StatsCenterPage from './components/StatsCenterPage';
+import CaseDiscussionPage from './components/CaseDiscussionPage';
+import MyAppointmentPage from './components/MyAppointmentPage';
+import NotificationPage from './components/NotificationPage';
+import RemunerationPage from './components/RemunerationPage';
+import PersonalInfoEdit from './components/PersonalInfoEdit';
+import WorkInfoEdit from './components/WorkInfoEdit';
+import BankInfoEdit from './components/BankInfoEdit';
+
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
   const [activeTab, setActiveTab] = useState<number>(0);
+  
+  // Sub-page state for workbench sub-pages
+  const [activeSubPage, setActiveSubPage] = useState<SubPageType>(null);
   
   // Login State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
@@ -28,6 +41,32 @@ export default function App() {
   
   // Global filters
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('all');
+
+  // Profile edit data states
+  const [personalInfo, setPersonalInfo] = useState({
+    name: mockArbitrator.name,
+    ranking: mockArbitrator.ranking,
+    phone: '138-8888-8888',
+    email: 'zhangming@gzac.org.cn',
+    homeAddress: '广州市天河区珠江新城华夏路30号',
+    contactAddress: '广州市越秀区东风中路418号',
+    otherAddress: '深圳市南山区科技园南区',
+    preferredAddress: 'home' as 'home' | 'contact' | 'other',
+    specialties: mockArbitrator.specialties
+  });
+
+  const [workInfo, setWorkInfo] = useState({
+    company: '广州市社会科学院政治法律研究所',
+    position: '资深执业律师 / 研究所客座专家',
+    qualification: '商事及涉外民法律照专职律师'
+  });
+
+  const [bankInfo, setBankInfo] = useState({
+    bank: '东莞银行股份有限公司',
+    branch: '广州分行',
+    accountNo: '6223 8812 **** 0918',
+    accountName: mockArbitrator.name
+  });
 
   // Callback to mark a task as completed and update case values
   const handleCompleteTask = (taskId: string, extraUpdates?: { caseId: string; nextStatus: CaseStatus }) => {
@@ -80,13 +119,23 @@ export default function App() {
     setActiveTab(2); // Jump to 待办 (index 2)
   };
 
+  // Navigate to sub-page from workbench
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit') => {
+    setActiveSubPage(page);
+  };
+
+  // Back from sub-page to workbench
+  const handleBackFromSubPage = () => {
+    setActiveSubPage(null);
+  };
+
   if (!isLoggedIn) {
     return (
       <MiniProgramContainer>
         <div className="flex-1 bg-gradient-to-br from-[#0B0F19] via-[#111827] to-[#1E293B] text-white flex flex-col justify-center items-center p-6 text-center select-none animate-fade-in font-sans relative">
           <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center space-x-1.5">
             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping text-indigo-500"></span>
-            <span className="text-[10px] font-black tracking-widest text-slate-400">广州仲裁委 • 智慧专网盾</span>
+            <span className="text-xs font-black tracking-widest text-slate-500">广州仲裁委 • 智慧专网盾</span>
           </div>
 
           <div className="space-y-6 w-full max-w-xs">
@@ -101,7 +150,7 @@ export default function App() {
 
             <div className="space-y-2">
               <h1 className="text-base font-black tracking-tight text-[#F3F4F6]">仲裁端双因子登录认证</h1>
-              <p className="text-[10.5px] text-slate-400 leading-normal px-2">
+              <p className="text-xs text-slate-500 leading-normal px-2">
                 检测到您未载入本委CA防伪专效证书盾，为保证合议内容秘密度及数据，请点击指纹核验或一键进行数字建连登录。
               </p>
             </div>
@@ -112,13 +161,13 @@ export default function App() {
                   setIsLoggedIn(true);
                   setActiveTab(0); // auto reset tab to workbench
                 }}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-heavy p-3 text-[11px] rounded-2xl cursor-pointer transition-all border border-indigo-600 shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5"
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-heavy p-3 text-sm rounded-2xl cursor-pointer transition-all border border-indigo-600 shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2"
               >
                 <i className="fa-solid fa-fingerprint text-xs"></i>
                 <span>双因子安全一键核签登录</span>
               </button>
               
-              <div className="text-[8.5px] text-slate-500 font-mono">
+              <div className="text-2xs text-slate-500 font-mono">
                 硬件指纹及数字校验盾 ID: ARB-2018-0925
               </div>
             </div>
@@ -131,8 +180,73 @@ export default function App() {
   return (
     <MiniProgramContainer>
       {/* Dynamic Content View based on Active bottom tab tab index */}
-      <div className="flex-1 flex flex-col min-h-0 w-full relative">
-        {activeTab === 0 && (
+      <div className="flex-1 flex flex-col min-h-0 w-full relative overflow-y-auto no-scrollbar">
+        {/* Sub-page rendering (takes priority over main tabs) */}
+        {activeSubPage === 'statsCenter' && (
+          <StatsCenterPage
+            cases={cases}
+            onBack={handleBackFromSubPage}
+            onNavigateToTab={(idx) => {
+              handleBackFromSubPage();
+              setActiveTab(idx);
+            }}
+            onFilterStatus={setSelectedStatusFilter}
+          />
+        )}
+
+        {activeSubPage === 'caseDiscussion' && (
+          <CaseDiscussionPage
+            cases={cases}
+            userName={mockArbitrator.name}
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'appointment' && (
+          <MyAppointmentPage
+            profile={mockArbitrator}
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'notifications' && (
+          <NotificationPage
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'remuneration' && (
+          <RemunerationPage
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'personalInfoEdit' && (
+          <PersonalInfoEdit
+            initialData={personalInfo}
+            onBack={handleBackFromSubPage}
+            onSave={(data) => setPersonalInfo(data)}
+          />
+        )}
+
+        {activeSubPage === 'workInfoEdit' && (
+          <WorkInfoEdit
+            initialData={workInfo}
+            onBack={handleBackFromSubPage}
+            onSave={(data) => setWorkInfo(data)}
+          />
+        )}
+
+        {activeSubPage === 'bankInfoEdit' && (
+          <BankInfoEdit
+            initialData={bankInfo}
+            onBack={handleBackFromSubPage}
+            onSave={(data) => setBankInfo(data)}
+          />
+        )}
+
+        {/* Main tab content (only show when no sub-page is active) */}
+        {!activeSubPage && activeTab === 0 && (
           <Workbench
             profile={mockArbitrator}
             tasks={tasks}
@@ -142,10 +256,11 @@ export default function App() {
             onSelectCase={setSelectedCase}
             onSelectTaskDirect={handleSelectTaskDirect}
             selectedStatusFilter={selectedStatusFilter}
+            onNavigateToSubPage={handleNavigateToSubPage}
           />
         )}
 
-        {activeTab === 1 && (
+        {!activeSubPage && activeTab === 1 && (
           <CaseList
             cases={cases}
             selectedStatusFilter={selectedStatusFilter}
@@ -154,7 +269,7 @@ export default function App() {
           />
         )}
 
-        {activeTab === 2 && (
+        {!activeSubPage && activeTab === 2 && (
           <TaskCenter
             tasks={tasks}
             cases={cases}
@@ -164,10 +279,15 @@ export default function App() {
           />
         )}
 
-        {activeTab === 3 && (
+        {!activeSubPage && activeTab === 3 && (
           <MyProfile
             profile={mockArbitrator}
             onLogout={() => setIsLoggedIn(false)}
+            onNavigateToEdit={handleNavigateToSubPage}
+            personalInfo={personalInfo}
+            workInfo={workInfo}
+            bankInfo={bankInfo}
+            onSetPreferredAddress={(type) => setPersonalInfo({...personalInfo, preferredAddress: type})}
           />
         )}
 
@@ -188,26 +308,29 @@ export default function App() {
           { label: '待办', icon: 'fa-square-check', index: 2 },
           { label: '我的', icon: 'fa-user', index: 3 }
         ].map((tab) => {
-          const isActive = activeTab === tab.index;
+          const isActive = activeTab === tab.index && !activeSubPage;
           const pendingCount = tab.index === 2 ? tasks.filter(t => t.status === 'pending').length : 0;
 
           return (
             <button
                key={tab.index}
-               onClick={() => { setActiveTab(tab.index); setSelectedCase(null); }}
+               onClick={() => { setActiveTab(tab.index); setSelectedCase(null); setActiveSubPage(null); }}
                className="flex flex-col items-center justify-center flex-1 h-full font-bold cursor-pointer relative transition-all"
+               aria-label={tab.label}
+               aria-current={isActive ? 'page' : undefined}
              >
               <div className="relative">
                 <i 
-                  className={`fa-solid ${tab.icon} text-[18px] transition-colors duration-200 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} 
+                  className={`fa-solid ${tab.icon} text-xl transition-colors duration-200 ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}
+                  aria-hidden="true"
                 />
                 {pendingCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-red-500 text-white font-bold text-[8.5px] h-4 w-4 rounded-full flex items-center justify-center border border-white">
+                  <span className="absolute -top-1.5 -right-2 bg-red-500 text-white font-bold text-2xs h-4 w-4 rounded-full flex items-center justify-center border border-white">
                     {pendingCount}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] mt-0.5 transition-colors duration-200 ${isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-500 font-semibold'}`}>
+              <span className={`text-xs mt-0.5 transition-colors duration-200 ${isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-500 font-semibold'}`}>
                 {tab.label}
               </span>
             </button>

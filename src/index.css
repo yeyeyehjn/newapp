@@ -5,6 +5,94 @@
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
+  /* Override indigo-500 to brand secondary color */
+  /* --color-indigo-500: #4780FF; */
+
+  /* Typography Scale - Unified Font Size System */
+  --text-2xs: 8px;
+  --text-xs: 10px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 24px;
+
+  /* Spacing Scale - Unified Spacing System */
+  /* Level 1: 4px - Micro spacing (icon gaps, tight elements) */
+  --space-1: 4px;
+  /* Level 2: 8px - Small spacing (related elements, inline gaps) */
+  --space-2: 8px;
+  /* Level 3: 12px - Medium-small spacing (component internal) */
+  --space-3: 12px;
+  /* Level 4: 16px - Medium spacing (component padding, section gaps) */
+  --space-4: 16px;
+  /* Level 5: 20px - Medium-large spacing (card padding) */
+  --space-5: 20px;
+  /* Level 6: 24px - Large spacing (section margins, card groups) */
+  --space-6: 24px;
+  /* Level 8: 32px - Extra large spacing (page sections) */
+  --space-8: 32px;
+
+  /* =====================================================
+   * SEMANTIC COLOR SYSTEM - 广州仲裁委智能管理平台
+   * ===================================================== */
+
+  /* Brand Colors - 品牌色 */
+  --color-brand-primary: #4f46e5;     /* Indigo 600 - 主品牌色 */
+  --color-brand-secondary: #4780FF;   /* Indigo 500 - 品牌辅助色 */
+  --color-brand-accent: #f59e0b;      /* Amber 500 - 品牌强调色 */
+
+  /* Background Colors - 背景色 */
+  --color-bg-base: #f8fafc;           /* Slate 50 - 页面背景 */
+  --color-bg-surface: #ffffff;        /* White - 卡片/组件背景 */
+  --color-bg-muted: #f1f5f9;          /* Slate 100 - 次级背景 */
+  --color-bg-elevated: #ffffff;       /* White - 浮层/弹窗背景 */
+
+  /* Text Colors - 文字色 */
+  --color-text-primary: #0f172a;      /* Slate 900 - 主要文字 */
+  --color-text-secondary: #475569;    /* Slate 600 - 次要文字 */
+  --color-text-muted: #64748b;        /* Slate 500 - 辅助文字 */
+  --color-text-inverse: #ffffff;      /* White - 反色文字 */
+
+  /* Border Colors - 边框色 */
+  --color-border-default: #e2e8f0;    /* Slate 200 - 默认边框 */
+  --color-border-muted: #f1f5f9;      /* Slate 100 - 次级边框 */
+  --color-border-strong: #cbd5e1;     /* Slate 300 - 强边框 */
+
+  /* Semantic Colors - 语义色 */
+  --color-success: #10b981;           /* Emerald 500 - 成功 */
+  --color-success-bg: #d1fae5;        /* Emerald 100 - 成功背景 */
+  --color-success-border: #a7f3d0;    /* Emerald 200 - 成功边框 */
+
+  --color-warning: #f59e0b;           /* Amber 500 - 警告 */
+  --color-warning-bg: #fef3c7;        /* Amber 100 - 警告背景 */
+  --color-warning-border: #fde68a;    /* Amber 200 - 警告边框 */
+
+  --color-error: #ef4444;             /* Red 500 - 错误 */
+  --color-error-bg: #fee2e2;          /* Red 100 - 错误背景 */
+  --color-error-border: #fecaca;      /* Red 200 - 错误边框 */
+
+  --color-info: #4780FF;              /* Brand Secondary - 信息 */
+  --color-info-bg: #e0e7ff;           /* Indigo 100 - 信息背景 */
+  --color-info-border: #c7d2fe;       /* Indigo 200 - 信息边框 */
+
+  /* Case Status Colors - 案件状态色 */
+  --color-status-active: #4780FF;     /* Brand Secondary - 审理中 */
+  --color-status-active-bg: #e0e7ff;  /* Indigo 100 - 审理中背景 */
+  --color-status-pending: #f59e0b;    /* Amber 500 - 待开庭 */
+  --color-status-pending-bg: #fef3c7; /* Amber 100 - 待开庭背景 */
+  --color-status-signing: #f43f5e;    /* Rose 500 - 待签名 */
+  --color-status-signing-bg: #ffe4e6; /* Rose 100 - 待签名背景 */
+  --color-status-resolved: #10b981;   /* Emerald 500 - 已结案 */
+  --color-status-resolved-bg: #d1fae5;/* Emerald 100 - 已结案背景 */
+
+  /* Interaction Colors - 交互色 */
+  --color-hover: #4f46e5;             /* Indigo 600 - Hover 状态 */
+  --color-active: #4338ca;            /* Indigo 700 - Active 状态 */
+  --color-focus: #4780FF;             /* Brand Secondary - Focus 状态 */
+
+  /* Animation Keyframes */
   --animate-slide-in: slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-down: slide-down 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-fade-in: fade-in 0.2s ease-out forwards;
@@ -35,5 +123,26 @@
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animate-slide-in,
+  .animate-slide-down,
+  .animate-fade-in,
+  .animate-scale-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 

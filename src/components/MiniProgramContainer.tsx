@@ -28,12 +28,12 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
       {/* Top Header Controls */}
       <div className="w-full max-w-6xl flex justify-between items-center mb-4 px-4 py-2 bg-slate-800 rounded-xl border border-slate-700 shadow-md">
         <div className="flex items-center space-x-3">
-          <div className="h-4 p-1 px-1.5 bg-rose-600 text-white rounded text-[10px] font-bold tracking-wider leading-none uppercase">
+          <div className="h-4 p-1 px-1.5 bg-rose-600 text-white rounded text-xs font-bold tracking-wider leading-none uppercase">
             仲裁员端
           </div>
           <h1 className="text-base sm:text-lg font-semibold tracking-tight text-white flex items-center gap-1.5">
             <span>广州仲裁委智能管理平台</span>
-            <span className="text-slate-400 font-normal text-xs">• 微信小程序版模拟</span>
+            <span className="text-slate-500 font-normal text-xs">• 微信小程序版模拟</span>
           </h1>
         </div>
         
@@ -74,20 +74,15 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
               <div className="w-2.5 h-2.5 bg-slate-900 rounded-full border border-slate-800"></div>
             </div>
 
-            {/* Simulated Signal & Time Top Bar */}
-            <div className="h-11 bg-slate-900 text-slate-100 px-7 flex justify-between items-end pb-1.5 text-xs font-semibold select-none z-40 transition-colors font-mono">
-              <span className="text-slate-300">{currentTime}</span>
-              <div className="flex items-center space-x-1.5 text-slate-300">
-                <Signal size={12} className="stroke-[2.5]" />
-                <span className="text-[10px] font-bold">5G</span>
-                <Wifi size={12} className="stroke-[2.5]" />
-                <Battery size={14} className="stroke-[2.5]" />
+            {/* Simulated Signal & Time Top Bar - merged with title */}
+            <div className="h-7 bg-slate-900 text-slate-100 px-4 flex justify-between items-center text-xs font-semibold select-none z-40 transition-colors font-mono">
+              <span className="text-slate-400">{currentTime}</span>
+              <div className="flex items-center space-x-1.5 text-slate-400">
+                <Signal size={10} className="stroke-[2.5]" />
+                <span className="text-xs font-bold">5G</span>
+                <Wifi size={10} className="stroke-[2.5]" />
+                <Battery size={12} className="stroke-[2.5]" />
               </div>
-            </div>
-
-            {/* WeChat Mini Program Navigation Bar */}
-            <div className="h-11 bg-slate-900 flex items-center justify-center px-4 z-40 select-none relative">
-              <span className="text-[15px] font-bold text-white">仲裁智能工作台</span>
             </div>
 
             {/* Inside Scrollable Screen */}
@@ -112,7 +107,7 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-800">广州仲裁委员会委案系统</h2>
-                  <p className="text-[10px] text-slate-400">桌面模拟视图 (仲裁独立面板)</p>
+                  <p className="text-xs text-slate-500">桌面模拟视图 (仲裁独立面板)</p>
                 </div>
               </div>
               

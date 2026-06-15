@@ -8,7 +8,7 @@ export const mockArbitrator: ArbitratorProfile = {
   resolvedCount: 142,
   activeCount: 6,
   avgResolveDays: 85,
-  ranking: "仲裁员"
+  ranking: "第六届仲裁员"
 };
 
 export const mockCases: Case[] = [
@@ -45,7 +45,8 @@ export const mockCases: Case[] = [
       { id: "e1_3", name: "项目尽职调查报告及其反驳意见书.docx", submitter: "被申请人-蓝海创投", time: "2026-02-22 16:45", size: "6.5 MB", ext: "docx" }
     ],
     hearings: [
-      { id: "h1_1", hearingTime: "2026-03-05 09:30 至 12:00", location: "广州仲裁委员会第一数字法庭", status: "已结束", notes: "开庭顺利，对双方主要事实争议进行了深度辩论。" }
+      { id: "h1_1", hearingTime: "2026-03-05 09:30 至 12:00", location: "广州仲裁委员会第一数字法庭", status: "已结束", notes: "开庭顺利，对双方主要事实争议进行了深度辩论。" },
+      { id: "h1_2", hearingTime: "2026-06-11 09:30 至 11:30", location: "广州仲裁委员会第一数字法庭", status: "待开庭", notes: "开庭" }
     ]
   },
   {
@@ -80,7 +81,8 @@ export const mockCases: Case[] = [
       { id: "e2_3", name: "遭遇极寒大雾天气港口封航通知.pdf", submitter: "被申请人-金桥钢铁", time: "2026-03-10 10:20", size: "1.2 MB", ext: "pdf" }
     ],
     hearings: [
-      { id: "h2_1", hearingTime: "2026-03-20 14:00 至 16:30", location: "广州仲裁委线上开庭系统B室", status: "已结束", notes: "本次为线上开庭。双方就恶劣天气免责等进行了质辩。" }
+      { id: "h2_1", hearingTime: "2026-03-20 14:00 至 16:30", location: "广州仲裁委线上开庭系统B室", status: "已结束", notes: "本次为线上开庭。双方就恶劣天气免责等进行了质辩。" },
+      { id: "h2_2", hearingTime: "2026-06-13 16:30 至 18:00", location: "广州仲裁委线上开庭系统B室", status: "待开庭", notes: "调解" }
     ]
   },
   {
@@ -112,7 +114,7 @@ export const mockCases: Case[] = [
       { id: "e3_2", name: "第三方工程进度及质量司法鉴定报告.pdf", submitter: "仲裁庭指定鉴定机构", time: "2026-05-08 14:15", size: "12.8 MB", ext: "pdf" }
     ],
     hearings: [
-      { id: "h3_1", hearingTime: "2026-06-11 14:00 至 16:30", location: "广州仲裁委员会第三数字开庭室", status: "待开庭", notes: "主体建设工程价款及延误违约金纠纷第一次开庭。" }
+      { id: "h3_1", hearingTime: "2026-06-12 14:00 至 16:30", location: "广州仲裁委员会第三数字开庭室", status: "待开庭", notes: "开庭" }
     ]
   },
   {
@@ -176,7 +178,9 @@ export const mockCases: Case[] = [
     evidence: [
       { id: "e5_1", name: "授信合同及担保抵押质押文件汇编.pdf", submitter: "申请人-众盛信托", time: "2026-02-18 10:00", size: "32.4 MB", ext: "pdf" }
     ],
-    hearings: []
+    hearings: [
+      { id: "h5_1", hearingTime: "2026-06-12 15:30 至 17:30", location: "广州仲裁委员会第四数字法庭", status: "待开庭", notes: "鉴定" }
+    ]
   }
 ];
 

@@ -1,19 +1,131 @@
 import React, { useState } from 'react';
-import { X, Calendar, FileText, Award, Download, CheckCircle, Clock, ShieldAlert } from 'lucide-react';
+import { X, Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles } from 'lucide-react';
 import { Case } from '../types';
 
 interface CaseDetailProps {
   caseItem: Case;
   onClose: () => void;
-  onNavigateToTask?: (taskId: string) => void;
+}
+
+interface PartyInfo {
+  type: 'applicant' | 'respondent';
+  attribute: '自然人' | '企业';
+  name: string;
+  idType: string;
+  idNo: string;
+  phone: string;
+  email: string;
+  address: string;
+}
+
+interface ArbitrationRequest {
+  facts: string;
+  items: string[];
+}
+
+interface MaterialItem {
+  id: string;
+  category: '申请书' | '申请人证据' | '被申请人证据' | '申请人答辩状' | '被申请人答辩状' | '其他材料';
+  name: string;
+  submitter: string;
+  time: string;
+  size: string;
+  content?: string;
 }
 
 export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
-  const [activeSegment, setActiveSegment] = useState<'info' | 'timeline' | 'evidence'>('info');
-  const [viewingEvidence, setViewingEvidence] = useState<{ name: string; url?: string } | null>(null);
-  const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials'>('basic');
+  const [viewingMaterial, setViewingMaterial] = useState<MaterialItem | null>(null);
+  const [materialSearch, setMaterialSearch] = useState('');
 
-  // Helper to format currency in CNY
+  // Mock data for parties
+  const parties: PartyInfo[] = [
+    {
+      type: 'applicant',
+      attribute: '企业',
+      name: '广州天河科技投资有限公司',
+      idType: '统一社会信用代码',
+      idNo: '91440106MA5XXXXX',
+      phone: '020-8888-8888',
+      email: 'legal@tianhe-tech.com',
+      address: '广州市天河区珠江新城华夏路30号'
+    },
+    {
+      type: 'applicant',
+      attribute: '自然人',
+      name: '张伟',
+      idType: '身份证',
+      idNo: '440106198501011234',
+      phone: '138-0000-0001',
+      email: 'zhangwei@email.com',
+      address: '广州市越秀区东风中路100号'
+    },
+    {
+      type: 'respondent',
+      attribute: '企业',
+      name: '深圳南山创新发展有限公司',
+      idType: '统一社会信用代码',
+      idNo: '91440300MA5YYYYY',
+      phone: '0755-8888-8888',
+      email: 'contact@nanshan-dev.com',
+      address: '深圳市南山区科技园南区'
+    },
+    {
+      type: 'respondent',
+      attribute: '自然人',
+      name: '李明',
+      idType: '身份证',
+      idNo: '440303199001011234',
+      phone: '139-0000-0002',
+      email: 'liming@email.com',
+      address: '深圳市福田区深南大道200号'
+    }
+  ];
+
+  // Mock data for arbitration requests
+  const arbitrationRequest: ArbitrationRequest = {
+    facts: '申请人广州天河科技投资有限公司与被申请人深圳南山创新发展有限公司于2023年签订《合作协议》，约定双方共同投资开发某科技项目。协议约定被申请人应在收到申请人投资款项后6个月内完成项目开发并交付。申请人已按约定支付投资款项人民币5000万元，但被申请人未能按期完成项目开发，且在申请人多次催促后仍未能履行合同义务。被申请人的违约行为给申请人造成了重大经济损失。',
+    items: [
+      '请求裁决被申请人向申请人支付违约金人民币1000万元',
+      '请求裁决被申请人返还申请人已支付的投资款项人民币5000万元',
+      '请求裁决被申请人赔偿申请人因违约造成的经济损失人民币2000万元',
+      '请求裁决本案仲裁费用由被申请人承担'
+    ]
+  };
+
+  // Mock data for materials
+  const materials: MaterialItem[] = [
+    { id: '1', category: '申请书', name: '仲裁申请书', submitter: '申请人', time: '2024-01-15', size: '2.5MB' },
+    { id: '2', category: '申请人证据', name: '合作协议原件', submitter: '申请人', time: '2024-01-15', size: '1.2MB', content: '双方签订的合作协议原件，约定项目开发期限为6个月' },
+    { id: '3', category: '申请人证据', name: '银行转账凭证', submitter: '申请人', time: '2024-01-15', size: '0.8MB', content: '申请人支付5000万元投资款项的银行转账凭证' },
+    { id: '4', category: '申请人证据', name: '催告函及送达证明', submitter: '申请人', time: '2024-02-20', size: '1.5MB', content: '申请人向被申请人发出的催告函及送达证明' },
+    { id: '5', category: '被申请人证据', name: '项目进度报告', submitter: '被申请人', time: '2024-03-01', size: '3.0MB', content: '被申请人提交的项目进度报告，说明项目延期原因' },
+    { id: '6', category: '被申请人证据', name: '技术困难说明', submitter: '被申请人', time: '2024-03-01', size: '2.0MB', content: '被申请人说明项目开发过程中遇到的技术困难' },
+    { id: '7', category: '申请人答辩状', name: '申请人答辩状', submitter: '申请人', time: '2024-03-15', size: '1.8MB' },
+    { id: '8', category: '被申请人答辩状', name: '被申请人答辩状', submitter: '被申请人', time: '2024-03-20', size: '2.2MB' },
+    { id: '9', category: '其他材料', name: '仲裁庭组成通知书', submitter: '仲裁委', time: '2024-02-01', size: '0.5MB' },
+    { id: '10', category: '其他材料', name: '开庭通知书', submitter: '仲裁委', time: '2024-03-25', size: '0.3MB' }
+  ];
+
+  // Filter materials by search
+  const filteredMaterials = materials.filter(m => 
+    materialSearch === '' || 
+    m.name.includes(materialSearch) || 
+    m.category.includes(materialSearch) ||
+    m.submitter.includes(materialSearch)
+  );
+
+  // Group materials by category
+  const groupedMaterials = {
+    '申请书': filteredMaterials.filter(m => m.category === '申请书'),
+    '申请人证据': filteredMaterials.filter(m => m.category === '申请人证据'),
+    '被申请人证据': filteredMaterials.filter(m => m.category === '被申请人证据'),
+    '申请人答辩状': filteredMaterials.filter(m => m.category === '申请人答辩状'),
+    '被申请人答辩状': filteredMaterials.filter(m => m.category === '被申请人答辩状'),
+    '其他材料': filteredMaterials.filter(m => m.category === '其他材料')
+  };
+
+  // Helper to format currency
   const formatCNY = (amount: number) => {
     if (amount >= 10000000) {
       return `¥${(amount / 10000000).toFixed(2)} 千万元`;
@@ -24,8 +136,11 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
     return `¥${amount.toLocaleString()}`;
   };
 
+  const applicants = parties.filter(p => p.type === 'applicant');
+  const respondents = parties.filter(p => p.type === 'respondent');
+
   return (
-    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in">
+    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
       {/* Top Header */}
       <div className="h-12 bg-white border-b border-slate-100 px-4 flex items-center justify-between shadow-sm flex-shrink-0">
         <button 
@@ -36,239 +151,188 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
           <span>返回</span>
         </button>
         <span className="font-bold text-slate-800 text-xs truncate max-w-[200px]">{caseItem.caseNo}</span>
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-10"></div>
       </div>
 
-      {/* Case Header Details Widget */}
-      <div className="bg-indigo-950 text-white p-5 flex-shrink-0 relative overflow-hidden">
-        {/* Decorative corner background */}
-        <div className="absolute right-[-10px] bottom-[-10px] opacity-10 pointer-events-none transform scale-150">
-          <Award size={80} className="text-white" />
+      {/* Simplified Banner */}
+      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded">
+              {caseItem.category}
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded font-bold ${
+              caseItem.status === '已结案' ? 'bg-emerald-500/30 text-emerald-100' :
+              caseItem.status === '审理中' ? 'bg-amber-500/30 text-amber-100' :
+              'bg-slate-500/30 text-slate-100'
+            }`}>
+              {caseItem.status}
+            </span>
+          </div>
         </div>
-
-        <div className="flex items-center justify-between mb-2 relative z-10">
-          <span className="text-[10px] font-extrabold bg-indigo-600 px-2 py-0.5 rounded-lg tracking-wide">
-            {caseItem.category}
-          </span>
-          <span className={`text-[10px] p-0.5 px-2 rounded-lg font-bold border ${
-            caseItem.status === '已结案' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/25' :
-            caseItem.status === '审理中' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/25 animate-pulse' :
-            caseItem.status === '待开庭' ? 'bg-amber-500/20 text-amber-300 border-amber-500/25' :
-            'bg-rose-500/20 text-rose-300 border-rose-500/25'
-          }`}>
-            ● {caseItem.status}
-          </span>
-        </div>
-        <h4 className="text-sm font-extrabold text-slate-100 tracking-tight leading-relaxed mb-3 relative z-10 text-left">
+        <h4 className="text-sm font-bold text-white mt-1 truncate">
           {caseItem.title}
         </h4>
-        <div className="flex items-center justify-between text-[11px] text-indigo-200/90 relative z-10">
-          <span>首席席位: <strong className="font-bold text-indigo-300">{caseItem.role}</strong></span>
-          <span>标的额: <strong className="font-extrabold text-amber-400">{formatCNY(caseItem.disputeAmount)}</strong></span>
-        </div>
       </div>
 
-      {/* Segment Controllers */}
-      <div className="bg-white border-b border-indigo-50 flex p-1 shadow-sm text-xs text-slate-500 flex-shrink-0">
-        {(['info', 'timeline', 'evidence'] as const).map((seg) => (
+      {/* Tab Navigation */}
+      <div className="bg-white border-b border-slate-100 flex px-2 py-1 flex-shrink-0">
+        {(['basic', 'parties', 'requests', 'materials'] as const).map((tab) => (
           <button
-            key={seg}
-            onClick={() => setActiveSegment(seg)}
-            className={`flex-1 py-2.5 text-center font-bold tracking-wide transition-all rounded-lg ${
-              activeSegment === seg 
-                ? 'text-indigo-600 bg-indigo-50/40' 
-                : 'hover:text-slate-800'
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2 text-center text-xs font-bold transition-all rounded-lg ${
+              activeTab === tab 
+                ? 'text-indigo-600 bg-indigo-50' 
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            {seg === 'info' ? '案情基本情况' : seg === 'timeline' ? '办案大事记' : '全案证据材料'}
+            {tab === 'basic' ? '基本信息' : 
+             tab === 'parties' ? '当事人' : 
+             tab === 'requests' ? '仲裁请求' : '主要材料'}
           </button>
         ))}
       </div>
 
-      {/* Scrollable details view */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-        {activeSegment === 'info' && (
-          <div className="space-y-4 animate-fade-in">
-            {/* Parties Info Block */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm space-y-3">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100">
-                本案当事人结构
-              </h5>
-              
-              <div className="space-y-3 text-xs">
-                {/* Claimant */}
-                <div className="flex flex-col space-y-1">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="bg-emerald-500 text-white font-bold px-1 rounded text-[9px] leading-relaxed">申请</span>
-                    <span className="font-bold text-slate-800">{caseItem.claimant}</span>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Basic Info Tab */}
+        {activeTab === 'basic' && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Key Info Grid */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3">
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-50 rounded-lg p-2.5">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                    <Calendar size={12} />
+                    <span>立案日期</span>
                   </div>
-                  {caseItem.claimantAgent && (
-                    <div className="pl-7 text-[10px] text-slate-400">
-                      代理律师: {caseItem.claimantAgent}
-                    </div>
-                  )}
+                  <span className="font-bold text-slate-800">{caseItem.startDate}</span>
                 </div>
-
-                {/* Divider */}
-                <div className="h-px bg-dashed border-t border-slate-100 my-1"></div>
-
-                {/* Respondent */}
-                <div className="flex flex-col space-y-1">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="bg-red-500 text-white font-bold px-1 rounded text-[9px] leading-relaxed">被申</span>
-                    <span className="font-bold text-slate-800">{caseItem.respondent}</span>
+                <div className="bg-slate-50 rounded-lg p-2.5">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                    <Calendar size={12} />
+                    <span>组庭日期</span>
                   </div>
-                  {caseItem.respondentAgent && (
-                    <div className="pl-7 text-[10px] text-slate-400">
-                      代理律师: {caseItem.respondentAgent}
-                    </div>
-                  )}
+                  <span className="font-bold text-slate-800">2024-02-01</span>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-2.5">
+                  <div className="text-slate-500 mb-1">争议金额</div>
+                  <span className="font-bold text-amber-600">{formatCNY(caseItem.disputeAmount)}</span>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-2.5">
+                  <div className="text-slate-500 mb-1">仲裁费</div>
+                  <span className="font-bold text-slate-800">¥{Math.round(caseItem.disputeAmount * 0.01 / 10000)}万元</span>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-2.5 col-span-2">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                    <User size={12} />
+                    <span>办案秘书</span>
+                  </div>
+                  <span className="font-bold text-slate-800">王秘书</span>
                 </div>
               </div>
             </div>
 
-            {/* Case description summary */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm space-y-2">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100">
-                仲裁案情摘要
-              </h5>
-              <p className="text-xs text-slate-600 leading-relaxed text-justify">
-                {caseItem.description}
-              </p>
-            </div>
-
-            {/* Trial Info Grid */}
-            <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm space-y-2.5 text-xs text-slate-600">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100">
-                仲裁规则与机构
-              </h5>
-              <div className="grid grid-cols-2 gap-y-3 gap-x-2 pt-1 text-[11px]">
-                <div>
-                  <span className="text-slate-400 block mb-0.5">立案日期</span>
-                  <span className="font-semibold text-slate-800">{caseItem.startDate}</span>
-                </div>
-                {caseItem.closeDate && (
-                  <div>
-                    <span className="text-slate-400 block mb-0.5">结案归档日</span>
-                    <span className="font-semibold text-emerald-600">{caseItem.closeDate}</span>
-                  </div>
-                )}
-                <div>
-                  <span className="text-slate-400 block mb-0.5">组庭机构</span>
-                  <span className="font-semibold text-slate-800">{caseItem.commission}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block mb-0.5">执行仲裁规则</span>
-                  <span className="font-semibold text-slate-800 truncate block max-w-[150px]">{caseItem.rules}</span>
-                </div>
+            {/* Case Summary with AI watermark */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3 relative overflow-hidden">
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+                <FileText size={14} />
+                <span>案情摘要</span>
               </div>
-            </div>
-
-            {/* Hearing scheduling block */}
-            {caseItem.hearings.length > 0 && (
-              <div className="bg-white p-3.5 rounded-xl border border-slate-100 shadow-sm space-y-2.5">
-                <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100 flex items-center justify-between">
-                  <span>开庭日程纪要</span>
-                  <Calendar size={13} className="text-slate-400" />
-                </h5>
-                <div className="space-y-2">
-                  {caseItem.hearings.map((h, idx) => (
-                    <div key={idx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[11px] space-y-1">
-                      <div className="flex justify-between font-bold text-slate-800">
-                        <span>{h.location}</span>
-                        <span className="text-emerald-500 text-[10px] font-semibold">{h.status}</span>
-                      </div>
-                      <div className="text-slate-500 font-mono">时间: {h.hearingTime}</div>
-                      {h.notes && <div className="text-[10px] text-slate-400 italic">备注: {h.notes}</div>}
-                    </div>
-                  ))}
+              <div className="text-xs text-slate-600 leading-relaxed relative">
+                {/* AI watermark */}
+                <div className="absolute top-0 right-0 flex items-center gap-1 text-[10px] text-indigo-400 bg-indigo-50 px-1.5 py-0.5 rounded">
+                  <Sparkles size={10} />
+                  <span>AI生成，仅供参考</span>
                 </div>
+                <p className="mt-4">
+                  {caseItem.description}
+                </p>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Vertical timeline node display */}
-        {activeSegment === 'timeline' && (
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm space-y-4 animate-fade-in">
-            <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100">
-              案件推进全寿光轴 (委案系统记录)
-            </h5>
-            
-            <div className="relative pl-6 space-y-5">
-              {/* Vertical line connector */}
-              <div className="absolute left-2.5 top-1.5 bottom-1.5 w-0.5 bg-slate-100"></div>
-
-              {caseItem.timeline.map((node, index) => (
-                <div key={index} className="relative group">
-                  {/* Circle Indicator */}
-                  <div className={`absolute -left-6 top-1 h-3.5 w-3.5 rounded-full border-2 bg-white flex items-center justify-center z-10 ${
-                    node.status === 'completed' ? 'border-emerald-500' :
-                    node.status === 'processing' ? 'border-indigo-500 animate-pulse' :
-                    'border-slate-200'
-                  }`}>
-                    {node.status === 'completed' && <div className="h-1.5 w-1.5 bg-emerald-500 rounded-full"></div>}
-                    {node.status === 'processing' && <div className="h-1.5 w-1.5 bg-indigo-500 rounded-full"></div>}
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex justify-between items-center text-xs font-bold text-slate-800">
-                      <span>{node.title}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{node.time}</span>
-                    </div>
-                    {node.operator && (
-                      <div className="text-[10px] text-slate-500">
-                        处理主体: {node.operator}
-                      </div>
-                    )}
-                    {node.remark && (
-                      <div className="text-[10px] bg-slate-50 p-1.5 px-2.5 text-slate-400 rounded-xl border border-slate-100 leading-relaxed">
-                        描述: {node.remark}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         )}
 
-        {/* Evidence documents checklist */}
-        {activeSegment === 'evidence' && (
-          <div className="space-y-3 animate-fade-in pb-4">
-            <div className="bg-amber-50 rounded-2xl p-3.5 border border-amber-100 flex items-start gap-2 text-[10px] text-amber-700 leading-relaxed font-medium">
-              <ShieldAlert size={15} className="flex-shrink-0 text-amber-500" />
-              <span>根据《中华人民共和国仲裁法》及涉密安全条例，此处证据文件仅作为仲裁合议、裁決拟稿之审阅用途。切勿向庭外第三方散播、留底，系统已实施电子追踪防伪水印封存。</span>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-              <h5 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider p-3 pb-2 border-b border-slate-100">
-                全案提交证据清单 ({caseItem.evidence.length}个卷宗)
-              </h5>
-
-              <div className="divide-y divide-slate-100">
-                {caseItem.evidence.map((file) => (
-                  <div key={file.id} className="p-3 hover:bg-slate-50/50 transition-colors flex items-center justify-between">
-                    <div className="flex items-start space-x-2.5 max-w-[240px]">
-                      <FileText size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
+        {/* Parties Tab */}
+        {activeTab === 'parties' && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Applicants */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded">申请人</span>
+                <span className="text-xs text-slate-500">共{applicants.length}位</span>
+              </div>
+              <div className="space-y-3">
+                {applicants.map((party, idx) => (
+                  <div key={idx} className="bg-slate-50 rounded-lg p-2.5 space-y-2">
+                    <div className="flex items-center gap-2">
+                      {party.attribute === '企业' ? (
+                        <Building2 size={14} className="text-indigo-500" />
+                      ) : (
+                        <User size={14} className="text-indigo-500" />
+                      )}
+                      <span className="font-bold text-slate-800 text-xs">{party.name}</span>
+                      <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{party.attribute}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <div className="text-[11px] font-bold text-slate-800 line-clamp-1">{file.name}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
-                          提交方: {file.submitter}
-                        </div>
-                        <div className="text-[9px] text-slate-300 font-mono mt-0.5">
-                          时间: {file.time} • 大小: {file.size}
-                        </div>
+                        <span className="text-slate-500">{party.idType}：</span>
+                        <span className="text-slate-700">{party.idNo}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">手机：</span>
+                        <span className="text-slate-700">{party.phone}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-500">邮箱：</span>
+                        <span className="text-slate-700">{party.email}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-500">法定地址：</span>
+                        <span className="text-slate-700">{party.address}</span>
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setViewingEvidence({ name: file.name })}
-                        className="p-1 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-[10px] font-extrabold cursor-pointer transition-colors"
-                      >
-                        预览
-                      </button>
+            {/* Respondents */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">被申请人</span>
+                <span className="text-xs text-slate-500">共{respondents.length}位</span>
+              </div>
+              <div className="space-y-3">
+                {respondents.map((party, idx) => (
+                  <div key={idx} className="bg-slate-50 rounded-lg p-2.5 space-y-2">
+                    <div className="flex items-center gap-2">
+                      {party.attribute === '企业' ? (
+                        <Building2 size={14} className="text-red-500" />
+                      ) : (
+                        <User size={14} className="text-red-500" />
+                      )}
+                      <span className="font-bold text-slate-800 text-xs">{party.name}</span>
+                      <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{party.attribute}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-500">{party.idType}：</span>
+                        <span className="text-slate-700">{party.idNo}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">手机：</span>
+                        <span className="text-slate-700">{party.phone}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-500">邮箱：</span>
+                        <span className="text-slate-700">{party.email}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-slate-500">法定地址：</span>
+                        <span className="text-slate-700">{party.address}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -276,81 +340,151 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
             </div>
           </div>
         )}
+
+        {/* Arbitration Requests Tab */}
+        {activeTab === 'requests' && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Facts and Reasons */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3">
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+                <FileText size={14} />
+                <span>事实和理由</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {arbitrationRequest.facts}
+              </p>
+            </div>
+
+            {/* Request Items */}
+            <div className="bg-white rounded-lg border border-slate-100 p-3">
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+                <FileCheck size={14} />
+                <span>请求项</span>
+              </div>
+              <div className="space-y-2">
+                {arbitrationRequest.items.map((item, idx) => (
+                  <div key={idx} className="bg-indigo-50 rounded-lg p-2.5 text-xs text-slate-700 flex items-start gap-2">
+                    <span className="bg-indigo-500 text-white text-[10px] font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Materials Tab */}
+        {activeTab === 'materials' && (
+          <div className="space-y-3 animate-fade-in">
+            {/* Search Bar */}
+            <div className="bg-white rounded-lg border border-slate-100 p-2.5 flex items-center gap-2">
+              <Search size={14} className="text-slate-400" />
+              <input
+                type="text"
+                placeholder="搜索材料名称、类别..."
+                value={materialSearch}
+                onChange={(e) => setMaterialSearch(e.target.value)}
+                className="flex-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+              />
+            </div>
+
+            {/* Materials grouped by category */}
+            {Object.entries(groupedMaterials).map(([category, items]) => (
+              items.length > 0 && (
+                <div key={category} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-700">{category}</span>
+                    <span className="text-xs text-slate-500">{items.length}项</span>
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {items.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="px-3 py-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer"
+                        onClick={() => setViewingMaterial(item)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileText size={14} className="text-slate-400" />
+                          <div>
+                            <div className="text-xs font-bold text-slate-800">{item.name}</div>
+                            <div className="text-[10px] text-slate-500 mt-0.5">
+                              {item.time} • {item.size}
+                            </div>
+                          </div>
+                        </div>
+                        <button className="text-xs text-indigo-600 font-medium hover:text-indigo-700">
+                          查看
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Mock Evidence Document Preview Watermarked Modal */}
-      {viewingEvidence && (
+      {/* Material Preview Modal */}
+      {viewingMaterial && (
         <div className="absolute inset-0 bg-slate-900/95 z-[60] flex flex-col animate-fade-in text-white p-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-4 flex-shrink-0">
-            <span className="text-xs font-bold truncate max-w-[250px]">{viewingEvidence.name}</span>
+            <div className="flex items-center gap-2">
+              <FileText size={14} className="text-indigo-400" />
+              <span className="text-xs font-bold truncate max-w-[250px]">{viewingMaterial.name}</span>
+            </div>
             <button 
-              onClick={() => setViewingEvidence(null)}
-              className="text-slate-400 hover:text-white p-1 bg-slate-800 rounded cursor-pointer"
+              onClick={() => setViewingMaterial(null)}
+              className="text-slate-500 hover:text-white p-1 bg-slate-800 rounded cursor-pointer"
             >
               <X size={15} />
             </button>
           </div>
 
-          {/* Document Content Simulation */}
-          <div className="flex-1 bg-white text-slate-950 p-6 rounded-xl overflow-y-auto relative whitespace-pre-wrap font-serif text-xs select-none selection:bg-transparent shadow-inner">
-            {/* Real legal watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.06] transform -rotate-45 pointer-events-none select-none">
+          {/* Document Content */}
+          <div className="flex-1 bg-white text-slate-950 p-4 rounded-xl overflow-y-auto relative text-xs">
+            {/* Watermark */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.05] transform -rotate-45 pointer-events-none">
               <div className="text-center">
-                <div className="text-2xl font-bold tracking-widest text-[#9400D3] uppercase m-4">广州仲裁委员会审案材料</div>
-                <div className="text-sm font-semibold tracking-wider text-[#9400D3]">专供仲裁员: 张明 • 机密阅览</div>
-                <div className="text-xs text-[#9400D3] font-mono mt-2">2026-06-10 广州市机密追踪系统</div>
+                <div className="text-xl font-bold tracking-widest text-indigo-600">广州仲裁委员会</div>
+                <div className="text-sm text-indigo-600">机密材料 • 仅供审阅</div>
               </div>
             </div>
 
-            <h3 className="text-center text-sm font-extrabold tracking-wide mb-6">
-              证据卷宗详情说明及审阅本
-            </h3>
-            
-            <p className="indent-6 leading-relaxed mb-4">
-              根据广州仲裁委员会第 {caseItem.caseNo} 号案排定之合议庭质辩安排，本卷宗为当事人依《仲裁证据规则》提报之书证、物证原件副本汇编。
-            </p>
+            <div className="relative z-10">
+              <h3 className="text-sm font-bold mb-4">{viewingMaterial.name}</h3>
+              
+              <div className="bg-slate-50 rounded-lg p-3 mb-3 text-xs text-slate-500">
+                <p>提交方：{viewingMaterial.submitter}</p>
+                <p>提交时间：{viewingMaterial.time}</p>
+                <p>文件大小：{viewingMaterial.size}</p>
+              </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-100 rounded-lg font-sans text-[10px] space-y-2 mb-4 leading-relaxed text-slate-500">
-              <p className="font-bold text-slate-700">【技术检验及签名信息】</p>
-              <p>数字存证链编号: TX-CHAINS-908B1F2D0198E2</p>
-              <p>CA签发人认证: 工业和信息化部统一CA电子签名认证存证</p>
-              <p>可追溯完整性: SHA-256验证一致。该原件于立案合规审查时完成归档。</p>
+              {viewingMaterial.content && (
+                <p className="leading-relaxed text-slate-600">
+                  {viewingMaterial.content}
+                </p>
+              )}
+
+              {!viewingMaterial.content && (
+                <div className="h-32 border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400">
+                  [ 材料内容预览 ]
+                </div>
+              )}
             </div>
-
-            <p className="indent-6 leading-relaxed mb-4 font-serif">
-              “...特此申报，双方在合作第二阶段对于协议修正案的第四条执行机制，已进行了充分的可行性技术论证。其双方签字盖章原件如下文附表所示，旨在明确被申请人在未获得申请人独立董事决议批复前，不享有擅自重组控股合伙企业资产负债表之决定特许权...”
-            </p>
-
-            <div className="h-20 border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-[10px] italic mb-4">
-              [ 附件此处省略双签合伙企业公章、法人签字印谱扫描件 ]
-            </div>
-
-            <p className="indent-6 leading-relaxed mb-4 text-slate-500 text-[11px] italic">
-              （本处内容为智能虚拟文书系统提供的仿真涉密证据展示片断）
-            </p>
           </div>
 
-          <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-between items-center text-[10px] text-slate-500 flex-shrink-0">
-            <span>机密证据级保护 • IP追踪中</span>
-            <div className="flex items-center space-x-2">
-              {isDownloaded && (
-                <span className="text-[10px] text-emerald-400 font-extrabold animate-fade-in">
-                  ✓ 安全加密并生成追踪日志成功！
-                </span>
-              )}
-              <button
-                onClick={() => {
-                  setIsDownloaded(true);
-                  setTimeout(() => setIsDownloaded(false), 3000);
-                }}
-                className={`flex items-center gap-1.5 p-2 px-4 rounded-xl text-white font-extrabold cursor-pointer transition-all ${
-                  isDownloaded ? 'bg-emerald-600' : 'bg-slate-800 hover:bg-slate-700'
-                }`}
-              >
-                <Download size={12} />
-                <span>{isDownloaded ? '已离线备审' : '下载审阅离线副件'}</span>
-              </button>
-            </div>
+          {/* Footer */}
+          <div className="mt-4 flex justify-end flex-shrink-0">
+            <button
+              onClick={() => setViewingMaterial(null)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-xs font-bold transition-colors"
+            >
+              <Download size={12} />
+              <span>下载材料</span>
+            </button>
           </div>
         </div>
       )}

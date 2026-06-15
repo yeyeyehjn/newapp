@@ -22,7 +22,7 @@ import PersonalInfoEdit from './components/PersonalInfoEdit';
 import WorkInfoEdit from './components/WorkInfoEdit';
 import BankInfoEdit from './components/BankInfoEdit';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -120,13 +120,14 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail') => {
     setActiveSubPage(page);
   };
 
   // Back from sub-page to workbench
   const handleBackFromSubPage = () => {
     setActiveSubPage(null);
+    setSelectedCase(null); // 同时清除选中的案件
   };
 
   if (!isLoggedIn) {
@@ -245,6 +246,14 @@ export default function App() {
           />
         )}
 
+        {/* Case Detail sub-page */}
+        {activeSubPage === 'caseDetail' && selectedCase && (
+          <CaseDetail
+            caseItem={selectedCase}
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
         {/* Main tab content (only show when no sub-page is active) */}
         {!activeSubPage && activeTab === 0 && (
           <Workbench
@@ -253,7 +262,10 @@ export default function App() {
             cases={cases}
             onNavigateToTab={setActiveTab}
             onFilterStatus={setSelectedStatusFilter}
-            onSelectCase={setSelectedCase}
+            onSelectCase={(caseItem) => {
+              setSelectedCase(caseItem);
+              setActiveSubPage('caseDetail');
+            }}
             onSelectTaskDirect={handleSelectTaskDirect}
             selectedStatusFilter={selectedStatusFilter}
             onNavigateToSubPage={handleNavigateToSubPage}
@@ -265,7 +277,10 @@ export default function App() {
             cases={cases}
             selectedStatusFilter={selectedStatusFilter}
             onFilterStatusChange={setSelectedStatusFilter}
-            onSelectCase={setSelectedCase}
+            onSelectCase={(caseItem) => {
+              setSelectedCase(caseItem);
+              setActiveSubPage('caseDetail');
+            }}
           />
         )}
 
@@ -275,7 +290,10 @@ export default function App() {
             cases={cases}
             onCompleteTask={handleCompleteTask}
             onNavigateToTab={setActiveTab}
-            onSelectCase={setSelectedCase}
+            onSelectCase={(caseItem) => {
+              setSelectedCase(caseItem);
+              setActiveSubPage('caseDetail');
+            }}
           />
         )}
 
@@ -288,14 +306,6 @@ export default function App() {
             workInfo={workInfo}
             bankInfo={bankInfo}
             onSetPreferredAddress={(type) => setPersonalInfo({...personalInfo, preferredAddress: type})}
-          />
-        )}
-
-        {/* Floating Case Details Slide-over panel */}
-        {selectedCase && (
-          <CaseDetail
-            caseItem={selectedCase}
-            onClose={() => setSelectedCase(null)}
           />
         )}
       </div>

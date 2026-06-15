@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles } from 'lucide-react';
 import { Case } from '../types';
 
 interface CaseDetailProps {
   caseItem: Case;
-  onClose: () => void;
+  onBack: () => void;
 }
 
 interface PartyInfo {
@@ -33,39 +33,10 @@ interface MaterialItem {
   content?: string;
 }
 
-export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
+export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
   const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials'>('basic');
   const [viewingMaterial, setViewingMaterial] = useState<MaterialItem | null>(null);
   const [materialSearch, setMaterialSearch] = useState('');
-
-  // Prevent background scrolling when modal is open
-  useEffect(() => {
-    // Save original overflow styles
-    const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-    const originalBodyPosition = document.body.style.position;
-    const originalBodyTop = document.body.style.top;
-    const originalBodyWidth = document.body.style.width;
-    const originalScrollTop = window.scrollY;
-
-    // Prevent scrolling by multiple methods
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${originalScrollTop}px`;
-    document.body.style.width = '100%';
-
-    // Restore scrolling on cleanup
-    return () => {
-      document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
-      document.body.style.position = originalBodyPosition;
-      document.body.style.top = originalBodyTop;
-      document.body.style.width = originalBodyWidth;
-      // Restore scroll position
-      window.scrollTo(0, originalScrollTop);
-    };
-  }, []);
 
   // Mock data for parties
   const parties: PartyInfo[] = [
@@ -169,18 +140,18 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
   const respondents = parties.filter(p => p.type === 'respondent');
 
   return (
-    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
-      {/* Top Header */}
-      <div className="h-12 bg-white border-b border-slate-100 px-4 flex items-center justify-between shadow-sm flex-shrink-0">
-        <button 
-          onClick={onClose} 
-          className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-xs cursor-pointer"
+    <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden animate-slide-in">
+      {/* Header - 参考 StatsCenterPage 的样式 */}
+      <div className="h-13 bg-slate-900 border-b border-slate-800 flex items-center px-4 relative flex-shrink-0">
+        <button
+          onClick={onBack}
+          className="flex items-center space-x-1 text-xs text-indigo-200 hover:text-white font-bold transition-colors cursor-pointer"
         >
-          <X size={16} />
-          <span>返回</span>
+          <span>❮ 返回</span>
         </button>
-        <span className="font-bold text-slate-800 text-xs truncate max-w-[200px]">{caseItem.caseNo}</span>
-        <div className="w-10"></div>
+        <div className="absolute left-1/2 -translate-x-1/2 text-xs font-black text-white tracking-widest whitespace-nowrap">
+          案件详情
+        </div>
       </div>
 
       {/* Simplified Banner */}
@@ -200,7 +171,7 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
           </div>
         </div>
         <h4 className="text-sm font-bold text-white mt-1 truncate">
-          {caseItem.title}
+          {caseItem.caseNo} - {caseItem.title}
         </h4>
       </div>
 
@@ -224,7 +195,7 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-10 bg-slate-50">
         {/* Basic Info Tab */}
         {activeTab === 'basic' && (
           <div className="space-y-3 animate-fade-in">
@@ -458,7 +429,7 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
 
       {/* Material Preview Modal */}
       {viewingMaterial && (
-        <div className="absolute inset-0 bg-slate-900/95 z-[60] flex flex-col animate-fade-in text-white p-4">
+        <div className="fixed inset-0 bg-slate-900/95 z-[110] flex flex-col animate-fade-in text-white p-4">
           <div className="flex justify-between items-center pb-2 border-b border-slate-800 mb-4 flex-shrink-0">
             <div className="flex items-center gap-2">
               <FileText size={14} className="text-indigo-400" />
@@ -468,7 +439,7 @@ export default function CaseDetail({ caseItem, onClose }: CaseDetailProps) {
               onClick={() => setViewingMaterial(null)}
               className="text-slate-500 hover:text-white p-1 bg-slate-800 rounded cursor-pointer"
             >
-              <X size={15} />
+              ✕
             </button>
           </div>
 

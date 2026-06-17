@@ -12,6 +12,7 @@ interface TaskCenterProps {
   onCompleteTask: (taskId: string, extraUpdates?: { caseId: string; nextStatus: any }) => void;
   onNavigateToTab: (index: number) => void;
   onSelectCase: (caseItem: Case) => void;
+  onNavigateToSubPage?: (page: 'declarationList' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'postponementApproval') => void;
 }
 
 export default function TaskCenter({ 
@@ -19,7 +20,8 @@ export default function TaskCenter({
   cases, 
   onCompleteTask, 
   onNavigateToTab,
-  onSelectCase 
+  onSelectCase,
+  onNavigateToSubPage
 }: TaskCenterProps) {
   // Current active drilldown category
   // null shows the top-level Overview list of stats card (from arbitrator-todo.html)
@@ -1058,7 +1060,7 @@ export default function TaskCenter({
       {/* Main List Area scrolling through arbitrator-todo.html stat modules */}
       <div className="flex-1 overflow-y-auto px-4 pt-6  pb-8 space-y-4 no-scrollbar">
 
-        {/* STAT OVERVIEW CARD 1: 待开庭提醒 */}
+        {/* STAT OVERVIEW CARD 0: 待开庭提醒 */}
         <div 
           onClick={() => setSelectedCategory('hearing')}
           className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-red-100 group text-left"
@@ -1101,65 +1103,57 @@ export default function TaskCenter({
           </div>
         </div>
 
-        {/* STAT OVERVIEW CARD 2: 结案文书签名 */}
+        {/* STAT OVERVIEW CARD 1: 声明承诺书 */}
         <div 
-          onClick={() => setSelectedCategory('signature')}
-          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-blue-100 group text-left"
+          onClick={() => onNavigateToSubPage ? onNavigateToSubPage('declarationList') : setSelectedCategory('promise')}
+          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-teal-100 group text-left"   
         >
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-3">
             <div className="flex items-center space-x-3">
-              <div className="bg-blue-50 rounded-lg text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
-                <i className="fas fa-file-signature text-base flex items-center justify-center"></i>
+              <div className="bg-teal-50 rounded-lg text-teal-600 transition-colors group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
+                <i className="fas fa-file-shield text-base flex items-center justify-center"></i>
               </div>
-              <h2 className="font-bold text-slate-800 text-lg">结案文书签名</h2>
+              <h2 className="font-bold text-slate-800 text-lg">声明承诺书</h2>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-black text-blue-600">{pendingAwardSignaturesCount + 2}</div>
+              <div className="text-2xl font-black text-teal-600">{pendingPromisesSignaturesCount}</div>
               <ChevronRight size={14} className="text-slate-500 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 py-3 border-t border-b border-slate-50 mb-3 text-center">
-            <div className="border-r border-slate-50">
-              <div className="text-base font-bold text-blue-600">{signaturesStats.pending}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待签</div>
-            </div>
+          <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center font-sans">
             <div>
-              <div className="text-base font-bold text-sky-600">{signaturesStats.signed}</div>
-              <div className="text-sm text-slate-500 tracking-wider">本月已签</div>
+              <div className="text-base font-bold text-teal-600">{pendingPromisesSignaturesCount}</div>
+              <div className="text-sm text-slate-500 tracking-wider">待签署</div>
             </div>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-blue-600 h-full transition-all duration-500" style={{ width: signaturesStats.pending === 0 ? '100%' : '62%' }}></div>
+            <div className="border-l border-slate-50">
+              <div className="text-base font-bold text-green-600">{promises.filter(p => p.signed).length}</div>
+              <div className="text-sm text-slate-500 tracking-wider">已签署</div>
             </div>
-
-          <div className="flex justify-between mt-3 text-sm text-slate-500 font-sans tracking-wide">
-            <span>本年度应签 6 份，已签 {6 - pendingPromisesSignaturesCount} 份</span>
-            <span className="text-sm text-slate-500 font-medium">完成率 {Math.round(((6 - pendingPromisesSignaturesCount) / 6) * 100)}%</span>
           </div>
         </div>
 
-        {/* STAT OVERVIEW CARD 3: 笔录签名 */}
+        {/* STAT OVERVIEW CARD 2: 笔录签名 */}
         <div 
-          onClick={() => setSelectedCategory('transcript')}
-          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-purple-100 group text-left"
+          onClick={() => onNavigateToSubPage && onNavigateToSubPage('transcriptSignature')}
+          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-orange-100 group text-left"
         >
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-purple-50 rounded-lg text-purple-600 transition-colors group-hover:bg-purple-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
+              <div className="bg-orange-50 rounded-lg text-orange-600 transition-colors group-hover:bg-orange-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
                 <i className="fas fa-pen-nib text-base flex items-center justify-center"></i>
               </div>
               <h2 className="font-bold text-slate-800 text-lg">笔录签名</h2>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-black text-purple-600">{pendingTranscriptsSignaturesCount}</div>
+              <div className="text-2xl font-black text-orange-600">{pendingTranscriptsSignaturesCount}</div>
               <ChevronRight size={14} className="text-slate-500 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center">
             <div className="border-r border-slate-50">
-              <div className="text-base font-bold text-purple-600">{pendingTranscriptsSignaturesCount}</div>
+              <div className="text-base font-bold text-orange-600">{pendingTranscriptsSignaturesCount}</div>
               <div className="text-sm text-slate-500 tracking-wider">待签署</div>
             </div>
             <div>
@@ -1169,9 +1163,9 @@ export default function TaskCenter({
           </div>
         </div>
 
-        {/* STAT OVERVIEW CARD 4: 延期办理 */}
+        {/* STAT OVERVIEW CARD 3: 延期审批 */}
         <div 
-          onClick={() => setSelectedCategory('extension')}
+          onClick={() => onNavigateToSubPage && onNavigateToSubPage('postponementApproval')}
           className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-amber-100 group text-left"
         >
           <div className="flex justify-between items-center mb-4">
@@ -1179,9 +1173,7 @@ export default function TaskCenter({
               <div className="bg-amber-50 rounded-lg text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
                 <i className="fas fa-clock text-base flex items-center justify-center"></i>
               </div>
-              <div>
-                <h2 className="font-bold text-slate-800 text-lg">延期办理审批</h2>
-              </div>
+              <h2 className="font-bold text-slate-800 text-lg">延期审批</h2>
             </div>
             <div className="flex items-center gap-2">
               <div className="text-2xl font-black text-amber-600">{pendingExtensionsRequestsCount}</div>
@@ -1201,32 +1193,70 @@ export default function TaskCenter({
           </div>
         </div>
 
-        {/* STAT OVERVIEW CARD 5: 承诺书签署 */}
+        {/* STAT OVERVIEW CARD 4: 文书签名 */}
         <div 
-          onClick={() => setSelectedCategory('promise')}
-          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-emerald-100 group text-left"   
+          onClick={() => onNavigateToSubPage ? onNavigateToSubPage('docSignatureList') : setSelectedCategory('signature')}
+          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-indigo-100 group text-left"
         >
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex justify-between items-center mb-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-emerald-50 rounded-lg text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
-                <i className="fas fa-handshake text-base flex items-center justify-center"></i>
+              <div className="bg-indigo-50 rounded-lg text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
+                <i className="fas fa-file-signature text-base flex items-center justify-center"></i>
               </div>
-              <h2 className="font-bold text-slate-800 text-lg">承诺书签署</h2>
+              <h2 className="font-bold text-slate-800 text-lg">文书签名</h2>
             </div>
             <div className="flex items-center gap-2">
-              <div className="text-2xl font-black text-emerald-600">{pendingPromisesSignaturesCount}</div>
+              <div className="text-2xl font-black text-indigo-600">{pendingAwardSignaturesCount + 2}</div>
+              <ChevronRight size={14} className="text-slate-500 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-3 text-center">
+            <div className="border-r border-slate-50">
+              <div className="text-base font-bold text-indigo-600">{signaturesStats.pending}</div>
+              <div className="text-sm text-slate-500 tracking-wider">待签</div>
+            </div>
+            <div>
+              <div className="text-base font-bold text-sky-600">{signaturesStats.signed}</div>
+              <div className="text-sm text-slate-500 tracking-wider">本月已签</div>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: signaturesStats.pending === 0 ? '100%' : '62%' }}></div>
+            </div>
+
+          <div className="flex justify-between mt-3 text-sm text-slate-500 font-sans tracking-wide">
+            <span>本年度应签 6 份，已签 {6 - pendingPromisesSignaturesCount} 份</span>
+            <span className="text-sm text-slate-500 font-medium">完成率 {Math.round(((6 - pendingPromisesSignaturesCount) / 6) * 100)}%</span>
+          </div>
+        </div>
+
+        {/* STAT OVERVIEW CARD 5: 草拟裁决书 */}
+        <div 
+          onClick={() => onNavigateToSubPage ? onNavigateToSubPage('draftAwardList') : setSelectedCategory('draft')}
+          className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-rose-100 group text-left"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center space-x-3">
+              <div className="bg-rose-50 rounded-lg text-rose-600 transition-colors group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center" style={{ height: '36px', width: '36px', marginRight: '12px' }}>
+                <i className="fas fa-file-pen text-base flex items-center justify-center"></i>
+              </div>
+              <h2 className="font-bold text-slate-800 text-lg">草拟裁决书</h2>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-2xl font-black text-rose-600">3</div>
               <ChevronRight size={14} className="text-slate-500 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center font-sans">
             <div>
-              <div className="text-base font-bold text-emerald-600">{pendingPromisesSignaturesCount}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待签署</div>
+              <div className="text-base font-bold text-rose-600">3</div>
+              <div className="text-sm text-slate-500 tracking-wider">待草拟</div>
             </div>
             <div className="border-l border-slate-50">
-              <div className="text-base font-bold text-green-600">{promises.filter(p => p.signed).length}</div>
-              <div className="text-sm text-slate-500 tracking-wider">已签署</div>
+              <div className="text-base font-bold text-green-600">8</div>
+              <div className="text-sm text-slate-500 tracking-wider">已提交</div>
             </div>
           </div>
         </div>

@@ -118,28 +118,25 @@ export default function NotificationPage({ onBack }: NotificationPageProps) {
 
   return (
     <div className="flex-1 bg-slate-50 flex flex-col min-h-0 relative select-none font-sans animate-fade-in">
-      {/* Subpage Header Dashboard Style */}
-      <div className="bg-white border-b border-slate-100 h-13 px-4 flex items-center justify-between flex-shrink-0 z-20">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={onBack}
-            className="h-8 w-8 hover:bg-slate-50 active:scale-95 rounded-full flex items-center justify-center transition-all cursor-pointer border border-transparent hover:border-slate-100 text-slate-600"
-            aria-label="返回上一页"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div>
-            <h1 className="text-sm font-extrabold text-slate-800">消息通知</h1>
-            <p className="text-[10px] text-slate-400 font-medium">查看专网办案系统及合议通知</p>
-          </div>
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0 z-20">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
+        >
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
+        </button>
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">
+          消息通知
         </div>
-
+        {/* 右侧全部已读按钮 */}
         {unreadCount > 0 && (
           <button 
             onClick={handleMarkAllRead}
-            className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 active:scale-95 transition-all flex items-center gap-1 bg-indigo-50/50 hover:bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-150/50 cursor-pointer"
+            className="absolute right-4 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
           >
-            <MailOpen className="h-3 w-3" />
+            <i className="fa-solid fa-envelope-open text-xs"></i>
             <span>全部已读</span>
           </button>
         )}
@@ -150,10 +147,8 @@ export default function NotificationPage({ onBack }: NotificationPageProps) {
         <div className="flex items-center space-x-1 overflow-x-auto scrollbar-none py-2 px-3 max-w-full">
           {[
             { id: 'all', label: '全部', count: notifications.length },
-            { id: 'unread', label: '未读', count: unreadCount, highlight: true },
-            { id: 'system', label: '系统通知', count: notifications.filter(n => n.category === 'system').length },
-            { id: 'business', label: '业务提醒', count: notifications.filter(n => n.category === 'business').length },
-            { id: 'signing', label: '签章合议', count: notifications.filter(n => n.category === 'signing').length }
+            { id: 'unread', label: '未读', count: unreadCount, highlight: true }
+            
           ].map(tab => {
             const isActive = activeTab === tab.id;
             const showBadge = tab.count > 0;
@@ -205,28 +200,10 @@ export default function NotificationPage({ onBack }: NotificationPageProps) {
                   <span className="absolute left-0 top-3.5 bottom-3.5 w-1 bg-indigo-500 rounded-r-full" />
                 )}
 
-                {/* Card Header */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className={`flex items-center gap-1 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ${details.badgeStyle}`}>
-                      {details.icon}
-                      <span>{details.label}</span>
-                    </span>
-                    {noti.docCode && (
-                      <span className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider bg-slate-100 h-[18px] flex items-center justify-center px-1 rounded">
-                        {noti.docCode}
-                      </span>
-                    )}
-                  </div>
-
-                  <span className="shrink-0 text-[10px] text-slate-400 font-medium">
-                    {noti.time}
-                  </span>
-                </div>
 
                 {/* Title */}
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className={`text-xs select-none block leading-normal ${noti.isRead ? 'font-bold text-slate-700' : 'font-extrabold text-slate-900 font-sans'}`}>
+                  <h3 className={`text-base select-none block leading-normal ${noti.isRead ? 'font-bold text-slate-700' : 'font-extrabold text-slate-900'}`}>
                     {noti.title}
                   </h3>
                   {!noti.isRead && (
@@ -235,24 +212,20 @@ export default function NotificationPage({ onBack }: NotificationPageProps) {
                 </div>
 
                 {/* Content */}
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
+                <p className="text-sm text-slate-500 leading-relaxed font-medium">
                   {noti.content}
                 </p>
 
                 {/* Quick actions inside card */}
                 <div className="flex items-center justify-between pt-2.5 border-t border-slate-100/80 mt-0.5">
-                  <span className="text-[9px] text-slate-400 font-bold flex items-center gap-1">
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
                     <Check className={`h-3 w-3 ${noti.isRead ? 'text-emerald-500' : 'text-slate-300'}`} />
                     <span>{noti.isRead ? '已读消息' : '暂未阅读 • 点击标记'}</span>
                   </span>
 
-                  <button
-                    onClick={(e) => handleDelete(noti.id, e)}
-                    className="text-[10px] text-slate-400 hover:text-rose-500 hover:bg-rose-50/50 p-1 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-rose-100/40 select-none flex items-center gap-1"
-                    title="删除此通知"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  <span className="shrink-0 text-[10px] text-slate-400 font-medium">
+                    {noti.time}
+                  </span>
                 </div>
               </div>
             );
@@ -270,12 +243,7 @@ export default function NotificationPage({ onBack }: NotificationPageProps) {
         )}
       </div>
 
-      {/* Ambient tips */}
-      <div className="p-3 bg-slate-100/50 border-t border-slate-150 text-center flex-shrink-0">
-        <span className="text-[10px] text-slate-400 font-medium">
-          所有通知同步接入广州仲裁委核心速裁加密节点网络
-        </span>
-      </div>
+     
     </div>
   );
 }

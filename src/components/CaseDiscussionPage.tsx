@@ -80,16 +80,17 @@ export default function CaseDiscussionPage({
 
   return (
     <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="h-13 bg-slate-900 border-b border-slate-800 flex items-center px-4 relative flex-shrink-0">
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button
           onClick={onBack}
-          className="flex items-center space-x-1 text-xs text-indigo-200 hover:text-white font-bold transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
         >
-          <span>❮ 返回首页</span>
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
         </button>
-        <div className="absolute left-1/2 -translate-x-1/2 text-xs font-black text-white tracking-widest whitespace-nowrap">
-          广州仲裁委 • 案件讨论
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">
+          案件讨论
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url("src/css/googleapis.css");
 @import "tailwindcss";
 
 @theme {
@@ -6,7 +6,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   /* Override indigo-500 to brand secondary color */
-  /* --color-indigo-500: #4780FF; */
+  --color-indigo-600: #1e62ec;
+  --color-indigo-500: #4780FF;
 
   /* Typography Scale - Unified Font Size System */
   --text-2xs: 8px;

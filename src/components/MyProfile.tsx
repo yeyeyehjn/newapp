@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { ArbitratorProfile } from '../types';
 
-interface PersonalInfo {
+export interface PersonalInfo {
   name: string;
   ranking: string;
   phone: string;
@@ -19,13 +19,13 @@ interface PersonalInfo {
   idNo: string;
 }
 
-interface WorkInfo {
+export interface WorkInfo {
   company: string;
   position: string;
   qualification: string;
 }
 
-interface BankInfo {
+export interface BankInfo {
   bank: string;
   branch: string;
   accountNo: string;
@@ -80,91 +80,80 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
   };
 
   return (
-    <div className="flex-1 bg-slate-50 flex flex-col overflow-y-auto no-scrollbar pb-10">
-      {/* Top Professional Header with Premium Styled Banner Image */}
-      <div className="relative w-full">
-        {/* Banner Background Image with Light Blue Gradient Wash */}
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-br from-sky-400 via-sky-500 to-blue-600 overflow-hidden shadow-inner">
-          <img
-            src={import.meta.env.BASE_URL + "tu/Image.png"}
-            alt="Banner"
-            className="w-full h-full object-cover"
-          />
-        </div>
+    <div className="flex-1 bg-slate-50/75 flex flex-col overflow-y-auto no-scrollbar pb-10">
+      {/* Top Professional Header - Inspired by homepage's elegant blue gradient */}
+      <div className="bg-gradient-to-b from-[#DCEBFF] via-[#EEF5FF] to-slate-50/10 px-4 pt-6 pb-6 flex-shrink-0 relative overflow-hidden text-left">
         
-        {/* Decorative thin circles for abstract aesthetics */}
-        <div className="absolute right-[15%] top-[-10px] w-36 h-36 rounded-full border border-white/20 pointer-events-none" />
-        <div className="absolute right-[5%] top-[-20px] w-48 h-48 rounded-full border border-sky-100/20 pointer-events-none" />
+        {/* Modern abstract geometric decorative circles */}
+        <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-blue-100/30 blur-2xl pointer-events-none" />
+        <div className="absolute right-[12%] top-[-10px] w-36 h-36 rounded-full border border-blue-200/20 pointer-events-none" />
+        <div className="absolute left-[-5%] bottom-[-10%] w-32 h-32 rounded-full bg-white/40 blur-xl pointer-events-none" />
 
-        {/* User Info Card - Floating elegantly in flow */}
-        <div className="absolute top-14 left-4 z-10">
-          <div className="text-left">
-            {/* User Welcome Block */}
-            <div className="flex items-start gap-3">
-              {/* Profile Avatar with uploaded or dynamic placeholder */}
-              <div className="relative flex-shrink-0 group cursor-pointer" onClick={handleAvatarClick}>
-                {avatar ? (
-                  <img
-                    src={avatar}
-                    alt={profile.name}
-                    className="w-14 h-14 rounded-md object-cover  transform group-hover:scale-105 transition-all duration-300"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-14 h-14 rounded-md bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 flex items-center justify-center  ">
-                    <span className="text-xl font-black text-white">{profile.name.charAt(0)}</span>
-                  </div>
-                )}
-                {/* Micro Camera overlay indicator on hover */}
-                <div className="absolute inset-0 bg-slate-950/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Camera size={16} className="text-white animate-pulse" />
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                />
+        {/* User Welcome Info Block */}
+        <div className="flex items-start gap-3.5 relative z-10">
+          {/* Profile Avatar with uploaded or dynamic placeholder */}
+          <div className="relative flex-shrink-0 group cursor-pointer" onClick={handleAvatarClick}>
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={profile.name}
+                className="w-15 h-15 rounded-xl object-cover border-2 border-white shadow-xs transform group-hover:scale-105 transition-all duration-300"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-15 h-15 rounded-xl bg-gradient-to-br from-[#1E62EC] to-blue-600 flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="text-xl font-black text-white">{profile.name.charAt(0)}</span>
               </div>
+            )}
+            
+            {/* Micro Camera overlay indicator on hover */}
+            <div className="absolute inset-0 bg-slate-950/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <Camera size={16} className="text-white animate-pulse" />
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+          </div>
 
-              {/* User Identity Details */}
-              <div className="flex-1 min-w-0 px-1">
-                <div className="flex items-center flex-wrap gap-2 mb-1">
-                  <h1 className="text-lg font-black text-white tracking-tight leading-none">
-                    {profile.name}
-                  </h1>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-sm font-medium tracking-wide bg-sky-50 text-sky-600 border border-sky-100">
-                    <Award size={10} className="text-sky-500" />
-                    {profile.ranking}
-                  </span>
-                </div>
-                <p className="text-sm text-white font-medium truncate">
-                  广州市社会科学院政治法律研究所
-                </p>
-                
-                {/* Minor specialties badges */}
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {profile.specialties.map((spec, idx) => (
-                    <span key={idx} className="bg-sky-50/80 border border-sky-100 text-sm text-sky-700 px-1.5 py-0.5 rounded font-medium">
-                      {spec}
-                    </span>
-                  ))}
-                </div>
-              </div>
+          {/* User Identity Details */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <div className="flex items-center flex-wrap gap-2 mb-1.5">
+              <h1 className="text-[17px] font-black text-slate-800 tracking-tight leading-none">
+                {profile.name}
+              </h1>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-black bg-white/95 text-[#1E62EC] border border-blue-100/50 shadow-2xs">
+                <Award size={10} className="text-[#1E62EC]" />
+                {profile.ranking}
+              </span>
+            </div>
+            <p className="text-[12.5px] text-slate-500 font-bold truncate mb-2">
+              广州市社会科学院政治法律研究所
+            </p>
+            
+            {/* Minor specialties badges */}
+            <div className="flex flex-wrap gap-1">
+              {profile.specialties.map((spec, idx) => (
+                <span key={idx} className="bg-white/80 border border-slate-100 text-[10.5px] font-bold text-[#1E62EC] px-2 py-0.5 rounded-md shadow-2xs">
+                  {spec}
+                </span>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Profile Functional Body */}
-      <div className="p-4 pt-42 space-y-3 z-[1]">
+      <div className="p-4 space-y-3 z-[1]">
         
         {/* SECTION 1: 个人信息 (Personal Info) */}
         <div className="bg-white rounded-lg border border-slate-100  overflow-hidden transition-all duration-300">
-          <button 
+          <div 
             onClick={() => toggleSection('personal')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100/50 text-indigo-600">
@@ -190,7 +179,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 className={`text-slate-500 transition-transform duration-300 ${activeSection === 'personal' ? 'rotate-90' : ''}`} 
               />
             </div>
-          </button>
+          </div>
 
           {activeSection === 'personal' && (
             <div className="border-t border-slate-100 p-3.5 pt-2 bg-slate-50/30 text-left space-y-2.5 animate-slide-up">
@@ -288,9 +277,9 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
         {/* SECTION 2: 工作单位 (Workplace) */}
         <div className="bg-white rounded-lg border border-slate-100 overflow-hidden transition-all duration-300">
-          <button 
+          <div 
             onClick={() => toggleSection('work')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100/50 text-indigo-600">
@@ -316,7 +305,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 className={`text-slate-500 transition-transform duration-300 ${activeSection === 'work' ? 'rotate-90' : ''}`} 
               />
             </div>
-          </button>
+          </div>
 
           {activeSection === 'work' && (
             <div className="border-t border-slate-100 p-3.5 pt-2 bg-slate-50/30 text-left space-y-2 animate-slide-up">
@@ -405,9 +394,9 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
         {/* SECTION 4: 银行账号信息 (Bank Account Info) */}
         <div className="bg-white rounded-lg border border-slate-100 overflow-hidden transition-all duration-300">
-          <button 
+          <div 
             onClick={() => toggleSection('bank')}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
+            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left cursor-pointer"
           >
             <div className="flex items-center space-x-3">
               <div className="p-2 rounded-lg bg-indigo-50 border border-indigo-100/50 text-indigo-600">
@@ -433,7 +422,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 className={`text-slate-500 transition-transform duration-300 ${activeSection === 'bank' ? 'rotate-90' : ''}`} 
               />
             </div>
-          </button>
+          </div>
 
           {activeSection === 'bank' && (
             <div className="border-t border-slate-100 p-3.5 pt-2 bg-slate-50/30 text-left space-y-2 animate-slide-up">

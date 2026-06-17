@@ -15,7 +15,8 @@ interface WorkbenchProps {
   onSelectCase: (caseItem: Case) => void;
   onSelectTaskDirect: (taskItem: Task) => void;
   selectedStatusFilter: CaseStatus | 'all';
-  onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration') => void;
+  onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'declarationList') => void;
+  onToggleVersion?: () => void;
 }
 
 export default function Workbench({ 
@@ -27,7 +28,8 @@ export default function Workbench({
   onSelectCase,
   onSelectTaskDirect,
   selectedStatusFilter,
-  onNavigateToSubPage
+  onNavigateToSubPage,
+  onToggleVersion
 }: WorkbenchProps) {
   const [showLearningModal, setShowLearningModal] = useState<boolean>(false);
   const [activeFuncTab, setActiveFuncTab] = useState<'common' | 'other'>('common');
@@ -153,7 +155,7 @@ export default function Workbench({
         />
 
         {/* Notification button in top right corner */}
-        <div className="absolute right-4 top-4 z-20">
+        <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
           <button
             onClick={() => onNavigateToSubPage('notifications')}
             className="flex items-center bg-white/15 hover:bg-white/25 border border-white/20 rounded-full h-6 px-2 py-1 gap-2 transition-all cursor-pointer group backdrop-blur-sm"
@@ -162,10 +164,19 @@ export default function Workbench({
             <span className="text-xs font-bold text-white">通知</span>
             <span className="h-1.5 w-1.5 bg-rose-500 rounded-full animate-pulse"></span>
           </button>
+          {/* Version toggle button */}
+          <button
+            onClick={onToggleVersion}
+            className="flex items-center bg-white/15 hover:bg-white/25 border border-white/20 rounded-full h-6 px-2 py-1 gap-1.5 transition-all cursor-pointer group backdrop-blur-sm"
+            title="切换首页版本"
+          >
+            <i className="fa-solid fa-shuffle text-slate-300 text-xs group-hover:text-white transition-colors"></i>
+            <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">V2</span>
+          </button>
         </div>
 
-        {/* USER INFO + STATS - 浮动在 Banner 下方 3/4 区域 */}
-        <div className="absolute left-4 right-4 top-[70%] px-4 pt-4 pb-3 bg-white/95 backdrop-blur-sm text-left rounded-lg shadow-md shadow-slate-900/5 z-10 border border-white/50">
+        {/* USER INFO + STATS - 横向大数字版 */}
+        <div className="absolute left-4 right-4 top-[70%] p-4  bg-white/95 backdrop-blur-md text-left rounded-lg border border-slate-200/60 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.03)] z-10">
           {/* User Welcome Block */}
           <div className="flex items-center gap-3 mb-3">
             {/* Avatar - visual anchor */}
@@ -174,70 +185,72 @@ export default function Workbench({
                 <img
                   src={profile.avatar}
                   alt={profile.name}
-                  className="w-11 h-11 rounded-xl object-cover "
+                  className="w-11 h-11 rounded-lg object-cover"
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center border-2 border-white shadow-lg">
-                  <span className="text-lg font-black text-white">{profile.name.charAt(0)}</span>
+                <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center">
+                  <span className="text-sm font-bold text-white">{profile.name.charAt(0)}</span>
                 </div>
               )}
             </div>
 
             {/* User info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-0.5">
-                <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none">
-                  {profile.name}
-                </h1>
-                <span className="text-xs  text-amber-600 bg-amber-100 px-1.5 py-1 rounded">
-                  第六届仲裁员
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-medium truncate text-left">
-                广州市社会科学院政治法律研究所
-              </p>
+              <h1 className="text-lg font-bold text-slate-800 leading-tight">{profile.name}</h1>
+              <p className="text-sm text-slate-400 truncate leading-relaxed">广州市社会科学院政治法律研究所</p>
             </div>
+            <span className="text-sm text-slate-500 bg-slate-100 px-2 py-1 rounded font-medium leading-relaxed">第六届</span>
           </div>
 
-          {/* Stats row - 在用户信息下方 */}
-          <div className="flex gap-2">
+          {/* Stats row - 大数字横向，渐变数字 */}
+          <div className="flex items-center gap-4 pt-2 border-t border-slate-100">
             <div 
-              className="text-center px-3 py-2 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-200/50 flex-1 cursor-pointer hover:from-indigo-100 hover:to-indigo-150/50 hover:shadow-sm transition-all active:scale-[0.98]" 
+              className="flex-1 cursor-pointer group transition-all duration-200" 
               onClick={() => handleStatBlockClick('审理中')}
             >
-              <span className="text-xl font-black text-indigo-600 block leading-none">{profile.activeCount}</span>
-              <span className="text-xs text-slate-600 block font-medium mt-1">在办</span>
+              <span className="text-2xl font-bold bg-gradient-to-br from-indigo-500 to-indigo-700 bg-clip-text text-transparent group-hover:from-indigo-600 group-hover:to-indigo-800">{profile.activeCount}</span>
+              <span className="text-sm text-slate-400 ml-1">在办</span>
             </div>
+            <div className="w-px h-6 bg-slate-200"></div>
             <div 
-              className="text-center px-3 py-2 rounded-xl bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200/50 flex-1 cursor-pointer hover:from-rose-100 hover:to-rose-150/50 hover:shadow-sm transition-all active:scale-[0.98]" 
+              className="flex-1 cursor-pointer group transition-all duration-200" 
               onClick={() => onNavigateToTab(2)}
             >
-              <span className="text-xl font-black text-rose-600 block leading-none">{pendingTasks.length}</span>
-              <span className="text-xs text-slate-600 block font-medium mt-1">待办</span>
+              <span className="text-2xl font-bold bg-gradient-to-br from-rose-500 to-rose-700 bg-clip-text text-transparent group-hover:from-rose-600 group-hover:to-rose-800">{pendingTasks.length}</span>
+              <span className="text-sm text-slate-400 ml-1">待办</span>
             </div>
+            <div className="w-px h-6 bg-slate-200"></div>
             <div 
-              className="text-center px-3 py-2 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/50 flex-1 cursor-pointer hover:from-emerald-100 hover:to-emerald-150/50 hover:shadow-sm transition-all active:scale-[0.98]" 
+              className="flex-1 cursor-pointer group transition-all duration-200" 
               onClick={() => handleStatBlockClick('已结案')}
             >
-              <span className="text-xl font-black text-emerald-600 block leading-none">{profile.resolvedCount}</span>
-              <span className="text-xs text-slate-600 block font-medium mt-1">累积结案</span>
+              <span className="text-2xl font-bold bg-gradient-to-br from-emerald-500 to-emerald-700 bg-clip-text text-transparent group-hover:from-emerald-600 group-hover:to-emerald-800">{profile.resolvedCount}</span>
+              <span className="text-sm text-slate-400 ml-1">结案</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Home View Container - 增加顶部间距避免被用户信息卡片遮挡 */}
-      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col mt-[22%]">
+      <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col mt-[18%]">
 
         {/* 最新动态模块 (Latest News/Updates Widget with vertical sliding carousel) */}
         <div className="mx-4 my-2.5 mt-5 bg-white rounded-lg border border-slate-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.012)] flex items-center pr-4 overflow-hidden animate-fade-in">
           {/* "动态" tag — brand-indigo gradient with an elegant diagonal cut trapezoid shape */}
-          <div
-            className="bg-gradient-to-br from-indigo-600 to-indigo-500 font-sans tracking-wide text-white font-extrabold text-base pl-4 pr-10 py-3 flex-shrink-0 flex items-center justify-center select-none"
-            style={{ clipPath: 'polygon(0% 0%, 100% 0%, 75% 100%, 0% 100%)' }}
-          >
-            <span>动态</span>
+          <div className="relative h-full w-[5rem] flex-shrink-0 flex items-center">
+            {/* Soft, semi-transparent light blue diagnostic/glare accent layer shifted right */}
+            <div 
+              className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-indigo-200/40 to-indigo-300/30 select-none z-0"
+              style={{ clipPath: 'polygon(0% 0%, 82% 0%, 100% 100%, 0% 100%)' }}
+            />
+            {/* Solid vibrant brand-blue main layer */}
+            <div 
+              className="absolute inset-y-0 left-0 w-[90%] bg-gradient-to-r from-[#1E62EC] via-[#246AF3] to-[#2B72FF] shadow-[2px_0_12px_rgba(30,98,236,0.2)] flex items-center justify-center select-none z-10"
+              style={{ clipPath: 'polygon(0% 0%, 80% 0%, 100% 100%, 0% 100%)' }}
+            >
+              <span className="text-[15px] font-bold text-white tracking-widest pr-2">动态</span>
+            </div>
           </div>
 
           {/* Scrolling ticker area with vertical slide translation */}
@@ -266,7 +279,7 @@ export default function Workbench({
           {/* Double chevrons right pointer icon */}
           <div className="flex-shrink-0 pl-1">
             <i
-              className="fa-solid fa-angles-right text-slate-500 hover:text-indigo-500 transition-colors text-xs cursor-pointer"
+              className="fa-solid fa-angles-right text-slate-300 hover:text-indigo-500 transition-colors text-xs cursor-pointer"
               onClick={() => {
                 const currentNews = newsList[activeNewsIndex];
                 setSelectedNews(currentNews);
@@ -284,9 +297,7 @@ export default function Workbench({
               <span>近3天待开庭</span>
             </span>
             <div className="flex items-center gap-2">
-             
               <span className="text-xs text-amber-600 bg-amber-50 border border-amber-100 px-1.5 py-1 flex items-center rounded">
-                
                 <span>{recentHearings.length} 场待开庭</span>
               </span>
             </div>
@@ -357,9 +368,18 @@ export default function Workbench({
                         <div className="flex items-start gap-2 min-w-0">
                           <i className="fa-solid fa-user-shield text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
                           <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">当事人：</span>
-                            <span className="truncate text-sm">{claimant} VS {respondent}</span>
+                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">申请人：</span>
+                            <span className="truncate text-sm">{claimant}</span>
                           </span>
+                          
+                        </div>
+                        <div className="flex items-start gap-2 min-w-0">
+                          <i className="fa-solid fa-user-shield text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
+                          <span className="flex min-w-0">
+                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">被申请人：</span>
+                            <span className="truncate text-sm">{respondent}</span>
+                          </span>
+                          
                         </div>
                         <div className="flex items-start gap-2 min-w-0">
                           <i className="fa-solid fa-clock text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
@@ -401,15 +421,15 @@ export default function Workbench({
                   {!showAllRecentHearings ? (
                     <button
                       onClick={() => setShowAllRecentHearings(true)}
-                      className="w-full bg-indigo-50/50 hover:bg-indigo-100/80 active:scale-98 text-indigo-600 font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-indigo-200 flex items-center justify-center gap-2 shadow-xs"
+                      className="w-full bg-indigo-50/50 hover:bg-indigo-100/80 active:scale-98 text-indigo-600  py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-indigo-200 flex items-center justify-center gap-2 shadow-xs"
                     >
-                      <span>展开更多近期开庭 ({recentHearings.length - 3}场)</span>
+                      <span>展开更多 ({recentHearings.length - 3}场)</span>
                       <i className="fa-solid fa-chevron-down text-xs"></i>
                     </button>
                   ) : (
                     <button
                       onClick={() => setShowAllRecentHearings(false)}
-                      className="w-full bg-slate-100 hover:bg-slate-200 active:scale-98 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-slate-200 flex items-center justify-center gap-2 shadow-xs"
+                      className="w-full bg-slate-100 hover:bg-slate-200 active:scale-98 text-slate-600  py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-slate-200 flex items-center justify-center gap-2 shadow-xs"
                     >
                       <span>收起开庭</span>
                       <i className="fa-solid fa-chevron-up text-xs"></i>
@@ -443,65 +463,65 @@ export default function Workbench({
               {
                 id: 'declaration',
                 label: '声明承诺书',
-                icon: 'fa-file-shield',
-                isCompleted: signedDeclaration,
-                colorClass: 'text-teal-500 group-hover:text-teal-600',
-                action: () => setActiveTodoModal('declaration')
+                icon: 'fa-file-shield text-[#009688]',
+                badgeCount: !signedDeclaration ? 1 : 0,
+                colorBg: 'bg-teal-50/60',
+                action: () => onNavigateToSubPage('declarationList')
               },
               {
                 id: 'transcript',
                 label: '笔录签名',
-                icon: 'fa-signature',
-                isCompleted: signedTranscript,
-                colorClass: 'text-rose-500 group-hover:text-rose-600',
+                icon: 'fa-signature text-[#FF5722]',
+                badgeCount: !signedTranscript ? 2 : 0,
+                colorBg: 'bg-orange-50/60',
                 action: () => setActiveTodoModal('transcript')
               },
               {
                 id: 'postponement',
                 label: '延期审批',
-                icon: 'fa-clock-rotate-left',
-                isCompleted: approvedPostponement,
-                colorClass: 'text-amber-500 group-hover:text-amber-600',
+                icon: 'fa-clock-rotate-left text-[#FF9800]',
+                badgeCount: !approvedPostponement ? 1 : 0,
+                colorBg: 'bg-amber-50/60',
                 action: () => setActiveTodoModal('postponement')
               },
               {
                 id: 'docSign',
                 label: '文书签名',
-                icon: 'fa-file-signature',
-                isCompleted: signedDoc,
-                colorClass: 'text-indigo-400 group-hover:text-indigo-500',
-                action: () => setActiveTodoModal('docSign')
+                icon: 'fa-file-signature text-[#3F51B5]',
+                badgeCount: !signedDoc ? 1 : 0,
+                colorBg: 'bg-indigo-50/60',
+                action: () => onNavigateToSubPage('docSignatureList' as any)
               },
               {
                 id: 'draft',
                 label: '草拟裁决书',
-                icon: 'fa-pen-to-square',
-                isCompleted: draftedAward,
-                colorClass: 'text-violet-400 group-hover:text-violet-500',
-                action: () => setActiveTodoModal('draft')
+                icon: 'fa-file-pen text-[#E91E63]',
+                badgeCount: !draftedAward ? 3 : 0,
+                colorBg: 'bg-rose-50/60',
+                action: () => onNavigateToSubPage('draftAwardList' as any)
               }
-            ].map((item) => (
+            ].map((srv) => (
               <button
-                key={item.id}
-                onClick={item.action}
-                className="relative py-2 px-0.5 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50/50 rounded-2xl active:scale-[0.95] text-center group bg-transparent"
+                key={srv.id}
+                onClick={srv.action}
+                className="flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 py-1.5 rounded-xl active:scale-95 group relative"
               >
-                {/* Icon Wrapper coordinates notification badges perfectly */}
-                <div className="relative w-12 h-12 flex items-center justify-center mb-1">
-                  <i className={`fa-solid ${item.isCompleted ? 'fa-check-double text-emerald-500' : item.icon} text-[30px] ${item.isCompleted ? '' : item.colorClass} transition-transform group-hover:scale-110`}></i>
+                {/* Micro round background wrapper with soft gradient color */}
+                <div className={`relative w-11 h-11 ${srv.colorBg} rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
+                  <i className={`fa-solid ${srv.icon} text-lg`}></i>
                   
                   {/* Top-Right Red Dot for pending inline with the icon */}
-                  {!item.isCompleted && (
-                    <span className="absolute top-1 right-1 flex h-2 w-2">
+                  {srv.badgeCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 ring-1 ring-white"></span>
                     </span>
                   )}
                 </div>
 
                 {/* Function Name */}
-                <span className="text-base font-medium block text-[#333333] mt-1 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">
-                  {item.label}
+                <span className="text-base font-medium block text-[#333333] mt-0.5 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">
+                  {srv.label}
                 </span>
               </button>
             ))}
@@ -546,45 +566,47 @@ export default function Workbench({
 
           {activeFuncTab === 'common' ? (
             /* Common Functions Grid (统计中心、案件讨论、我的聘书、酬金单) */
-            <div className="grid grid-cols-3 gap-y-4 gap-x-1 animate-fade-in">
+            <div className="grid grid-cols-3 gap-y-4 gap-x-3 animate-fade-in">
               {[
-                { id: 'statsCenter', label: '统计中心', icon: "fa-chart-pie", colorClass: 'text-indigo-400 group-hover:text-indigo-500' },
-                { id: 'caseDiscussion', label: '案件讨论', icon: "fa-comments", colorClass: 'text-fuchsia-400 group-hover:text-fuchsia-500' },
-                { id: 'appointment', label: '我的聘书', icon: "fa-award", colorClass: 'text-amber-500 group-hover:text-amber-600' },
-                { id: 'remuneration', label: '酬金单', icon: "fa-money-check-dollar", colorClass: 'text-emerald-500 group-hover:text-emerald-600' }
-              ].map((section) => {
+                { id: 'statsCenter', label: '统计中心', icon: "fa-chart-pie text-[#9C27B0]", colorBg: 'bg-purple-50/70' },
+                // { id: 'caseDiscussion', label: '案件讨论', icon: "fa-comments text-[#E91E63]", colorBg: 'bg-fuchsia-50/60' },
+                { id: 'appointment', label: '我的聘书', icon: "fa-id-card text-[#E91E63]", colorBg: 'bg-rose-50/50' },
+                { id: 'remuneration', label: '酬金单', icon: "fa-money-check-dollar text-[#4CAF50]", colorBg: 'bg-emerald-50/60' }
+              ].map((srv) => {
                 return (
                   <button
-                    key={section.id}
-                    onClick={() => onNavigateToSubPage(section.id as 'statsCenter' | 'caseDiscussion' | 'appointment' | 'remuneration')}
-                    className="py-2.5 px-0.5 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50/50 rounded-2xl active:scale-[0.95] text-center group bg-transparent"
+                    key={srv.id}
+                    onClick={() => onNavigateToSubPage(srv.id as 'statsCenter' | 'caseDiscussion' | 'appointment' | 'remuneration')}
+                    className="flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 py-1.5 rounded-xl active:scale-95 group relative"
                   >
-                    <div className="relative w-12 h-12 flex items-center justify-center mb-1">
-                      <i className={`fa-solid ${section.icon} text-[30px] ${section.colorClass} transition-transform group-hover:scale-110`}></i>
+                    {/* Micro round background wrapper with soft gradient color */}
+                    <div className={`relative w-11 h-11 ${srv.colorBg} rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
+                      <i className={`fa-solid ${srv.icon} text-lg`}></i>
                     </div>
-                    <span className="text-base font-medium block text-[#333333] mt-1 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">{section.label}</span>
+                    <span className="text-base font-medium block text-[#333333] mt-0.5 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">{srv.label}</span>
                   </button>
                 );
               })}
             </div>
           ) : (
             /* 辅助功能 Grid (审理指引、裁决书及案例、仲裁员须知) */
-            <div className="grid grid-cols-3 gap-y-4 gap-x-1 animate-fade-in">
+            <div className="grid grid-cols-3 gap-y-4 gap-x-3 animate-fade-in">
               {[
-                { id: 'guide', label: '审理指引', icon: "fa-compass", colorClass: 'text-rose-400 group-hover:text-rose-500', action: () => setShowGuideModal(true) },
-                { id: 'template', label: '裁决书及案例', icon: "fa-file-lines", colorClass: 'text-emerald-400 group-hover:text-emerald-500', action: () => setShowTemplateModal(true) },
-                { id: 'ops', label: '仲裁员须知', icon: "fa-sliders", colorClass: 'text-violet-400 group-hover:text-violet-500', action: () => setShowOpsModal(true) }
-              ].map((section) => {
+                { id: 'guide', label: '审理指引', icon: "fa-compass text-[#FF5722]", colorBg: 'bg-orange-50/60', action: () => setShowGuideModal(true) },
+                { id: 'template', label: '裁决书及案例', icon: "fa-file-lines text-[#4CAF50]", colorBg: 'bg-emerald-50/60', action: () => setShowTemplateModal(true) },
+                { id: 'ops', label: '仲裁员须知', icon: "fa-sliders text-[#9C27B0]", colorBg: 'bg-violet-50/60', action: () => setShowOpsModal(true) }
+              ].map((srv) => {
                 return (
                   <button
-                    key={section.id}
-                    onClick={section.action}
-                    className="py-2.5 px-0.5 flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50/50 rounded-2xl active:scale-[0.95] text-center group bg-transparent"
+                    key={srv.id}
+                    onClick={srv.action}
+                    className="flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 py-1.5 rounded-xl active:scale-95 group relative"
                   >
-                    <div className="relative w-12 h-12 flex items-center justify-center mb-1">
-                      <i className={`fa-solid ${section.icon} text-[30px] ${section.colorClass} transition-transform group-hover:scale-110`}></i>
+                    {/* Micro round background wrapper with soft gradient color */}
+                    <div className={`relative w-11 h-11 ${srv.colorBg} rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
+                      <i className={`fa-solid ${srv.icon} text-lg`}></i>
                     </div>
-                    <span className="text-base font-medium block text-[#333333] mt-1 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">{section.label}</span>
+                    <span className="text-base font-medium block text-[#333333] mt-0.5 leading-[18px] truncate w-full group-hover:text-indigo-500 transition-colors">{srv.label}</span>
                   </button>
                 );
               })}

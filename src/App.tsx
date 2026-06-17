@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { mockArbitrator, mockCases, mockTasks } from './data/mockData';
-import { Case, Task, CaseStatus } from './types';
+import { mockArbitrator, mockCases, mockTasks, mockTranscriptSignatures, mockPostponementApprovals } from './data/mockData';
+import { Case, Task, CaseStatus, TranscriptSignature, PostponementApproval } from './types';
 import MiniProgramContainer from './components/MiniProgramContainer';
 import Workbench from './components/Workbench';
+import Workbench2 from './components/Workbench-2';
 import CaseList from './components/CaseList';
 import TaskCenter from './components/TaskCenter';
 import CaseStats from './components/CaseStats';
@@ -21,12 +22,23 @@ import RemunerationPage from './components/RemunerationPage';
 import PersonalInfoEdit from './components/PersonalInfoEdit';
 import WorkInfoEdit from './components/WorkInfoEdit';
 import BankInfoEdit from './components/BankInfoEdit';
+import DeclarationList from './components/DeclarationList';
+import DeclarationSign from './components/DeclarationSign';
+import DocumentSignatureList from './components/DocumentSignatureList';
+import DraftAwardList from './components/DraftAwardList';
+import TranscriptSignaturePage from './components/TranscriptSignaturePage';
+import TranscriptSignatureDetail from './components/TranscriptSignatureDetail';
+import PostponementApprovalPage from './components/PostponementApprovalPage';
+import PostponementApprovalDetail from './components/PostponementApprovalDetail';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
   const [activeTab, setActiveTab] = useState<number>(0);
+  
+  // Workbench version toggle: 'v1' | 'v2'
+  const [workbenchVersion, setWorkbenchVersion] = useState<'v1' | 'v2'>('v1');
   
   // Sub-page state for workbench sub-pages
   const [activeSubPage, setActiveSubPage] = useState<SubPageType>(null);
@@ -37,7 +49,12 @@ export default function App() {
   // Data States
   const [cases, setCases] = useState<Case[]>(mockCases);
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
+  const [transcriptSignatures, setTranscriptSignatures] = useState<TranscriptSignature[]>(mockTranscriptSignatures);
+  const [postponementApprovals, setPostponementApprovals] = useState<PostponementApproval[]>(mockPostponementApprovals);
   const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [selectedTranscript, setSelectedTranscript] = useState<TranscriptSignature | null>(null);
+  const [selectedApproval, setSelectedApproval] = useState<PostponementApproval | null>(null);
+  const [selectedDeclaration, setSelectedDeclaration] = useState<any>(null);
   
   // Global filters
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('all');
@@ -120,14 +137,63 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail') => {
     setActiveSubPage(page);
   };
 
   // Back from sub-page to workbench
   const handleBackFromSubPage = () => {
     setActiveSubPage(null);
-    setSelectedCase(null); // 同时清除选中的案件
+    setSelectedCase(null);
+    setSelectedTranscript(null);
+    setSelectedApproval(null);
+  };
+
+  // Submit transcript signature
+  const handleSubmitTranscriptSignature = (transcriptId: string) => {
+    setTranscriptSignatures(prev =>
+      prev.map(t => t.id === transcriptId ? { ...t, status: 'signed', signedAt: new Date().toISOString() } : t)
+    );
+    setActiveSubPage(null);
+    setSelectedTranscript(null);
+  };
+
+  // Approve postponement
+  const handleApprovePostponement = (approvalId: string, comment: string) => {
+    setPostponementApprovals(prev =>
+      prev.map(a => a.id === approvalId ? {
+        ...a,
+        status: 'approved',
+        approvedTime: new Date().toISOString(),
+        flowRecords: [...a.flowRecords, {
+          operator: '仲裁员 张明',
+          time: new Date().toISOString(),
+          status: 'approved',
+          comment: comment || '同意延期申请'
+        }]
+      } : a)
+    );
+    setActiveSubPage(null);
+    setSelectedApproval(null);
+  };
+
+  // Reject postponement
+  const handleRejectPostponement = (approvalId: string, comment: string) => {
+    setPostponementApprovals(prev =>
+      prev.map(a => a.id === approvalId ? {
+        ...a,
+        status: 'rejected',
+        approvedTime: new Date().toISOString(),
+        flowRecords: [...a.flowRecords, {
+          operator: '仲裁员 张明',
+          time: new Date().toISOString(),
+          status: 'rejected',
+          comment: comment || '驳回延期申请'
+        }]
+      } : a)
+    );
+    setActiveSubPage(null);
+    setSelectedApproval(null);
   };
 
   if (!isLoggedIn) {
@@ -222,6 +288,51 @@ export default function App() {
           />
         )}
 
+        {activeSubPage === 'transcriptSignature' && (
+          <TranscriptSignaturePage
+            transcripts={transcriptSignatures}
+            onSelectTranscript={(transcript) => {
+              setSelectedTranscript(transcript);
+              setActiveSubPage('transcriptSignatureDetail');
+            }}
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'transcriptSignatureDetail' && selectedTranscript && (
+          <TranscriptSignatureDetail
+            transcript={selectedTranscript}
+            onBack={() => {
+              setActiveSubPage('transcriptSignature');
+              setSelectedTranscript(null);
+            }}
+            onSubmitSignature={handleSubmitTranscriptSignature}
+          />
+        )}
+
+        {activeSubPage === 'postponementApproval' && (
+          <PostponementApprovalPage
+            approvals={postponementApprovals}
+            onSelectApproval={(approval) => {
+              setSelectedApproval(approval);
+              setActiveSubPage('postponementApprovalDetail');
+            }}
+            onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'postponementApprovalDetail' && selectedApproval && (
+          <PostponementApprovalDetail
+            approval={selectedApproval}
+            onBack={() => {
+              setActiveSubPage('postponementApproval');
+              setSelectedApproval(null);
+            }}
+            onApprove={handleApprovePostponement}
+            onReject={handleRejectPostponement}
+          />
+        )}
+
         {activeSubPage === 'personalInfoEdit' && (
           <PersonalInfoEdit
             initialData={personalInfo}
@@ -254,8 +365,88 @@ export default function App() {
           />
         )}
 
+        {/* Declaration List sub-page */}
+        {activeSubPage === 'declarationList' && (
+          <DeclarationList
+            onBack={handleBackFromSubPage}
+            onSelectItem={(item) => {
+              setSelectedDeclaration(item);
+              setActiveSubPage('declarationSign');
+            }}
+          />
+        )}
+
+        {/* Declaration Sign sub-page */}
+        {activeSubPage === 'declarationSign' && selectedDeclaration && (
+          <DeclarationSign
+            caseNo={selectedDeclaration.caseNo}
+            claimant={selectedDeclaration.claimant}
+            respondent={selectedDeclaration.respondent}
+            secretary={selectedDeclaration.secretary}
+            arbitrator={selectedDeclaration.arbitrator}
+            status={selectedDeclaration.status}
+            signedDate={selectedDeclaration.signedDate}
+            onBack={() => {
+              setSelectedDeclaration(null);
+              setActiveSubPage('declarationList');
+            }}
+          />
+        )}
+
+        {/* Document Signature List sub-page */}
+        {activeSubPage === 'docSignatureList' && (
+          <DocumentSignatureList
+            onBack={handleBackFromSubPage}
+            onSelectItem={(item) => {
+              // Navigate to case detail with signature tab
+              const matchedCase = cases.find(c => c.caseNo === item.caseNo);
+              if (matchedCase) {
+                setSelectedCase(matchedCase);
+              } else {
+                // Fallback: use first case as base and override relevant fields
+                const fallbackCase = cases[0];
+                if (fallbackCase) {
+                  setSelectedCase({
+                    ...fallbackCase,
+                    caseNo: item.caseNo,
+                    claimant: item.claimant,
+                    respondent: item.respondent,
+                    secretary: item.secretary,
+                  });
+                }
+              }
+              setActiveSubPage('caseDetail');
+            }}
+          />
+        )}
+
+        {/* Draft Award List sub-page */}
+        {activeSubPage === 'draftAwardList' && (
+          <DraftAwardList
+            onBack={handleBackFromSubPage}
+            onSelectItem={(item) => {
+              const matchedCase = cases.find(c => c.caseNo === item.caseNo);
+              if (matchedCase) {
+                setSelectedCase(matchedCase);
+              } else {
+                const fallbackCase = cases[0];
+                if (fallbackCase) {
+                  setSelectedCase({
+                    ...fallbackCase,
+                    caseNo: item.caseNo,
+                    claimant: item.claimant,
+                    respondent: item.respondent,
+                    secretary: item.secretary,
+                  });
+                }
+              }
+              setActiveSubPage('caseDetail');
+            }}
+          />
+        )}
+
         {/* Main tab content (only show when no sub-page is active) */}
-        {!activeSubPage && activeTab === 0 && (
+        {!activeSubPage && activeTab === 0 && workbenchVersion === 'v1' && (
           <Workbench
             profile={mockArbitrator}
             tasks={tasks}
@@ -269,6 +460,25 @@ export default function App() {
             onSelectTaskDirect={handleSelectTaskDirect}
             selectedStatusFilter={selectedStatusFilter}
             onNavigateToSubPage={handleNavigateToSubPage}
+            onToggleVersion={() => setWorkbenchVersion('v2')}
+          />
+        )}
+
+        {!activeSubPage && activeTab === 0 && workbenchVersion === 'v2' && (
+          <Workbench2
+            profile={mockArbitrator}
+            tasks={tasks}
+            cases={cases}
+            onNavigateToTab={setActiveTab}
+            onFilterStatus={setSelectedStatusFilter}
+            onSelectCase={(caseItem) => {
+              setSelectedCase(caseItem);
+              setActiveSubPage('caseDetail');
+            }}
+            onSelectTaskDirect={handleSelectTaskDirect}
+            selectedStatusFilter={selectedStatusFilter}
+            onNavigateToSubPage={handleNavigateToSubPage}
+            onToggleVersion={() => setWorkbenchVersion('v1')}
           />
         )}
 
@@ -294,6 +504,7 @@ export default function App() {
               setSelectedCase(caseItem);
               setActiveSubPage('caseDetail');
             }}
+            onNavigateToSubPage={handleNavigateToSubPage}
           />
         )}
 

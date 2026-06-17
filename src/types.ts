@@ -84,3 +84,38 @@ export interface ArbitratorProfile {
   avgResolveDays: number;
   ranking: string;
 }
+
+export interface TranscriptSignature {
+  id: string;
+  caseNo: string;
+  claimant: string;
+  respondent: string;
+  secretary: string;
+  arbitrator: string;
+  hearingTime: string;
+  status: 'pending' | 'signed';
+  signedAt?: string;
+}
+
+export interface ApprovalFlowRecord {
+  operator: string;
+  time: string;
+  status: 'pending' | 'approved' | 'rejected';
+  comment?: string;
+}
+
+export interface PostponementApproval {
+  id: string;
+  caseNo: string;
+  claimant: string;
+  respondent: string;
+  secretary: string;
+  arbitrator: string;
+  reason: string;
+  originalHearingTime: string;
+  requestedTime: string;
+  requestTime: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedTime?: string;
+  flowRecords: ApprovalFlowRecord[];
+}

@@ -75,18 +75,18 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
             </div>
 
             {/* Simulated Signal & Time Top Bar - merged with title */}
-            <div className="h-7 bg-slate-900 text-slate-100 px-4 flex justify-between items-center text-xs font-semibold select-none z-40 transition-colors font-mono">
-              <span className="text-slate-400">{currentTime}</span>
-              <div className="flex items-center space-x-1.5 text-slate-400">
+            <div className="h-9 bg-[#ddecff] text-slate-700 px-6 flex justify-between items-end pb-1.5 text-[11px] font-bold select-none z-40 transition-colors font-mono">
+              <span className="text-slate-600 font-sans tracking-tight">{currentTime}</span>
+              <div className="flex items-center space-x-1.5 text-slate-600">
                 <Signal size={10} className="stroke-[2.5]" />
-                <span className="text-xs font-bold">5G</span>
+                <span className="text-[10px] font-bold font-sans">5G</span>
                 <Wifi size={10} className="stroke-[2.5]" />
                 <Battery size={12} className="stroke-[2.5]" />
               </div>
             </div>
 
             {/* Inside Scrollable Screen */}
-            <div className="flex-1 w-full bg-slate-50 text-slate-900 overflow-y-auto no-scrollbar relative flex flex-col justify-between">
+            <div className="flex-1 w-full bg-slate-50 text-slate-900 overflow-hidden relative flex flex-col justify-between">
               {children}
             </div>
 
@@ -120,7 +120,7 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
             {/* Main scrollable body */}
             <div className="flex-1 overflow-y-auto bg-slate-100 flex justify-center p-6">
               <div className="w-full max-w-4xl bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto flex flex-col justify-between">
+                <div className="flex-1 overflow-hidden flex flex-col justify-between">
                   {children}
                 </div>
               </div>

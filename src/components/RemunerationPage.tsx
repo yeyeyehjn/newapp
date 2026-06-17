@@ -38,22 +38,24 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
 
   return (
     <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-          >
-            <i className="fa-solid fa-arrow-left text-sm"></i>
-          </button>
-          <h1 className="text-lg font-bold text-slate-800">酬金单</h1>
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
+        >
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
+        </button>
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">
+          酬金单
         </div>
+        {/* 右侧报酬规则按钮 */}
         <button
           onClick={() => setShowRulesModal(true)}
-          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-1.5 transition-colors border border-indigo-200"
+          className="absolute right-4 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors"
         >
-          <FileText size={14} />
+          <i className="fa-solid fa-book-open text-xs"></i>
           <span>报酬规则</span>
         </button>
       </div>

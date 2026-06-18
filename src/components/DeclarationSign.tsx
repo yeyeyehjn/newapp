@@ -67,17 +67,16 @@ export default function DeclarationSign({
 
   return (
     <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
-      {/* Header */}
-      <div className="bg-white px-4 py-3 shadow-sm sticky top-0 z-10 flex items-center justify-between flex-shrink-0 border-b border-slate-100">
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button 
           onClick={onBack} 
-          className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-xs cursor-pointer"
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
         >
-          <ArrowLeft size={16} />
-          <span>返回</span>
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
         </button>
-        <h1 className="text-xs font-bold text-slate-900 text-center flex-1 mx-2 truncate">{caseNo}</h1>
-        <div className="w-10"></div>
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap truncate max-w-[60%]">{caseNo}</div>
       </div>
 
       {/* Content */}

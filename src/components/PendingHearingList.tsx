@@ -112,17 +112,16 @@ export default function PendingHearingList({ onBack, onSelectItem }: PendingHear
 
   return (
     <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
-      {/* Top Header */}
-      <div className="h-12 bg-white border-b border-slate-100 px-4 flex items-center justify-between shadow-sm flex-shrink-0">
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button 
           onClick={onBack} 
-          className="text-slate-500 hover:text-slate-800 flex items-center gap-1 text-xs cursor-pointer"
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
         >
-          <ArrowLeft size={16} />
-          <span>返回</span>
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
         </button>
-        <span className="font-bold text-slate-800 text-xs">待开庭提醒</span>
-        <div className="w-10"></div>
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">待开庭提醒</div>
       </div>
 
       {/* Search */}

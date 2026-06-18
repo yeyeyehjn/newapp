@@ -217,11 +217,11 @@ export default function Workbench({
           <div className="flex flex-col justify-center text-left z-10 w-3/5">
            
             {/* Large Bold Title */}
-            <span className="text-[16px] font-black text-slate-800 tracking-wider leading-none mb-1">
+            <span className="text-xl font-black text-slate-800 tracking-wider leading-none mb-1">
               立信铸就广仲
             </span>
             {/* Subtitle */}
-            <span className="text-[16px] font-black text-slate-500 tracking-wider">
+            <span className="text-xl font-black text-slate-500 tracking-wider">
               创新赢得未来
             </span>
            
@@ -252,12 +252,12 @@ export default function Workbench({
             {/* Top bar with Title & Red Pill */}
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-[14.5px] font-black text-slate-800 tracking-tight">我的待办</span>
+                <span className="text-lg font-black text-slate-800 tracking-tight">我的待办</span>
                 <span className="px-2  bg-[#FF3B30] text-white text-[10px] font-black rounded-md shadow-[0_2px_8px_rgba(255,59,48,0.25)] flex items-center justify-center min-w-4 text-center">
                   {tasks.filter(t => t.status === 'pending').length}
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+              <span className="text-sm text-slate-400 font-medium tracking-wide">
                 汇总各类流程待办
               </span>
             </div>
@@ -311,12 +311,12 @@ export default function Workbench({
             >
               <div className="flex-1 min-w-0 pr-1">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-sm font-black text-slate-800 tracking-tight shrink-0">在办</span>
+                  <span className="text-base font-black text-slate-800 tracking-tight shrink-0">在办</span>
                   <span className="text-[10px] font-extrabold text-[#1E62EC] bg-[#E1EEFF] px-2  rounded-md shrink-0 scale-90 origin-left">
                     {profile.activeCount}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
+                <span className="text-sm text-slate-400 font-medium block truncate">
                   在办案件
                 </span>
               </div>
@@ -357,12 +357,12 @@ export default function Workbench({
             >
               <div className="flex-1 min-w-0 pr-1">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-sm font-black text-slate-800 tracking-tight shrink-0">结案</span>
+                  <span className="text-base font-black text-slate-800 tracking-tight shrink-0">结案</span>
                   <span className="text-[10px] font-extrabold text-[#FF8E53] bg-[#FFEFE5] px-2  rounded-md shrink-0 scale-90 origin-left">
                     {profile.resolvedCount}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium block truncate">
+                <span className="text-sm text-slate-400 font-medium block truncate">
                   累计结案
                 </span>
               </div>
@@ -408,7 +408,7 @@ export default function Workbench({
             style={{ clipPath: 'polygon(0 0, 100% 0, 75% 100%, 0 100%)' }}
           >
             <div className="flex flex-col items-center justify-center pr-2 font-sans">
-              <span className="text-[13px] font-black tracking-widest leading-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.18)] text-center w-full">动态</span>
+              <span className="text-lg font-black tracking-widest leading-none drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.18)] text-center w-full">动态</span>
             </div>
           </div>
 
@@ -432,7 +432,7 @@ export default function Workbench({
                   }`}
                 >
                   {/* Title of newsList - Support exactly 2 lines */}
-                  <h4 className="text-[11px] font-medium text-slate-800 hover:text-[#1E62EC] active:text-[#1048B5] transition-colors pr-1 line-clamp-2 break-all overflow-hidden leading-tight whitespace-normal w-full">
+                  <h4 className="text-base font-medium text-slate-800 hover:text-[#1E62EC] active:text-[#1048B5] transition-colors pr-1 line-clamp-2 break-all overflow-hidden leading-tight whitespace-normal w-full">
                     {item.title}
                   </h4>
                 </div>
@@ -460,7 +460,7 @@ export default function Workbench({
         {/* 9. RECENT HEARINGS TIMELINE BLOCK (Keep it elegant as secondary scroll list) */}
         <div className="mx-4 my-2.5 bg-white rounded-2xl border border-slate-100 shadow-[0_6px_24px_rgba(15,23,42,0.02)] p-4 text-left">
           <div className="flex justify-between items-center mb-3.5 px-0.5">
-            <span className="text-base font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
+            <span className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
               <span className="w-1 h-3.5 bg-indigo-500 rounded-full inline-block"></span>
               <span>近3天待开庭日程</span>
             </span>
@@ -521,14 +521,14 @@ export default function Workbench({
                           <span className={`text-[10px]  px-1.5 py-0.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
                             {badgeText}
                           </span>
-                          <span className="text-xs font-bold text-slate-800 truncate" >
+                          <span className="text-base font-bold text-slate-800 truncate" >
                             {hearing.caseNo}
                           </span>
                         </div>
                       </div>
 
                       {/* Timeline Details */}
-                      <div className="text-[11px] text-slate-500 ">
+                      <div className="text-sm text-slate-500 ">
                         <div className="flex items-start gap-1.5 min-w-0">
                           <span className="text-slate-400 shrink-0 w-[55px]">申请人：</span>
                           <span className="truncate text-slate-700 font-medium">{claimant}</span>
@@ -549,7 +549,7 @@ export default function Workbench({
                           <span className="text-slate-400 shrink-0 w-[55px]">办案秘书：</span>
                           <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0">
+                        <div className="flex items-start gap-1.5 min-w-0 leading-normal">
                           <span className="text-slate-400 shrink-0 w-[55px]">开庭用途：</span>
                           <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
                         </div>
@@ -584,7 +584,7 @@ export default function Workbench({
             </div>
           ) : (
             <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200/60 p-5 text-center">
-              <p className="text-xs text-slate-400 font-medium font-sans">近期暂无待开庭日程</p>
+              <p className="text-sm text-slate-400 font-medium font-sans">近期暂无待开庭日程</p>
             </div>
           )}
         </div>
@@ -594,7 +594,7 @@ export default function Workbench({
         {/* 5. GZAC 8-MODULE SERVICES MICRO-GRID (近期待办 5个模块 & 常用功能 3个模块) */}
         <div className="mx-4 my-2.5 bg-white rounded-2xl border border-slate-100 shadow-[0_6px_24px_rgba(15,23,42,0.02)] p-4 text-left">
           <div className="flex justify-between items-center mb-4.5 px-0.5">
-            <span className="text-base font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
+            <span className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
               <span className="w-1 h-3.5 bg-[#1E62EC] rounded-full inline-block"></span>
               <span>近期待办</span>
             </span>
@@ -663,7 +663,7 @@ export default function Workbench({
                   )}
                 </div>
 
-                <span className="text-[10px] font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
+                <span className="text-sm font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>
@@ -674,7 +674,7 @@ export default function Workbench({
         {/* 6. COMMON CHANNELS MICRO-GRID (常用功能 - 样式参考“近期待办”，功能为：统计中心、酬金单、我的聘书) */}
         <div className="mx-4 my-2.5 bg-white rounded-2xl border border-slate-100 shadow-[0_6px_24px_rgba(15,23,42,0.02)] p-4 text-left">
           <div className="flex justify-between items-center mb-4.5 px-0.5">
-            <span className="text-base font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
+            <span className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
               <span className="w-1 h-3.5 bg-[#1E62EC] rounded-full inline-block"></span>
               <span>常用功能</span>
             </span>
@@ -694,7 +694,7 @@ export default function Workbench({
                 label: '酬金单',
                 icon: 'fa-money-check-dollar text-[#4CAF50]',
                 colorBg: 'bg-emerald-50/60',
-                action: () => setShowRemunerationModal(true)
+                action: () => onNavigateToSubPage('remuneration')
               },
               {
                 id: 'mycert',
@@ -714,7 +714,7 @@ export default function Workbench({
                   <i className={`fa-solid ${srv.icon} text-lg`}></i>
                 </div>
 
-                <span className="text-[10px] font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
+                <span className="text-sm font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>
@@ -728,7 +728,7 @@ export default function Workbench({
         {/* 8. "为你精选" RECOMMENDATION LIST (With functional "旋转换一换" Refresh action) */}
         <div className="mx-4 my-2.5 bg-white rounded-2xl border border-slate-100 shadow-[0_4px_24px_rgba(15,23,42,0.02)] p-4 text-left">
           <div className="flex justify-between items-center mb-4.5 px-0.5">
-            <span className="text-[15px] font-extrabold text-slate-800 flex items-center gap-1.5">
+            <span className="text-lg font-extrabold text-slate-800 flex items-center gap-1.5">
               <i className="fa-solid fa-compass text-sky-500"></i>
               <span>为你精选 • 仲裁知识</span>
             </span>
@@ -738,7 +738,7 @@ export default function Workbench({
               onClick={() => {
                 setSelectedArticleIndex((prev) => (prev + 1) % featuredArticles.length);
               }}
-              className="flex items-center gap-1 text-[11px] font-bold text-[#1E62EC] hover:text-[#174FCE] cursor-pointer"
+              className="flex items-center gap-1 text-sm font-bold text-[#1E62EC] hover:text-[#174FCE] cursor-pointer"
             >
               <i className="fa-solid fa-arrows-rotate text-[10px] animate-spin-slow"></i>
               <span>换一换</span>
@@ -763,13 +763,13 @@ export default function Workbench({
                   e.stopPropagation();
                   setShowGuideModal(true);
                 }}
-                className="text-[10px] text-[#1E62EC] hover:text-[#1148B5] font-black flex items-center gap-0.5 hover:underline transition-colors cursor-pointer"
+                className="text-sm text-[#1E62EC] hover:text-[#1148B5] font-black flex items-center gap-0.5 hover:underline transition-colors cursor-pointer"
               >
                 <span>更多内容</span>
                 <i className="fa-solid fa-angle-right text-[9px] transition-transform group-hover:translate-x-0.5"></i>
               </button>
             </div>
-            <h5 className="text-[12.5px] font-black text-slate-800 leading-relaxed group-hover:text-[#1E62EC] transition-colors mb-2.5">
+            <h5 className="text-base font-black text-slate-800 leading-relaxed group-hover:text-[#1E62EC] transition-colors mb-2.5">
               {featuredArticles[selectedArticleIndex].title}
             </h5>
             
@@ -803,7 +803,7 @@ export default function Workbench({
               <h4 className="font-extrabold text-slate-900 text-base leading-snug">
                 {selectedNews.title}
               </h4>
-              <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+              <div className="flex items-center gap-2 text-sm text-slate-400 font-mono">
                 <span>发布日期: {selectedNews.date}</span>
                 <span>•</span>
                 <span>信源: 广州仲裁委员会</span>
@@ -860,8 +860,8 @@ export default function Workbench({
                   return (
                     <div key={doc.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between hover:border-indigo-200 transition-all">
                       <div className="space-y-0.5 flex-1 min-w-0 pr-2">
-                        <h6 className="font-extrabold text-slate-800 text-sm truncate">{doc.name}</h6>
-                        <p className="text-xs text-slate-500 font-mono">大小: {doc.size} • 校验哈希: {doc.hash}</p>
+                        <h6 className="font-extrabold text-slate-800 text-base truncate">{doc.name}</h6>
+                        <p className="text-sm text-slate-500 font-mono">大小: {doc.size} • 校验哈希: {doc.hash}</p>
                       </div>
                       <button 
                         onClick={() => {
@@ -928,8 +928,8 @@ export default function Workbench({
                       {item.step}
                     </div>
                     <div className="space-y-0.5">
-                      <h4 className="font-extrabold text-slate-800 text-sm">{item.title}</h4>
-                      <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
+                      <h4 className="font-extrabold text-slate-800 text-base">{item.title}</h4>
+                      <p className="text-sm text-slate-500 leading-normal">{item.desc}</p>
                     </div>
                   </div>
                 ))}

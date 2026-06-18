@@ -24,19 +24,20 @@ export default function BankInfoEdit({ initialData, onBack, onSave }: BankInfoEd
 
   return (
     <div className="flex-1 bg-slate-50 flex flex-col overflow-y-auto no-scrollbar">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-100 px-4 py-3 flex items-center gap-3">
+      {/* Header - 微信小程序子页面返回样式 */}
+      <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button
           onClick={onBack}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+          className="flex items-center gap-1 text-slate-600 hover:text-slate-900 font-medium transition-colors cursor-pointer"
         >
-          <ArrowLeft size={20} />
+          <i className="fa-solid fa-chevron-left text-xs"></i>
+          <span className="text-sm">返回</span>
         </button>
-        <h1 className="text-base font-bold text-slate-800">编辑银行账号信息</h1>
+        <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">编辑银行账号信息</div>
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 p-4 space-y-4">
+      <div className="flex-1 p-4 space-y-4 text-left">
         <div className="bg-white rounded-lg border border-slate-100 p-4 space-y-4">
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <CreditCard size={14} className="text-indigo-500" />

@@ -20,7 +20,6 @@ export default function PostponementApprovalPage({
     { label: '全部', value: 'all' },
     { label: '待审批', value: 'pending' },
     { label: '已审批', value: 'approved' },
-    { label: '已驳回', value: 'rejected' },
   ];
 
   // Filtered approvals list based on status and search query
@@ -65,8 +64,6 @@ export default function PostponementApprovalPage({
         return '待审批';
       case 'approved':
         return '已审批';
-      case 'rejected':
-        return '已驳回';
       default:
         return status;
     }
@@ -89,7 +86,7 @@ export default function PostponementApprovalPage({
       </div>
 
       {/* Search & Tabs Area */}
-      <div className="bg-white border-b border-slate-100 px-4 py-3 flex-shrink-0 space-y-3">
+      <div className="bg-white border-b border-slate-100 px-4 py-3 flex-shrink-0 space-y-3 shadow-sm shadow-slate-900/5">
         {/* Search Box */}
         <div className="relative">
           <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>

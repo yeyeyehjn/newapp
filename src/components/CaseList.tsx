@@ -30,13 +30,11 @@ export default function CaseList({
     return `¥${amount.toLocaleString()}`;
   };
 
-  // Status Tabs Definition
+  // Status Tabs Definition - 简化为：全部、在办案件、已结案件
   const statusTabs: { label: string; value: CaseStatus | 'all' }[] = [
     { label: '全部', value: 'all' },
-    { label: '审理中', value: '审理中' },
-    { label: '待开庭', value: '待开庭' },
-    { label: '待签名', value: '待签名' },
-    { label: '已结案', value: '已结案' },
+    { label: '在办案件', value: '审理中' },
+    { label: '已结案件', value: '已结案' },
   ];
 
   // All categories present

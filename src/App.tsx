@@ -30,8 +30,9 @@ import TranscriptSignaturePage from './components/TranscriptSignaturePage';
 import TranscriptSignatureDetail from './components/TranscriptSignatureDetail';
 import PostponementApprovalPage from './components/PostponementApprovalPage';
 import PostponementApprovalDetail from './components/PostponementApprovalDetail';
+import PendingHearingList from './components/PendingHearingList';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -56,8 +57,8 @@ export default function App() {
   const [selectedApproval, setSelectedApproval] = useState<PostponementApproval | null>(null);
   const [selectedDeclaration, setSelectedDeclaration] = useState<any>(null);
   
-  // Global filters
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('all');
+  // Global filters - 默认查询在办案件
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
 
   // Profile edit data states
   const [personalInfo, setPersonalInfo] = useState({
@@ -137,7 +138,7 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList') => {
     setActiveSubPage(page);
   };
 
@@ -423,6 +424,31 @@ export default function App() {
         {/* Draft Award List sub-page */}
         {activeSubPage === 'draftAwardList' && (
           <DraftAwardList
+            onBack={handleBackFromSubPage}
+            onSelectItem={(item) => {
+              const matchedCase = cases.find(c => c.caseNo === item.caseNo);
+              if (matchedCase) {
+                setSelectedCase(matchedCase);
+              } else {
+                const fallbackCase = cases[0];
+                if (fallbackCase) {
+                  setSelectedCase({
+                    ...fallbackCase,
+                    caseNo: item.caseNo,
+                    claimant: item.claimant,
+                    respondent: item.respondent,
+                    secretary: item.secretary,
+                  });
+                }
+              }
+              setActiveSubPage('caseDetail');
+            }}
+          />
+        )}
+
+        {/* Pending Hearing List sub-page */}
+        {activeSubPage === 'pendingHearingList' && (
+          <PendingHearingList
             onBack={handleBackFromSubPage}
             onSelectItem={(item) => {
               const matchedCase = cases.find(c => c.caseNo === item.caseNo);

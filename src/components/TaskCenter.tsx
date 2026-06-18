@@ -12,7 +12,7 @@ interface TaskCenterProps {
   onCompleteTask: (taskId: string, extraUpdates?: { caseId: string; nextStatus: any }) => void;
   onNavigateToTab: (index: number) => void;
   onSelectCase: (caseItem: Case) => void;
-  onNavigateToSubPage?: (page: 'declarationList' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'postponementApproval') => void;
+  onNavigateToSubPage?: (page: 'declarationList' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'postponementApproval' | 'pendingHearingList') => void;
 }
 
 export default function TaskCenter({ 
@@ -1062,7 +1062,7 @@ export default function TaskCenter({
 
         {/* STAT OVERVIEW CARD 0: 待开庭提醒 */}
         <div 
-          onClick={() => setSelectedCategory('hearing')}
+          onClick={() => onNavigateToSubPage ? onNavigateToSubPage('pendingHearingList') : setSelectedCategory('hearing')}
           className="bg-white rounded-lg p-4  border border-slate-100 transition-all duration-150 active:scale-[0.98] cursor-pointer  hover:border-red-100 group text-left"
         >
           <div className="flex justify-between items-center mb-4">

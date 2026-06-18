@@ -521,36 +521,36 @@ export default function Workbench({
                           <span className={`text-[10px]  px-1.5 py-0.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
                             {badgeText}
                           </span>
-                          <span className="text-base font-bold text-slate-800 truncate" >
+                          <span className="text-base  text-slate-800 truncate" >
                             {hearing.caseNo}
                           </span>
                         </div>
                       </div>
 
                       {/* Timeline Details */}
-                      <div className="text-sm text-slate-500 ">
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          <span className="text-slate-400 shrink-0 w-[55px]">申请人：</span>
+                      <div className="text-sm text-slate-500 gap-y-1">
+                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <span className="text-slate-400 shrink-0 w-[60px]">申请人：</span>
                           <span className="truncate text-slate-700 font-medium">{claimant}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          <span className="text-slate-400 shrink-0 w-[55px]">被申请人：</span>
+                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <span className="text-slate-400 shrink-0 w-[60px]">被申请人：</span>
                           <span className="truncate text-slate-700 font-medium">{respondent}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          <span className="text-slate-400 shrink-0 w-[55px]">时间：</span>
+                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <span className="text-slate-400 shrink-0 w-[60px]">时间：</span>
                           <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          <span className="text-slate-400 shrink-0 w-[55px]">开庭地点：</span>
+                        <div className="flex items-start  gap-0.5 min-w-0 pb-1">
+                          <span className="text-slate-400 shrink-0 w-[60px]">开庭地点：</span>
                           <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0">
-                          <span className="text-slate-400 shrink-0 w-[55px]">办案秘书：</span>
+                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <span className="text-slate-400 shrink-0 w-[60px]">办案秘书：</span>
                           <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                         </div>
-                        <div className="flex items-start gap-1.5 min-w-0 leading-normal">
-                          <span className="text-slate-400 shrink-0 w-[55px]">开庭用途：</span>
+                        <div className="flex items-start gap-0.5 min-w-0 leading-normal">
+                          <span className="text-slate-400 shrink-0 w-[60px]">开庭用途：</span>
                           <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
                         </div>
                       </div>
@@ -567,7 +567,7 @@ export default function Workbench({
                       onClick={() => setShowAllRecentHearings(true)}
                       className="w-full bg-[#F4F8FE] hover:bg-[#EBF3FF] text-[#1E62EC] font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-indigo-100 flex items-center justify-center gap-2 shadow-xs"
                     >
-                      <span>展开更多近期开庭 ({recentHearings.length - 3}场)</span>
+                      <span>展开更多 ({recentHearings.length - 3}场)</span>
                       <i className="fa-solid fa-chevron-down text-[10px]"></i>
                     </button>
                   ) : (

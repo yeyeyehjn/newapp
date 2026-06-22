@@ -543,6 +543,7 @@ export default function App() {
             workInfo={workInfo}
             bankInfo={bankInfo}
             onSetPreferredAddress={(type) => setPersonalInfo({...personalInfo, preferredAddress: type})}
+            onNavigateToRemuneration={() => handleNavigateToSubPage('remuneration')}
           />
         )}
       </div>

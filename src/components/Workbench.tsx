@@ -535,27 +535,27 @@ export default function Workbench({
                         {/* Timeline Details */}
                         <div className="text-sm text-slate-500 gap-y-1">
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">申请人：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">申请人</span>
                             <span className="truncate text-slate-700 font-medium">{claimant}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">被申请人：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">被申请人</span>
                             <span className="truncate text-slate-700 font-medium">{respondent}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">时间：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭时间</span>
                             <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
                           </div>
                           <div className="flex items-start  gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">开庭地点：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭地点</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">办案秘书：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">办案秘书</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 leading-normal">
-                            <span className="text-slate-400 shrink-0 w-[60px]">开庭用途：</span>
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭用途</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
                           </div>
                         </div>
@@ -695,13 +695,13 @@ export default function Workbench({
                 colorBg: 'bg-purple-50/70',
                 action: () => onNavigateToSubPage('statsCenter')
               },
-              {
-                id: 'remuneration',
-                label: '酬金单',
-                icon: 'fa-money-check-dollar text-[#4CAF50]',
-                colorBg: 'bg-emerald-50/60',
-                action: () => onNavigateToSubPage('remuneration')
-              },
+              // {
+              //   id: 'remuneration',
+              //   label: '酬金单',
+              //   icon: 'fa-money-check-dollar text-[#4CAF50]',
+              //   colorBg: 'bg-emerald-50/60',
+              //   action: () => onNavigateToSubPage('remuneration')
+              // },
               {
                 id: 'mycert',
                 label: '我的聘书',

@@ -170,18 +170,18 @@ export default function PendingHearingList({ onBack, onSelectItem }: PendingHear
                   {/* Hearing Time */}
                   <div className="flex items-center gap-2 pt-1">
                     <Clock size={12} className="text-amber-500 flex-shrink-0" />
-                    <span className="text-slate-500 w-16 flex-shrink-0">时间</span>
-                    <span className="text-slate-800 font-bold flex-1 text-left">{h.hearingTime}</span>
+                    <span className="text-slate-500 w-16 flex-shrink-0">开庭时间</span>
+                    <span className="text-indigo-600 font-bold flex-1 text-left">{h.hearingTime}</span>
                   </div>
 
                   {/* Hearing Location */}
                   <div className="flex items-start gap-2">
                     <MapPin size={12} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-500 w-16 flex-shrink-0 mt-0.5">地点</span>
+                    <span className="text-slate-500 w-16 flex-shrink-0 mt-0.5">开庭地点</span>
                     <span className="text-slate-800 flex-1 text-left">{h.hearingLocation}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1 border-t border-dashed border-slate-100 mt-2">
+                  <div className="flex items-center gap-2 ">
                     <FileText size={12} className="text-slate-400 flex-shrink-0" />
                     <span className="text-slate-500 w-16 flex-shrink-0">办案秘书</span>
                     <span className="text-slate-700 flex-1 text-left">{h.secretary}</span>
@@ -189,7 +189,7 @@ export default function PendingHearingList({ onBack, onSelectItem }: PendingHear
                   <div className="flex items-center gap-2">
                     <Calendar size={12} className="text-indigo-400 flex-shrink-0" />
                     <span className="text-slate-500 w-16 flex-shrink-0">开庭用途</span>
-                    <span className="text-indigo-600 font-bold flex-1 text-left">{h.hearingPurpose}</span>
+                    <span className="text-slate-800 flex-1 text-left">{h.hearingPurpose}</span>
                   </div>
                 </div>
               </div>

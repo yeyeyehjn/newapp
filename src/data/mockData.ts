@@ -70,7 +70,7 @@ export const mockCases: Case[] = [
   {
     id: "1",
     caseNo: "(2026)穗仲案字第1024号",
-    title: "关于华夏科技公司与蓝海创投股权转让协议纠纷案",
+    title: "合同纠纷",
     claimant: "华夏科技股份有限公司",
     claimantAgent: "广州众信律师事务所 - 李大双律师",
     respondent: "蓝海创业投资合伙企业（有限合伙）",
@@ -280,7 +280,7 @@ export const mockTasks: Task[] = [
     id: "t_3",
     caseId: "1",
     caseNo: "(2026)穗仲案字第1024号",
-    caseTitle: "关于华夏科技公司与蓝海创投股权转让协议纠纷案",
+    caseTitle: "合同纠纷",
     type: "review",
     title: "审理材料及当事人最新质证代理意见审查",
     description: "申请人于2026-06-08提交了关于第二轮对等证据的反驳辩论书。请首席仲裁员完成实质审查与阅毕确认。",

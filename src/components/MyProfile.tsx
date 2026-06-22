@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { 
-  User, Building2, FileText, CreditCard, LogOut, ShieldCheck, 
-  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera, 
-  Phone, Mail, Home, Edit3, Star
+import {
+  User, Building2, FileText, CreditCard, LogOut, ShieldCheck,
+  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera,
+  Phone, Mail, Home, Edit3, Star, Wallet
 } from 'lucide-react';
 import { ArbitratorProfile } from '../types';
 
@@ -40,9 +40,10 @@ interface MyProfileProps {
   workInfo: WorkInfo;
   bankInfo: BankInfo;
   onSetPreferredAddress: (type: 'home' | 'contact' | 'other') => void;
+  onNavigateToRemuneration?: () => void;
 }
 
-export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, onSetPreferredAddress }: MyProfileProps) {
+export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, onSetPreferredAddress, onNavigateToRemuneration }: MyProfileProps) {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | undefined>(profile.avatar);
@@ -148,6 +149,25 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
       {/* Main Profile Functional Body */}
       <div className="p-4 space-y-3 z-[1]">
+        
+        {/* SECTION 0: 酬金单模块 (Remuneration) */}
+        <div className="bg-white rounded-lg border border-slate-100 overflow-hidden transition-all duration-300">
+          <div
+            onClick={() => onNavigateToRemuneration?.()}
+            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left cursor-pointer"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100/50 text-emerald-600">
+                <Wallet size={15} />
+              </div>
+              <div className="space-y-0.5">
+                <h3 className="text-sm font-bold text-slate-800 leading-none">酬金单</h3>
+                <p className="text-sm text-slate-500 font-medium">案件酬劳明细及结算统计</p>
+              </div>
+            </div>
+            <ChevronRight size={14} className="text-slate-500" />
+          </div>
+        </div>
         
         {/* SECTION 1: 个人信息 (Personal Info) */}
         <div className="bg-white rounded-lg border border-slate-100  overflow-hidden transition-all duration-300">

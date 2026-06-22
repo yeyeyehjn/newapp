@@ -363,53 +363,33 @@ export default function Workbench({
                         
                       </div>
 
-                      {/* Timeline Details Box - Label 标签统一宽度 */}
-                      <div className="text-sm text-slate-500 space-y-2">
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-user-shield text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">申请人：</span>
-                            <span className="truncate text-sm">{claimant}</span>
-                          </span>
-                          
+                      {/* Timeline Details */}
+                        <div className="text-sm text-slate-500 gap-y-1">
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">申请人</span>
+                            <span className="truncate text-slate-700 font-medium">{claimant}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">被申请人</span>
+                            <span className="truncate text-slate-700 font-medium">{respondent}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭时间</span>
+                            <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
+                          </div>
+                          <div className="flex items-start  gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭地点</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">办案秘书</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 leading-normal">
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭用途</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
+                          </div>
                         </div>
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-user-shield text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">被申请人：</span>
-                            <span className="truncate text-sm">{respondent}</span>
-                          </span>
-                          
-                        </div>
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-clock text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">时间：</span>
-                            <span className="truncate text-sm">{hearing.hearingTime}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-location-dot text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">开庭地点：</span>
-                            <span className="truncate text-sm">{hearing.location}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-user-tie text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">办案秘书：</span>
-                            <span className="truncate text-sm font-sans">{hearing.secretary}</span>
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2 min-w-0">
-                          <i className="fa-solid fa-clipboard text-slate-400 text-sm w-3 rounded text-center shrink-0 mt-0.5"></i>
-                          <span className="flex min-w-0">
-                            <span className="text-sm text-slate-400 shrink-0 w-[60px]">开庭用途：</span>
-                            <span className="truncate text-sm font-sans">{hearing.purpose}</span>
-                          </span>
-                        </div>
-                      </div>
                     </div>
                   );
                 })}
@@ -571,7 +551,7 @@ export default function Workbench({
                 { id: 'statsCenter', label: '统计中心', icon: "fa-chart-pie text-[#9C27B0]", colorBg: 'bg-purple-50/70' },
                 // { id: 'caseDiscussion', label: '案件讨论', icon: "fa-comments text-[#E91E63]", colorBg: 'bg-fuchsia-50/60' },
                 { id: 'appointment', label: '我的聘书', icon: "fa-id-card text-[#E91E63]", colorBg: 'bg-rose-50/50' },
-                { id: 'remuneration', label: '酬金单', icon: "fa-money-check-dollar text-[#4CAF50]", colorBg: 'bg-emerald-50/60' }
+                // { id: 'remuneration', label: '酬金单', icon: "fa-money-check-dollar text-[#4CAF50]", colorBg: 'bg-emerald-50/60' }
               ].map((srv) => {
                 return (
                   <button

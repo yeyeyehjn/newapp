@@ -1,19 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  TrendingUp, AlertCircle, FileText, CheckCircle2, User, ChevronRight,
-  Shield, Key, Lock, Fingerprint, ShieldCheck, RefreshCw, QrCode, 
-  Settings, ArrowRightLeft, HelpCircle, Archive, Eye, Trash2, Calendar
+  TrendingUp, CheckCircle2, ChevronRight, Award, FileText, Clock, HelpCircle
 } from 'lucide-react';
-import { Case, CaseCategory, CaseStatus } from '../types';
-
-type TimeFilterType = 'year' | 'quarter' | 'month';
-
-interface TimeFilterState {
-  type: TimeFilterType;
-  year: number;
-  quarter?: number;
-  month?: number;
-}
+import { Case, CaseStatus } from '../types';
 
 interface CaseStatsProps {
   cases: Case[];
@@ -21,329 +10,592 @@ interface CaseStatsProps {
   onFilterStatus: (status: CaseStatus | 'all') => void;
 }
 
+type QuarterData = {
+  courtCases: { sole: number; chief: number; side: number };
+  topCases: { name: string; count: number; ratio: number }[];
+  indicators: {
+    settle: { value: string; change: string; isUp: boolean; rank: string };
+    cancel: { value: string; change: string; isUp: boolean; rank: string };
+    delay: { value: string; change: string; isUp: boolean; rank: string };
+  };
+  quarterChart: { name: string; settle: number; cancel: number; delay: number }[];
+};
+
+const DATA_MATRIX: Record<string, Record<string, QuarterData>> = {
+  '2026': {
+    all: {
+      courtCases: { sole: 40, chief: 20, side: 30 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 36, ratio: 66 },
+        { name: '合同纠纷', count: 28, ratio: 46 },
+        { name: '房地产合同纠纷', count: 10, ratio: 16 },
+        { name: '买卖合同纠纷', count: 8, ratio: 12 },
+        { name: '劳动争议纠纷', count: 5, ratio: 8 }
+      ],
+      indicators: {
+        settle: { value: '89.00%', change: '20%', isUp: true, rank: '30%' },
+        cancel: { value: '89.00%', change: '20%', isUp: true, rank: '35%' },
+        delay: { value: '89.00%', change: '20%', isUp: false, rank: '10%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 92, cancel: 85, delay: 70 },
+        { name: '第二季度', settle: 48, cancel: 90, delay: 60 },
+        { name: '第三季度', settle: 35, cancel: 55, delay: 90 },
+        { name: '第四季度', settle: 75, cancel: 70, delay: 58 }
+      ]
+    },
+    Q1: {
+      courtCases: { sole: 14, chief: 8, side: 11 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 15, ratio: 68 },
+        { name: '合同纠纷', count: 10, ratio: 45 },
+        { name: '房地产合同纠纷', count: 4, ratio: 18 },
+        { name: '买卖合同纠纷', count: 3, ratio: 13 },
+        { name: '劳动争议纠纷', count: 2, ratio: 9 }
+      ],
+      indicators: {
+        settle: { value: '92.00%', change: '25%', isUp: true, rank: '25%' },
+        cancel: { value: '85.00%', change: '18%', isUp: true, rank: '40%' },
+        delay: { value: '70.00%', change: '15%', isUp: false, rank: '15%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 92, cancel: 85, delay: 70 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q2: {
+      courtCases: { sole: 10, chief: 5, side: 7 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 9, ratio: 60 },
+        { name: '合同纠纷', count: 8, ratio: 53 },
+        { name: '房地产合同纠纷', count: 2, ratio: 13 },
+        { name: '买卖合同纠纷', count: 2, ratio: 13 },
+        { name: '劳动争议纠纷', count: 1, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '48.00%', change: '5%', isUp: false, rank: '55%' },
+        cancel: { value: '90.00%', change: '25%', isUp: true, rank: '20%' },
+        delay: { value: '60.00%', change: '8%', isUp: false, rank: '28%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 48, cancel: 90, delay: 60 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q3: {
+      courtCases: { sole: 8, chief: 4, side: 6 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 6, ratio: 50 },
+        { name: '合同纠纷', count: 5, ratio: 41 },
+        { name: '房地产合同纠纷', count: 2, ratio: 16 },
+        { name: '买卖合同纠纷', count: 1, ratio: 8 },
+        { name: '劳动争议纠纷', count: 1, ratio: 8 }
+      ],
+      indicators: {
+        settle: { value: '35.00%', change: '10%', isUp: false, rank: '65%' },
+        cancel: { value: '55.00%', change: '5%', isUp: true, rank: '48%' },
+        delay: { value: '90.00%', change: '18%', isUp: true, rank: '5%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 35, cancel: 55, delay: 90 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q4: {
+      courtCases: { sole: 10, chief: 5, side: 9 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 9, ratio: 60 },
+        { name: '合同纠纷', count: 7, ratio: 46 },
+        { name: '房地产合同纠纷', count: 3, ratio: 20 },
+        { name: '买卖合同纠纷', count: 2, ratio: 13 },
+        { name: '劳动争议纠纷', count: 1, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '75.00%', change: '12%', isUp: true, rank: '32%' },
+        cancel: { value: '70.00%', change: '15%', isUp: true, rank: '38%' },
+        delay: { value: '58.00%', change: '14%', isUp: false, rank: '22%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 75, cancel: 70, delay: 58 }
+      ]
+    }
+  },
+  '2025': {
+    all: {
+      courtCases: { sole: 35, chief: 20, side: 28 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 32, ratio: 60 },
+        { name: '合同纠纷', count: 24, ratio: 40 },
+        { name: '房地产合同纠纷', count: 9, ratio: 15 },
+        { name: '买卖合同纠纷', count: 7, ratio: 11 },
+        { name: '劳动争议纠纷', count: 4, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '86.00%', change: '18%', isUp: true, rank: '33%' },
+        cancel: { value: '84.00%', change: '15%', isUp: true, rank: '38%' },
+        delay: { value: '85.00%', change: '12%', isUp: false, rank: '12%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 88, cancel: 80, delay: 65 },
+        { name: '第二季度', settle: 50, cancel: 85, delay: 58 },
+        { name: '第三季度', settle: 40, cancel: 60, delay: 85 },
+        { name: '第四季度', settle: 80, cancel: 75, delay: 55 }
+      ]
+    },
+    Q1: {
+      courtCases: { sole: 10, chief: 5, side: 7 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 10, ratio: 66 },
+        { name: '合同纠纷', count: 6, ratio: 40 },
+        { name: '房地产合同纠纷', count: 2, ratio: 13 },
+        { name: '买卖合同纠纷', count: 1, ratio: 6 },
+        { name: '劳动争议纠纷', count: 1, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '88.00%', change: '12%', isUp: true, rank: '28%' },
+        cancel: { value: '80.00%', change: '8%', isUp: true, rank: '42%' },
+        delay: { value: '65.00%', change: '10%', isUp: false, rank: '18%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 88, cancel: 80, delay: 65 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q2: {
+      courtCases: { sole: 9, chief: 5, side: 8 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 8, ratio: 57 },
+        { name: '合同纠纷', count: 6, ratio: 42 },
+        { name: '房地产合同纠纷', count: 2, ratio: 14 },
+        { name: '买卖合同纠纷', count: 2, ratio: 14 },
+        { name: '劳动争议纠纷', count: 1, ratio: 7 }
+      ],
+      indicators: {
+        settle: { value: '50.00%', change: '4%', isUp: false, rank: '52%' },
+        cancel: { value: '85.00%', change: '20%', isUp: true, rank: '24%' },
+        delay: { value: '58.00%', change: '7%', isUp: false, rank: '30%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 50, cancel: 85, delay: 58 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q3: {
+      courtCases: { sole: 7, chief: 4, side: 5 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 6, ratio: 54 },
+        { name: '合同纠纷', count: 5, ratio: 45 },
+        { name: '房地产合同纠纷', count: 2, ratio: 18 },
+        { name: '买卖合同纠纷', count: 1, ratio: 9 },
+        { name: '劳动争议纠纷', count: 1, ratio: 9 }
+      ],
+      indicators: {
+        settle: { value: '40.00%', change: '8%', isUp: false, rank: '60%' },
+        cancel: { value: '60.00%', change: '4%', isUp: true, rank: '44%' },
+        delay: { value: '85.00%', change: '15%', isUp: true, rank: '8%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 40, cancel: 60, delay: 85 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q4: {
+      courtCases: { sole: 10, chief: 5, side: 8 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 8, ratio: 53 },
+        { name: '合同纠纷', count: 7, ratio: 46 },
+        { name: '房地产合同纠纷', count: 3, ratio: 20 },
+        { name: '买卖合同纠纷', count: 2, ratio: 13 },
+        { name: '劳动争议纠纷', count: 1, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '80.00%', change: '10%', isUp: true, rank: '35%' },
+        cancel: { value: '75.00%', change: '12%', isUp: true, rank: '40%' },
+        delay: { value: '55.00%', change: '12%', isUp: false, rank: '24%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 80, cancel: 75, delay: 55 }
+      ]
+    }
+  },
+  '2024': {
+    all: {
+      courtCases: { sole: 32, chief: 18, side: 25 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 28, ratio: 56 },
+        { name: '合同纠纷', count: 22, ratio: 44 },
+        { name: '房地产合同纠纷', count: 8, ratio: 16 },
+        { name: '买卖合同纠纷', count: 6, ratio: 12 },
+        { name: '劳动争议纠纷', count: 3, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '85.00%', change: '15%', isUp: true, rank: '35%' },
+        cancel: { value: '82.00%', change: '12%', isUp: true, rank: '41%' },
+        delay: { value: '82.00%', change: '10%', isUp: false, rank: '14%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 85, cancel: 78, delay: 60 },
+        { name: '第二季度', settle: 48, cancel: 82, delay: 55 },
+        { name: '第三季度', settle: 38, cancel: 58, delay: 82 },
+        { name: '第四季度', settle: 78, cancel: 72, delay: 50 }
+      ]
+    },
+    Q1: {
+      courtCases: { sole: 8, chief: 4, side: 6 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 7, ratio: 58 },
+        { name: '合同纠纷', count: 5, ratio: 41 },
+        { name: '房地产合同纠纷', count: 2, ratio: 16 },
+        { name: '买卖合同纠纷', count: 1, ratio: 8 },
+        { name: '劳动争议纠纷', count: 1, ratio: 8 }
+      ],
+      indicators: {
+        settle: { value: '85.00%', change: '10%', isUp: true, rank: '32%' },
+        cancel: { value: '78.00%', change: '6%', isUp: true, rank: '45%' },
+        delay: { value: '60.00%', change: '8%', isUp: false, rank: '20%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 85, cancel: 78, delay: 60 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q2: {
+      courtCases: { sole: 8, chief: 4, side: 6 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 7, ratio: 58 },
+        { name: '合同纠纷', count: 5, ratio: 41 },
+        { name: '房地产合同纠纷', count: 2, ratio: 16 },
+        { name: '买卖合同纠纷', count: 1, ratio: 8 },
+        { name: '劳动争议纠纷', count: 1, ratio: 8 }
+      ],
+      indicators: {
+        settle: { value: '48.00%', change: '3%', isUp: false, rank: '54%' },
+        cancel: { value: '82.00%', change: '18%', isUp: true, rank: '26%' },
+        delay: { value: '55.00%', change: '6%', isUp: false, rank: '32%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 48, cancel: 82, delay: 55 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q3: {
+      courtCases: { sole: 7, chief: 4, side: 5 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 6, ratio: 54 },
+        { name: '合同纠纷', count: 5, ratio: 45 },
+        { name: '房地产合同纠纷', count: 2, ratio: 18 },
+        { name: '买卖合同纠纷', count: 1, ratio: 9 },
+        { name: '劳动争议纠纷', count: 1, ratio: 9 }
+      ],
+      indicators: {
+        settle: { value: '38.00%', change: '6%', isUp: false, rank: '62%' },
+        cancel: { value: '58.00%', change: '3%', isUp: true, rank: '46%' },
+        delay: { value: '82.00%', change: '12%', isUp: true, rank: '10%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 38, cancel: 58, delay: 82 },
+        { name: '第四季度', settle: 0, cancel: 0, delay: 0 }
+      ]
+    },
+    Q4: {
+      courtCases: { sole: 10, chief: 5, side: 8 },
+      topCases: [
+        { name: '金融借款合同纠纷', count: 8, ratio: 53 },
+        { name: '合同纠纷', count: 7, ratio: 46 },
+        { name: '房地产合同纠纷', count: 3, ratio: 20 },
+        { name: '买卖合同纠纷', count: 2, ratio: 13 },
+        { name: '劳动争议纠纷', count: 1, ratio: 6 }
+      ],
+      indicators: {
+        settle: { value: '78.00%', change: '8%', isUp: true, rank: '38%' },
+        cancel: { value: '72.00%', change: '10%', isUp: true, rank: '44%' },
+        delay: { value: '50.00%', change: '10%', isUp: false, rank: '26%' }
+      },
+      quarterChart: [
+        { name: '第一季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第二季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第三季度', settle: 0, cancel: 0, delay: 0 },
+        { name: '第四季度', settle: 78, cancel: 72, delay: 50 }
+      ]
+    }
+  }
+};
+
 export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: CaseStatsProps) {
-  const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
-  const [hoveredBar, setHoveredBar] = useState<string | null>(null);
-  const [activeTrendMonth, setActiveTrendMonth] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string>('2026');
+  const [selectedQuarter, setSelectedQuarter] = useState<string>('all');
+  const [hoveredQuarterIndex, setHoveredQuarterIndex] = useState<number | null>(null);
 
-  // Time filter states for each chart module
-  const [statusChartFilter, setStatusChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
-  const [categoryChartFilter, setCategoryChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
-  const [trendChartFilter, setTrendChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
-  const [resolutionChartFilter, setResolutionChartFilter] = useState<TimeFilterState>({ type: 'year', year: 2026 });
+  // Retrieve filtered data safely
+  const yearConfig = DATA_MATRIX[selectedYear] || DATA_MATRIX['2026'];
+  const activeData = yearConfig[selectedQuarter] || yearConfig['all'];
 
-  // States for interactive security buttons
-  const [caStatus, setCaStatus] = useState<'pending' | 'syncing' | 'active'>('active');
-  const [faceStatus, setFaceStatus] = useState<'unbound' | 'binding' | 'bound'>('bound');
-  const [isClearing, setIsClearing] = useState<boolean>(false);
-  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+  const { courtCases, topCases, indicators, quarterChart } = activeData;
+  const totalCourtCases = courtCases.sole + courtCases.chief + courtCases.side;
+  const safeTotal = totalCourtCases || 1;
+  const solePct = (courtCases.sole / safeTotal) * 100;
+  const chiefPct = (courtCases.chief / safeTotal) * 100;
+  const sidePct = (courtCases.side / safeTotal) * 100;
 
-  // Helper function to get time filter label
-  const getTimeFilterLabel = (filter: TimeFilterState): string => {
-    if (filter.type === 'year') {
-      return `${filter.year}年度`;
-    } else if (filter.type === 'quarter') {
-      return `${filter.year}年Q${filter.quarter}季度`;
-    } else {
-      const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-      return `${filter.year}年${monthNames[filter.month! - 1]}`;
-    }
-  };
+  // Circle/Ring formula variables for customizable dimensions
+  const radius = 38;
+  const strokeWidth = 8;
+  const circumference = 2 * Math.PI * radius;
+  
+  const soleLen = (solePct / 100) * circumference;
+  const chiefLen = (chiefPct / 100) * circumference;
+  const sideLen = (sidePct / 100) * circumference;
+  
+  const soleOffset = 0;
+  const chiefOffset = -soleLen;
+  const sideOffset = -(soleLen + chiefLen);
 
-  // Helper function to adjust data based on time filter
-  const getAdjustedData = (baseData: any, filter: TimeFilterState) => {
-    // For demo purposes, we'll adjust the counts based on time period
-    // In real app, this would query actual data based on the filter
-    let multiplier = 1;
-    if (filter.type === 'quarter') {
-      multiplier = 0.25; // Quarter is ~25% of year
-    } else if (filter.type === 'month') {
-      multiplier = 0.083; // Month is ~8.3% of year
-    }
-    return baseData * multiplier;
-  };
-
-  // Time filter component
-  const TimeFilterSelector = ({ 
-    filter, 
-    onFilterChange,
-    showMonth = true 
-  }: { 
-    filter: TimeFilterState; 
-    onFilterChange: (newFilter: TimeFilterState) => void;
-    showMonth?: boolean;
-  }) => {
-    const years = [2024, 2025, 2026];
-    const quarters = [1, 2, 3, 4];
-    const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-
-    return (
-      <div className="flex items-center gap-2 mb-3">
-        <Calendar size={14} className="text-slate-400" />
-        <div className="flex gap-1.5">
-          {/* Year selector */}
-          <select
-            value={filter.year}
-            onChange={(e) => onFilterChange({ ...filter, year: parseInt(e.target.value) })}
-            className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
-          >
-            {years.map(y => (
-              <option key={y} value={y}>{y}年</option>
-            ))}
-          </select>
-
-          {/* Type selector */}
-          <select
-            value={filter.type}
-            onChange={(e) => {
-              const newType = e.target.value as TimeFilterType;
-              const newFilter: TimeFilterState = { ...filter, type: newType };
-              if (newType === 'quarter') {
-                newFilter.quarter = 1;
-                newFilter.month = undefined;
-              } else if (newType === 'month') {
-                newFilter.month = 1;
-                newFilter.quarter = undefined;
-              } else {
-                newFilter.quarter = undefined;
-                newFilter.month = undefined;
-              }
-              onFilterChange(newFilter);
-            }}
-            className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
-          >
-            <option value="year">年度</option>
-            <option value="quarter">季度</option>
-            {showMonth && <option value="month">月度</option>}
-          </select>
-
-          {/* Quarter selector */}
-          {filter.type === 'quarter' && (
-            <select
-              value={filter.quarter}
-              onChange={(e) => onFilterChange({ ...filter, quarter: parseInt(e.target.value) })}
-              className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
-            >
-              {quarters.map(q => (
-                <option key={q} value={q}>Q{q}</option>
-              ))}
-            </select>
-          )}
-
-          {/* Month selector */}
-          {filter.type === 'month' && (
-            <select
-              value={filter.month}
-              onChange={(e) => onFilterChange({ ...filter, month: parseInt(e.target.value) })}
-              className="px-2 py-1 rounded-lg border border-slate-200 text-xs font-medium text-slate-700 bg-white hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none cursor-pointer"
-            >
-              {months.map(m => (
-                <option key={m} value={m}>{m}月</option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // Statistics aggregates with time filter adjustment
-  const totalCases = Math.round(getAdjustedData(cases.length + 138, statusChartFilter)); // Add real historic count: total 143 cases
-  const inTrialCount = Math.round(getAdjustedData(cases.filter(c => c.status === '审理中').length, statusChartFilter));
-  const pendingHearingCount = Math.round(getAdjustedData(cases.filter(c => c.status === '待开庭').length, statusChartFilter));
-  const pendingAwardCount = Math.round(getAdjustedData(cases.filter(c => c.status === '待签名').length, statusChartFilter));
-  const closedCount = Math.round(getAdjustedData(cases.filter(c => c.status === '已结案').length + 138, statusChartFilter)); // Include legacy records
-
-  // Status breakdown array for circle chart with indigo accent
-  const statusData = [
-    { label: '已结案', value: closedCount, color: '#10B981', statusType: '已结案' as CaseStatus },
-    { label: '审理中', value: inTrialCount, color: '#4780FF', statusType: '审理中' as CaseStatus },
-    { label: '待开庭', value: pendingHearingCount, color: '#F59E0B', statusType: '待开庭' as CaseStatus },
-    { label: '待签名', value: pendingAwardCount, color: '#EF4444', statusType: '待签名' as CaseStatus },
-  ];
-
-  // Category statistics from cases (realistic historical aggregates) with time filter
-  const categories: { [key in CaseCategory]?: number } = {
-    '股权投资纠纷': Math.round(getAdjustedData(45, categoryChartFilter)),
-    '国际贸易纠纷': Math.round(getAdjustedData(38, categoryChartFilter)),
-    '建设工程纠纷': Math.round(getAdjustedData(29, categoryChartFilter)),
-    '知识产权纠纷': Math.round(getAdjustedData(18, categoryChartFilter)),
-    '金融借款合同': Math.round(getAdjustedData(12, categoryChartFilter)),
-  };
-
-  // Convert categories object to list sorted
-  const categoryData = Object.entries(categories).map(([k, val]) => ({
-    label: k as CaseCategory,
-    value: val,
-  })).sort((a, b) => b.value - a.value);
-
-  // Monthly stats trend data (Jan to Jun 2026) with time filter adjustment
-  const monthlyData = [
-    { name: '1月', input: Math.round(getAdjustedData(8, trendChartFilter)), resolved: Math.round(getAdjustedData(6, trendChartFilter)) },
-    { name: '2月', input: Math.round(getAdjustedData(12, trendChartFilter)), resolved: Math.round(getAdjustedData(9, trendChartFilter)) },
-    { name: '3月', input: Math.round(getAdjustedData(10, trendChartFilter)), resolved: Math.round(getAdjustedData(14, trendChartFilter)) },
-    { name: '4月', input: Math.round(getAdjustedData(15, trendChartFilter)), resolved: Math.round(getAdjustedData(11, trendChartFilter)) },
-    { name: '5月', input: Math.round(getAdjustedData(9, trendChartFilter)), resolved: Math.round(getAdjustedData(13, trendChartFilter)) },
-    { name: '6月', input: Math.round(getAdjustedData(11, trendChartFilter)), resolved: Math.round(getAdjustedData(8, trendChartFilter)) },
-  ];
-
-  // Quick stats trigger - navigates to Home workbench and filters cases
-  const handleStatusCardClick = (status: CaseStatus) => {
-    onFilterStatus(status);
-    onNavigateToTab(0); // Go to Home (since CaseList belongs to Workbench now!)
-  };
-
-  // Simulate active security toggles
-  const handleSyncCa = () => {
-    setCaStatus('syncing');
-    setTimeout(() => {
-      setCaStatus('active');
-    }, 1500);
-  };
-
-  const handleBindFace = () => {
-    setFaceStatus('binding');
-    setTimeout(() => {
-      setFaceStatus('bound');
-    }, 1500);
-  };
-
-  const handleClearCache = () => {
-    setIsClearing(true);
-    setTimeout(() => {
-      setIsClearing(false);
-      alert('✓ 离线案卷元数据及安全缓存数据已成功重置清理！');
-    }, 1000);
-  };
-
-  // Calculate SVG donut slice parameters
-  let totalStatusValue = statusData.reduce((sum, item) => sum + item.value, 0);
-  let cumulativeAngle = 0;
+  // Custom colors matching the user interface blueprint diagrams
+  const colorBlue = '#1E62EC';
+  const colorOrange = '#F59E0B';
+  const colorGreen = '#74C080';
 
   return (
-    <div className="flex-1 bg-slate-50 flex flex-col pb-20 overflow-hidden relative">
+    <div className="flex-1 bg-slate-50 flex flex-col pb-6 overflow-hidden relative">
       
-      {/* Scrollable Profile View */}
-      <div className="flex-1  space-y-4 overflow-y-auto no-scrollbar w-full text-left">
+      {/* Scrollable View Container */}
+      <div className="flex-1 space-y-4 overflow-y-auto no-scrollbar w-full text-left">
         
+        {/* TOP INTERACTIVE FILTER CARD */}
+        <div id="stats_filter_card" className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5 select-none animate-fade-in">
+          
 
-        {/* Chart Section 1: Donut Status Chart */}
-        <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-extrabold text-slate-700">案件办理状态比例分布图</h4>
-            <span className="text-sm font-normal text-slate-400">委案基数总计: {totalStatusValue} 件</span>
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-sm font-extrabold text-slate-800">筛选配置</h4>
           </div>
-          <TimeFilterSelector filter={statusChartFilter} onFilterChange={setStatusChartFilter} />
 
-          <div className="grid grid-cols-12 gap-4 items-center">
-            {/* SVG Donut */}
-            <div className="col-span-5 relative flex items-center justify-center">
-              <svg viewBox="0 0 120 120" className="w-[110px] h-[110px] transform -rotate-90">
-                <circle cx="60" cy="60" r="45" fill="none" stroke="#F1F5F9" strokeWidth="11" />
-                {statusData.map((item, index) => {
-                  const percentage = (item.value / totalStatusValue) * 100;
-                  const strokeDasharray = `${(percentage * 2 * Math.PI * 45) / 100} 283`;
-                  const strokeDashoffset = -((cumulativeAngle * 2 * Math.PI * 45) / 100);
-                  
-                  // Accumulate angle
-                  cumulativeAngle += percentage;
-                  
-                  const isHovered = hoveredSlice === item.label;
+          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
 
-                  return (
-                    <circle
-                      key={index}
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke={item.color}
-                      strokeWidth={isHovered ? 14 : 11}
-                      strokeDasharray={strokeDasharray}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      onMouseEnter={() => setHoveredSlice(item.label)}
-                      onMouseLeave={() => setHoveredSlice(null)}
-                      onClick={() => handleStatusCardClick(item.statusType)}
-                      className="cursor-pointer transition-all duration-300 hover:opacity-95"
-                    />
-                  );
-                })}
-              </svg>
-              {/* Inner details text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                <span className="text-xs text-slate-400 font-extrabold">主审率</span>
-                <span className="text-xs font-extrabold text-slate-800 leading-none mt-0.5">
-                  {(( (inTrialCount + pendingHearingCount + pendingAwardCount) / totalStatusValue) * 100).toFixed(1)}%
-                </span>
-              </div>
-            </div>
-
-            {/* Legends */}
-            <div className="col-span-7 space-y-2">
-              {statusData.map((item, index) => {
-                const percentage = ((item.value / totalStatusValue) * 100).toFixed(1);
-                const isHovered = hoveredSlice === item.label;
+          {/* Year Filter Group */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择年度</span>
+            <div className="grid grid-cols-3 gap-2">
+              {['2026', '2025', '2024'].map((year) => {
+                const isActive = selectedYear === year;
                 return (
-                  <div
-                    key={index}
-                    onMouseEnter={() => setHoveredSlice(item.label)}
-                    onMouseLeave={() => setHoveredSlice(null)}
-                    onClick={() => handleStatusCardClick(item.statusType)}
-                    className={`flex items-center justify-between p-1.5 rounded-xl cursor-pointer transition-colors ${
-                      isHovered ? 'bg-indigo-50/50' : 'hover:bg-slate-50/50'
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer ${
+                      isActive 
+                        ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10' 
+                        : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                      <span className="text-sm font-bold text-slate-600">{item.label}</span>
-                    </div>
-                    <div className="flex items-center space-x-1.5 text-right">
-                      <span className="text-xs font-extrabold text-slate-800">{item.value}件</span>
-                      <span className="text-xs text-slate-400 font-bold">{percentage}%</span>
-                    </div>
-                  </div>
+                    {year}年
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quarter Filter Group */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择季度</span>
+            <div className="grid grid-cols-5 gap-1.5">
+              {[
+                { label: '全年', value: 'all' },
+                { label: '一季度', value: 'Q1' },
+                { label: '二季度', value: 'Q2' },
+                { label: '三季度', value: 'Q3' },
+                { label: '四季度', value: 'Q4' }
+              ].map((q) => {
+                const isActive = selectedQuarter === q.value;
+                return (
+                  <button
+                    key={q.value}
+                    onClick={() => setSelectedQuarter(q.value)}
+                    className={`py-1.5 px-1 text-[11px] font-bold rounded-lg text-center transition-all border outline-none cursor-pointer truncate ${
+                      isActive 
+                        ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-500/10' 
+                        : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50'
+                    }`}
+                  >
+                    {q.label}
+                  </button>
                 );
               })}
             </div>
           </div>
         </div>
 
-        {/* Chart Section 2: Horizontal Bar Chart of Case Categories */}
-        <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <h4 className="text-xs font-extrabold text-slate-700 mb-2">
-            争议法律纠纷性质类别分布一览
-          </h4>
-          <TimeFilterSelector filter={categoryChartFilter} onFilterChange={setCategoryChartFilter} />
+        {/* 1. 组庭情况 CARD (Ring/Donut Chart with bottom statistics) */}
+        <div id="arbitration_court_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-sm font-extrabold text-slate-800">组庭情况</h4>
+          </div>
 
-          <div className="space-y-4">
-            {categoryData.map((item, index) => {
-              const maxValue = Math.max(...categoryData.map(c => c.value));
-              const percentageOfMax = (item.value / maxValue) * 100;
-              const isHovered = hoveredBar === item.label;
+          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
 
+          {/* Stacked Ring Chart Layout */}
+          <div className="flex flex-col items-center space-y-5">
+            
+            {/* Custom SVG Donut/Ring Display */}
+            <div className="relative w-36 h-36 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 overflow-visible">
+                {/* Background Ring Track */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={radius}
+                  fill="none"
+                  stroke="#F8FAFC"
+                  strokeWidth={strokeWidth}
+                />
+                {/* Segment 1: 独任 */}
+                {courtCases.sole > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke={colorBlue}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${soleLen} ${circumference - soleLen}`}
+                    strokeDashoffset={soleOffset}
+                    strokeLinecap={solePct < 100 ? "round" : "butt"}
+                    className="transition-all duration-300"
+                  />
+                )}
+                {/* Segment 2: 首席 */}
+                {courtCases.chief > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke="#9CCAFF"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${chiefLen} ${circumference - chiefLen}`}
+                    strokeDashoffset={chiefOffset}
+                    strokeLinecap={chiefPct < 100 ? "round" : "butt"}
+                    className="transition-all duration-300"
+                  />
+                )}
+                {/* Segment 3: 边裁 */}
+                {courtCases.side > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke={colorGreen}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${sideLen} ${circumference - sideLen}`}
+                    strokeDashoffset={sideOffset}
+                    strokeLinecap={sidePct < 100 ? "round" : "butt"}
+                    className="transition-all duration-300"
+                  />
+                )}
+              </svg>
+              {/* Inner absolute label block inside the donut/ring hole */}
+              <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
+                <span className="text-xl font-black text-slate-800 leading-none">{totalCourtCases}</span>
+                <span className="text-[10px] text-slate-400 font-extrabold tracking-wider mt-1">总案件数</span>
+              </div>
+            </div>
+
+            {/* Legend Details below the ring */}
+            <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-dashed border-slate-100">
+              {/* Row 1: 独任 */}
+              <div id="stat_sole" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colorBlue }}></span>
+                  <span className="text-[11px] font-bold text-slate-500">独任</span>
+                </div>
+                <span className="text-xs font-black text-slate-800">{courtCases.sole}件</span>
+                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({solePct.toFixed(1)}%)</span>
+              </div>
+
+              {/* Row 2: 首席 */}
+              <div id="stat_chief" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: '#9CCAFF' }}></span>
+                  <span className="text-[11px] font-bold text-slate-500">首席</span>
+                </div>
+                <span className="text-xs font-black text-slate-800">{courtCases.chief}件</span>
+                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({chiefPct.toFixed(1)}%)</span>
+              </div>
+
+              {/* Row 3: 边裁 */}
+              <div id="stat_side" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colorGreen }}></span>
+                  <span className="text-[11px] font-bold text-slate-500">边裁</span>
+                </div>
+                <span className="text-xs font-black text-slate-800">{courtCases.side}件</span>
+                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({sidePct.toFixed(1)}%)</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 2. 办理案件的Top5案由 CARD */}
+        <div id="top_disputes_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-sm font-extrabold text-slate-800">办理案件的Top5案由</h4>
+          </div>
+
+          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
+
+          {/* Progress list matching prototype */}
+          <div className="space-y-4.5">
+            {topCases.map((item, idx) => {
+              // Custom colors matching prototype layout for up to 5 items
+              const barColorClass = idx === 0 
+                ? 'bg-[#1E62EC]' 
+                : idx === 1 
+                ? 'bg-amber-500' 
+                : idx === 2 
+                ? 'bg-[#74C080]' 
+                : idx === 3 
+                ? 'bg-indigo-500' 
+                : 'bg-rose-400';
               return (
-                <div 
-                  key={index}
-                  onMouseEnter={() => setHoveredBar(item.label)}
-                  onMouseLeave={() => setHoveredBar(null)}
-                  className="space-y-1.5"
-                >
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="font-extrabold text-slate-700 flex items-center space-x-1.5">
-                      <span className="text-xs text-indigo-600 font-extrabold bg-indigo-50 px-2 py-0.5 rounded-lg">Rank {index+1}</span>
-                      <span>{item.label}</span>
+                <div key={item.name} className="space-y-1">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs font-extrabold text-slate-700">{item.name}</span>
+                    <span className="text-2xs text-slate-400 font-bold">
+                      {item.count}件案件 占比{item.ratio}%
                     </span>
-                    <span className="font-extrabold text-slate-800">{item.value} 件案</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden relative">
+                  <div className="w-full bg-slate-50 h-1.5 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full transition-all duration-500 relative ${
-                        isHovered 
-                        ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 shadow-sm shadow-indigo-500/50' 
-                        : 'bg-gradient-to-r from-indigo-400 to-indigo-500'
-                      }`}
-                      style={{ width: `${percentageOfMax}%` }}
+                      className={`h-full rounded-full transition-all duration-500 ${barColorClass}`}
+                      style={{ width: `${item.ratio}%` }}
                     />
                   </div>
                 </div>
@@ -352,286 +604,251 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           </div>
         </div>
 
-        {/* Chart Section 3: Line Area Interactive Monthly Resolution trend */}
-        <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="text-xs font-extrabold text-slate-700">{getTimeFilterLabel(trendChartFilter)}案件吞吐趋势</h4>
-              <p className="text-xs text-slate-400 font-medium">新增受理与生效结案比照图</p>
-            </div>
-            <div className="flex items-center space-x-2.5 text-xs font-bold text-slate-500">
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-indigo-500 inline-block"></span> 收案
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-0.5 bg-emerald-500 inline-block"></span> 结案
-              </span>
-            </div>
+        {/* 3. 办结案件情况如下 CARD */}
+        <div id="metrics_summary_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-sm font-extrabold text-slate-800">办理案件情况</h4>
           </div>
-          <TimeFilterSelector filter={trendChartFilter} onFilterChange={setTrendChartFilter} showMonth={false} />
 
-          <div className="relative pt-1">
-            {/* Custom SVG Line Chart */}
-            <svg viewBox="0 0 300 130" className="w-full h-[120px] overflow-visible">
-              {/* Grid Lines */}
-              <line x1="20" y1="10" x2="280" y2="10" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="20" y1="50" x2="280" y2="50" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="20" y1="90" x2="280" y2="90" stroke="#F1F5F9" strokeWidth="1" />
-              <line x1="20" y1="110" x2="280" y2="110" stroke="#E2E8F0" strokeWidth="1.5" />
+          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
 
-              {/* Chart Paths */}
-              <path
-                d="M 25 110 L 25 70 L 75 50 L 125 60 L 175 35 L 225 65 L 275 55 L 275 110 Z"
-                fill="url(#indigoGradient)"
-                opacity="0.1"
-              />
-              <path
-                d="M 25 110 L 25 80 L 75 65 L 125 40 L 175 55 L 225 45 L 275 70 L 275 110 Z"
-                fill="url(#emeraldGradient)"
-                opacity="0.10"
-              />
-
-              {/* Definition for Gradients */}
-              <defs>
-                <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366F1" />
-                  <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-
-              {/* Draw Lines */}
-              <path
-                d="M 25 70 L 75 50 L 125 60 L 175 35 L 225 65 L 275 55"
-                fill="none"
-                stroke="#6366F1"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M 25 80 L 75 65 L 125 40 L 175 55 L 225 45 L 275 70"
-                fill="none"
-                stroke="#10B981"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-
-              {/* Interaction Bars / Columns */}
-              {monthlyData.map((item, index) => {
-                const xPos = 25 + index * 50;
-                return (
-                  <rect
-                    key={index}
-                    x={xPos - 20}
-                    y="10"
-                    width="40"
-                    height="100"
-                    fill="transparent"
-                    onMouseEnter={() => setActiveTrendMonth(index)}
-                    onMouseLeave={() => setActiveTrendMonth(null)}
-                    className="cursor-pointer"
-                  />
-                );
-              })}
-
-              {/* Hover highlight indicators */}
-              {activeTrendMonth !== null && (
-                <g className="pointer-events-none">
-                  {/* Vertical rule */}
-                  <line 
-                    x1={25 + activeTrendMonth * 50} 
-                    y1="10" 
-                    x2={25 + activeTrendMonth * 50} 
-                    y2="110" 
-                    stroke="#D1D5DB" 
-                    strokeWidth="1.2" 
-                    strokeDasharray="3,3" 
-                  />
-                  {/* Circle 1 Input */}
-                  <circle 
-                    cx={25 + activeTrendMonth * 50} 
-                    cy={110 - (monthlyData[activeTrendMonth].input / 20) * 100} 
-                    r="5.5" 
-                    fill="#6366F1" 
-                    stroke="#FFFFFF" 
-                    strokeWidth="2" 
-                  />
-                  {/* Circle 2 Resolved */}
-                  <circle 
-                    cx={25 + activeTrendMonth * 50} 
-                    cy={110 - (monthlyData[activeTrendMonth].resolved / 20) * 100} 
-                    r="5.5" 
-                    fill="#10B981" 
-                    stroke="#FFFFFF" 
-                    strokeWidth="2" 
-                  />
-                </g>
-              )}
-
-              {/* Month Text Labels */}
-              {monthlyData.map((item, index) => (
-                <text
-                  key={index}
-                  x={25 + index * 50}
-                  y="125"
-                  fill="#94A3B8"
-                  fontSize="8.5"
-                  textAnchor="middle"
-                  className="font-bold select-none"
-                >
-                  {item.name}
-                </text>
-              ))}
-            </svg>
-
-            {/* Hover Tooltip Box */}
-            <div className="h-11 flex justify-center items-center mt-1">
-              {activeTrendMonth !== null ? (
-                <div className="bg-slate-800 text-white rounded-xl p-1.5 px-3.5 flex items-center space-x-3.5 text-xs shadow-md animate-fade-in">
-                  <span className="font-extrabold border-r border-slate-600 pr-2 text-indigo-300">
-                    {monthlyData[activeTrendMonth].name}
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm">
-                    <span className="w-2 h-2 rounded bg-indigo-500 inline-block"></span>
-                    <span>收案: <strong className="font-bold">{monthlyData[activeTrendMonth].input}</strong> 件</span>
-                  </span>
-                  <span className="flex items-center gap-1.5 text-sm">
-                    <span className="w-2 h-2 rounded bg-emerald-500 inline-block"></span>
-                    <span>结案: <strong className="font-bold">{monthlyData[activeTrendMonth].resolved}</strong> 件</span>
-                  </span>
+          {/* List layout matching precisely */}
+          <div className="space-y-4 pt-1">
+            {/* Row 1: Settle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
+                  <Award size={18} />
                 </div>
-              ) : (
-                <span className="text-xs text-slate-400 italic">在走势图上放置鼠标或触摸以查看每月细节统计</span>
-              )}
+                <div>
+                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
+                    <span>结案率</span>
+                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.settle.value}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-right">
+                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.settle.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                  {indicators.settle.isUp ? '▲' : '▼'} {indicators.settle.change}
+                </span>
+                
+              </div>
+            </div>
+
+            {/* Row 2: Cancel */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
+                    <span>调撤率</span>
+                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.cancel.value}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-right">
+                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.cancel.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                  {indicators.cancel.isUp ? '▲' : '▼'} {indicators.cancel.change}
+                </span>
+                
+              </div>
+            </div>
+
+            {/* Row 3: Delay */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
+                    <span>延期率</span>
+                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.delay.value}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-right">
+                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.delay.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                  {indicators.delay.isUp ? '▲' : '▼'} {indicators.delay.change}
+                </span>
+                
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Chart Section 4: Resolution Statistics Bar Chart */}
-        <div className="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <h4 className="text-xs font-extrabold text-slate-700">年度/季度结案统计</h4>
-              <p className="text-xs text-slate-400 font-medium">各时间段结案数量对比</p>
-            </div>
+        {/* 4. 结案情况 (Column Chart with Quarters) CARD */}
+        <div id="chart_quarters_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-sm font-extrabold text-slate-800">裁调撤情况</h4>
           </div>
-          <TimeFilterSelector filter={resolutionChartFilter} onFilterChange={setResolutionChartFilter} showMonth={false} />
 
-          {/* Bar Chart for Resolution Statistics */}
+          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
+
+          {/* Interactive Custom SVG Column Chart styled with rounded caps */}
           <div className="relative pt-2">
-            {/* Resolution data based on time periods */}
-            {(() => {
-              // Generate data based on filter type
-              let resolutionData: { period: string; resolved: number; color: string }[] = [];
+            {/* Custom dotted legend */}
+            <div className="flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 select-none mb-3">
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorBlue }}></span> 裁决率
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorOrange }}></span> 调解率
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorGreen }}></span> 撤案率
+              </span>
+            </div>
+            <svg viewBox="0 0 300 160" className="w-full h-auto overflow-visible select-none">
+              {/* Dashed Horizontal Grid Lines */}
+              {[20, 50, 80, 110, 140].map((y, idx) => (
+                <line 
+                  key={idx} 
+                  x1="30" 
+                  y1={y} 
+                  x2="290" 
+                  y2={y} 
+                  stroke="#F1F5F9" 
+                  strokeWidth="1.2" 
+                  strokeDasharray="4,4" 
+                />
+              ))}
+              
+              {/* Solid Base Axis */}
+              <line x1="30" y1="140" x2="290" y2="140" stroke="#E2E8F0" strokeWidth="1.5" />
 
-              if (resolutionChartFilter.type === 'year') {
-                // Show yearly data
-                resolutionData = [
-                  { period: '2024年', resolved: 128, color: '#6366F1' },
-                  { period: '2025年', resolved: 145, color: '#8B5CF6' },
-                  { period: '2026年', resolved: Math.round(getAdjustedData(138, resolutionChartFilter)), color: '#A78BFA' },
-                ];
-              } else if (resolutionChartFilter.type === 'quarter') {
-                // Show quarterly data for selected year
-                resolutionData = [
-                  { period: `${resolutionChartFilter.year}年Q1`, resolved: Math.round(getAdjustedData(35, resolutionChartFilter)), color: '#6366F1' },
-                  { period: `${resolutionChartFilter.year}年Q2`, resolved: Math.round(getAdjustedData(42, resolutionChartFilter)), color: '#8B5CF6' },
-                  { period: `${resolutionChartFilter.year}年Q3`, resolved: Math.round(getAdjustedData(38, resolutionChartFilter)), color: '#A78BFA' },
-                  { period: `${resolutionChartFilter.year}年Q4`, resolved: Math.round(getAdjustedData(33, resolutionChartFilter)), color: '#C4B5FD' },
-                ];
-              }
+              {/* Y Axis percentage markers */}
+              {['100%', '80%', '60%', '40%', '20%', '0%'].map((txt, idx) => (
+                <text
+                  key={idx}
+                  x="22"
+                  y={20 + idx * 24}
+                  fill="#94A3B8"
+                  fontSize="8.5"
+                  textAnchor="end"
+                  className="font-extrabold"
+                >
+                  {txt}
+                </text>
+              ))}
 
-              const maxResolved = Math.max(...resolutionData.map(d => d.resolved));
-              const totalResolved = resolutionData.reduce((sum, d) => sum + d.resolved, 0);
+              {/* Draw Vertical Columns dynamically */}
+              {quarterChart.map((q, idx) => {
+                const xBase = 52 + idx * 62;
+                
+                // Opacity modifier based on selection
+                const isSelectedQ = selectedQuarter === 'all' || selectedQuarter === `Q${idx + 1}`;
+                const opacity = isSelectedQ ? 1.0 : 0.15;
 
-              return (
-                <div className="space-y-3">
-                  {resolutionData.map((item, index) => {
-                    const percentage = (item.resolved / maxResolved) * 100;
-                    const proportion = ((item.resolved / totalResolved) * 100).toFixed(1);
-                    return (
-                      <div key={index} className="space-y-1.5">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-bold text-slate-700">{item.period}</span>
-                          <span className="font-extrabold text-slate-800">{item.resolved} 件</span>
-                        </div>
-                        <div className="w-full bg-slate-100 h-8 rounded-lg overflow-hidden relative">
-                          <div
-                            className="h-full rounded-lg transition-all duration-500 relative flex items-center justify-end pr-2"
-                            style={{
-                              width: `${percentage}%`,
-                              backgroundColor: item.color,
-                            }}
-                          >
-                            {/* Show percentage inside the bar if it's wide enough */}
-                            {percentage > 30 && (
-                              <span className="text-xs font-bold text-white">
-                                {proportion}%
-                              </span>
-                            )}
-                          </div>
-                          {/* Show percentage outside the bar if it's narrow */}
-                          {percentage <= 30 && (
-                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600">
-                              {proportion}%
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                // Percentages to pixels calculation:
+                // height is max 120 pixels (from y=20 to y=140)
+                const hSettle = (q.settle / 100) * 120;
+                const hCancel = (q.cancel / 100) * 120;
+                const hDelay = (q.delay / 100) * 120;
 
-                  {/* Summary */}
-                  <div className="mt-4 pt-3 border-t border-slate-100">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-slate-600">
-                        {resolutionChartFilter.type === 'year' ? '三年总计' : `${resolutionChartFilter.year}年总计`}
-                      </span>
-                      <span className="text-sm font-extrabold text-indigo-600">{totalResolved} 件</span>
-                    </div>
-                  </div>
+                return (
+                  <g key={q.name} style={{ transition: 'opacity 0.4s' }}>
+                    {/* Background trigger container for interactivity */}
+                    <rect 
+                      x={xBase - 15}
+                      y="15"
+                      width="50"
+                      height="125"
+                      fill="transparent"
+                      className="cursor-pointer font-bold"
+                      onMouseEnter={() => setHoveredQuarterIndex(idx)}
+                      onMouseLeave={() => setHoveredQuarterIndex(null)}
+                      onClick={() => setSelectedQuarter(`Q${idx + 1}`)}
+                    />
+
+                    {/* Blue bar: c决率 */}
+                    {q.settle > 0 && (
+                      <rect
+                        x={xBase - 10}
+                        y={140 - hSettle}
+                        width="6"
+                        height={hSettle}
+                        fill={colorBlue}
+                        rx="2"
+                        ry="2"
+                        opacity={opacity}
+                      />
+                    )}
+
+                    {/* Orange bar: 调解率 */}
+                    {q.cancel > 0 && (
+                      <rect
+                        x={xBase - 2}
+                        y={140 - hCancel}
+                        width="6"
+                        height={hCancel}
+                        fill={colorOrange}
+                        rx="2"
+                        ry="2"
+                        opacity={opacity}
+                      />
+                    )}
+
+                    {/* Green bar: 撤案率 */}
+                    {q.delay > 0 && (
+                      <rect
+                        x={xBase + 6}
+                        y={140 - hDelay}
+                        width="6"
+                        height={hDelay}
+                        fill={colorGreen}
+                        rx="2"
+                        ry="2"
+                        opacity={opacity}
+                      />
+                    )}
+
+                    {/* Text Label at standard base */}
+                    <text
+                      x={xBase + 1}
+                      y="153"
+                      fill={selectedQuarter === `Q${idx + 1}` ? '#1E62EC' : '#64748B'}
+                      fontSize="9"
+                      textAnchor="middle"
+                      className={`font-black tracking-wide ${selectedQuarter === `Q${idx + 1}` ? 'font-extrabold underline decoration-2 underline-offset-4' : ''}`}
+                    >
+                      {q.name}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Hover Tooltip display box */}
+            <div className="h-10 flex justify-center items-center mt-2.5 select-none text-2xs z-30">
+              {hoveredQuarterIndex !== null ? (
+                <div className="bg-slate-900 text-white rounded-xl py-1.5 px-3 flex items-center space-x-3.5 shadow-md border border-slate-800 animate-fade-in font-bold text-center">
+                  <span className="text-[#9CCAFF]">
+                    {quarterChart[hoveredQuarterIndex].name}
+                  </span>
+                  <span>裁决: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].settle}%</strong></span>
+                  <span>调解: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].cancel}%</strong></span>
+                  <span>撤案: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].delay}%</strong></span>
                 </div>
-              );
-            })()}
+              ) : selectedQuarter !== 'all' ? (
+                <button 
+                  onClick={() => setSelectedQuarter('all')}
+                  className="text-xs text-[#1E62EC] bg-blue-50/50 py-1 px-3 rounded-full border border-blue-100 font-extrabold hover:bg-blue-100/40 transition-colors uppercase cursor-pointer"
+                >
+                  清除单度筛选 ↺ 查看全局对比
+                </button>
+              ) : (
+                <span className="text-slate-400 italic">轻触或悬浮季度柱状图进行联动对齐分析</span>
+              )}
+            </div>
           </div>
         </div>
 
       </div>
-
-      {/* ELECTRONIC IDENTITY CARD QR CODE MODAL */}
-      {showQrModal && (
-        <div className="absolute inset-0 bg-slate-900/80 z-[70] flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-[32px] w-full max-w-xs p-6 shadow-2xl border border-slate-100 text-center space-y-4">
-            <h4 className="text-xs font-extrabold text-slate-800 tracking-wider">广州市仲裁网云端数字身份通行盾</h4>
-            
-            {/* Simulated premium QR display */}
-            <div className="bg-slate-50 border-2 border-dashed border-indigo-400 p-4 rounded-2xl flex items-center justify-center relative">
-              <QrCode size={180} className="text-slate-800" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-2 rounded-xl border-2 border-indigo-500">
-                <span className="text-xs font-extrabold text-indigo-700 font-mono scale-95 block">GZAC安全</span>
-              </div>
-            </div>
-
-            <div className="space-y-1 text-slate-500 text-xs text-justify leading-relaxed">
-              <p className="text-center font-bold text-slate-800">首席仲裁员：张明</p>
-              <p className="text-center text-xs font-mono select-all">数字认证哈希：CA-925-B605-AES256</p>
-              <p className="border-t border-slate-100 pt-2 mt-1">此二维码作为线下庭审签到、多维数字档案解密及委员会内部系统登陆的双重特权身份验证证明。每隔60秒自动滚算加密印防伪。</p>
-            </div>
-
-            <button
-              onClick={() => setShowQrModal(false)}
-              className="w-full bg-slate-900 text-white font-extrabold py-2 px-4 text-xs rounded-xl hover:bg-slate-800 cursor-pointer"
-            >
-              已阅确认并关闭
-            </button>
-          </div>
-        </div>
-      )}
 
     </div>
   );

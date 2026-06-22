@@ -211,12 +211,12 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       {/* Simplified Banner */}
       <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-3.5 flex-shrink-0">
         {/* 第一行：案号 */}
-        <h4 className="text-base font-bold text-white truncate">
+        <h4 className="text-base font-bold text-white text-left">
           {caseItem.caseNo}
         </h4>
-        {/* 第二行：案由 + 状态 */}
+        {/* 第二行：案由标签 + 状态 */}
         <div className="flex items-center gap-2 mt-1.5">
-          <span className="text-sm text-white/85 truncate flex-1">
+          <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded">
             {caseItem.title}
           </span>
           <span className={`text-xs px-2 py-0.5 rounded font-bold flex-shrink-0 ${
@@ -483,7 +483,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {Object.entries(groupedMaterials).map(([category, items]) => (
               items.length > 0 && (
                 <div key={category} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-100">
+                  <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-slate-100">
                     <span className="text-sm font-bold text-slate-700">{category}</span>
                     <span className="text-sm text-slate-500">{items.length}项</span>
                   </div>
@@ -520,7 +520,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
           <div className="space-y-3 animate-fade-in">
             {/* 庭审笔录附件 */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-100">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
                   <span className="text-sm font-bold text-slate-700">庭审笔录</span>
@@ -562,7 +562,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
             {/* Document Preview */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-100">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
                   <span className="text-sm font-bold text-slate-700">仲裁裁决书</span>
@@ -744,7 +744,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
             {/* Document Overview */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
+              <div className="px-3 py-2 bg-white border-b border-slate-100">
                 <span className="text-sm font-bold text-slate-700">文书概览</span>
               </div>
               <div className="p-3 space-y-2">
@@ -774,7 +774,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
             {/* Review Flow Records */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">核阅流转记录</span>
                 <span className="text-xs text-slate-400">共 3 条流转记录</span>
               </div>
@@ -839,7 +839,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
             {/* Current Document */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
                   <span className="text-sm font-bold text-slate-700">裁决书草稿_v2.docx</span>
@@ -863,7 +863,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
             {/* Upload Document */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">上传文书</span>
                 <button 
                   onClick={() => setShowUploadForm(!showUploadForm)}

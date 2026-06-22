@@ -217,11 +217,11 @@ export default function Workbench({
           <div className="flex flex-col justify-center text-left z-10 w-3/5">
            
             {/* Large Bold Title */}
-            <span className="text-xl font-black text-slate-800 tracking-wider leading-none mb-1">
+            <span className="text-lg font-black text-slate-800 tracking-wider leading-none mb-1">
               立信铸就广仲
             </span>
             {/* Subtitle */}
-            <span className="text-xl font-black text-slate-500 tracking-wider">
+            <span className="text-lg font-black text-slate-500 tracking-wider">
               创新赢得未来
             </span>
            
@@ -232,7 +232,7 @@ export default function Workbench({
             <img
               src={import.meta.env.BASE_URL + "tu/xmy.png"}
               className="h-[105%] max-h-[7.25rem] w-auto object-contain pointer-events-none group-hover:-translate-y-1 transition-transform duration-300"
-              alt="3D Building Infrastructure"
+              alt="广州仲裁委员会智慧云平台建筑示意图"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -471,9 +471,12 @@ export default function Workbench({
 
           {/* Render hearings in timeline format */}
           {recentHearings.length > 0 ? (
-            <div className="space-y-3">
-              <div className="relative border-l-2 border-indigo-50/60 ml-2.5 pr-0.5 pl-4 space-y-4 pb-1.5">
-                {(showAllRecentHearings ? recentHearings : recentHearings.slice(0, 3)).map((hearing, idx) => {
+            <div className="relative">
+              {/* Timeline vertical axis line */}
+              <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-indigo-100 via-indigo-50 to-transparent"></div>
+
+              <div className="space-y-3">
+              {(showAllRecentHearings ? recentHearings : recentHearings.slice(0, 3)).map((hearing, idx) => {
                   const matchedCase = cases.find(c => c.id === hearing.caseId);
                   const claimant = matchedCase?.claimant || '华夏科技';
                   const respondent = matchedCase?.respondent || '蓝海创投';
@@ -508,60 +511,62 @@ export default function Workbench({
                       onClick={() => {
                         if (matchedCase) onSelectCase(matchedCase);
                       }}
-                      className="relative bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-[0_4px_16px_rgba(30,98,236,0.05)] p-3 shadow-xs transition-all flex flex-col gap-2.5 cursor-pointer"
+                      className="relative pl-6 cursor-pointer group"
                     >
-                      {/* Timeline Node Ring & Dot */}
-                      <div className="absolute -left-[22.5px] top-5.5 flex items-center justify-center">
-                        <span className={`h-2.5 w-2.5 rounded-full ${dotCircleStyle} transition-all`}></span>
+                      {/* Timeline Node */}
+                      <div className="absolute left-0 top-3 flex items-center justify-center z-10">
+                        <span className={`h-3.5 w-3.5 rounded-full ${dotCircleStyle} transition-all ring-2 ring-white`}></span>
                       </div>
 
-                      {/* Timeline Card Header */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`text-[10px]  px-1.5 py-0.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
-                            {badgeText}
-                          </span>
-                          <span className="text-base  text-slate-800 truncate" >
-                            {hearing.caseNo}
-                          </span>
+                      {/* Timeline Card */}
+                      <div className="bg-white rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-[0_4px_16px_rgba(30,98,236,0.05)] p-3 shadow-xs transition-all flex flex-col gap-2.5">
+                        {/* Timeline Card Header */}
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`text-[10px]  px-1.5 py-0.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
+                              {badgeText}
+                            </span>
+                            <span className="text-base  text-slate-800 truncate" >
+                              {hearing.caseNo}
+                            </span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Timeline Details */}
-                      <div className="text-sm text-slate-500 gap-y-1">
-                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                          <span className="text-slate-400 shrink-0 w-[60px]">申请人：</span>
-                          <span className="truncate text-slate-700 font-medium">{claimant}</span>
-                        </div>
-                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                          <span className="text-slate-400 shrink-0 w-[60px]">被申请人：</span>
-                          <span className="truncate text-slate-700 font-medium">{respondent}</span>
-                        </div>
-                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                          <span className="text-slate-400 shrink-0 w-[60px]">时间：</span>
-                          <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
-                        </div>
-                        <div className="flex items-start  gap-0.5 min-w-0 pb-1">
-                          <span className="text-slate-400 shrink-0 w-[60px]">开庭地点：</span>
-                          <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
-                        </div>
-                        <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                          <span className="text-slate-400 shrink-0 w-[60px]">办案秘书：</span>
-                          <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
-                        </div>
-                        <div className="flex items-start gap-0.5 min-w-0 leading-normal">
-                          <span className="text-slate-400 shrink-0 w-[60px]">开庭用途：</span>
-                          <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
+                        {/* Timeline Details */}
+                        <div className="text-sm text-slate-500 gap-y-1">
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">申请人：</span>
+                            <span className="truncate text-slate-700 font-medium">{claimant}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">被申请人：</span>
+                            <span className="truncate text-slate-700 font-medium">{respondent}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">时间：</span>
+                            <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
+                          </div>
+                          <div className="flex items-start  gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭地点：</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-400 shrink-0 w-[60px]">办案秘书：</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
+                          </div>
+                          <div className="flex items-start gap-0.5 min-w-0 leading-normal">
+                            <span className="text-slate-400 shrink-0 w-[60px]">开庭用途：</span>
+                            <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-              </div>
 
               {/* View More Button */}
               {recentHearings.length > 3 && (
-                <div className="pt-1">
+                <div className="pt-1 pl-6">
                   {!showAllRecentHearings ? (
                     <button
                       onClick={() => setShowAllRecentHearings(true)}
@@ -581,6 +586,7 @@ export default function Workbench({
                   )}
                 </div>
               )}
+              </div>
             </div>
           ) : (
             <div className="bg-slate-50/50 rounded-2xl border border-dashed border-slate-200/60 p-5 text-center">

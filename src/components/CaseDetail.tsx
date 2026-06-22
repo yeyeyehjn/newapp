@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles, Shield, MessageSquare, Mail } from 'lucide-react';
+import { Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles, Shield, MessageSquare, Mail, Phone, Copy } from 'lucide-react';
 import { Case } from '../types';
 
 interface CaseDetailProps {
@@ -47,6 +47,24 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
   const [uploadRemark, setUploadRemark] = useState('');
   const [uploadAwardFiles, setUploadAwardFiles] = useState<string[]>([]);
   const [uploadOtherFiles, setUploadOtherFiles] = useState<string[]>([]);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, field: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (e) {
+      // ignore
+    }
+    document.body.removeChild(textarea);
+  };
 
   // Drag scroll for tab navigation
   const tabRef = React.useRef<HTMLDivElement>(null);
@@ -80,8 +98,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       attribute: '企业',
       name: '广州天河科技投资有限公司',
       idType: '统一社会信用代码',
-      idNo: '91440106MA5XXXXX',
-      phone: '020-8888-8888',
+      idNo: '91440****XXXXX',
+      phone: '020-****-8888',
       email: 'legal@tianhe-tech.com',
       address: '广州市天河区珠江新城华夏路30号'
     },
@@ -90,8 +108,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       attribute: '自然人',
       name: '张伟',
       idType: '身份证',
-      idNo: '440106198501011234',
-      phone: '138-0000-0001',
+      idNo: '440106****1011234',
+      phone: '138-****-0001',
       email: 'zhangwei@email.com',
       address: '广州市越秀区东风中路100号'
     },
@@ -100,8 +118,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       attribute: '企业',
       name: '深圳南山创新发展有限公司',
       idType: '统一社会信用代码',
-      idNo: '91440300MA5YYYYY',
-      phone: '0755-8888-8888',
+      idNo: '91440****YYYYY',
+      phone: '0755-****-8888',
       email: 'contact@nanshan-dev.com',
       address: '深圳市南山区科技园南区'
     },
@@ -110,8 +128,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       attribute: '自然人',
       name: '李明',
       idType: '身份证',
-      idNo: '440303199001011234',
-      phone: '139-0000-0002',
+      idNo: '440303****1011234',
+      phone: '139-****-0002',
       email: 'liming@email.com',
       address: '深圳市福田区深南大道200号'
     }
@@ -191,30 +209,30 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
       </div>
 
       {/* Simplified Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded">
-              {caseItem.category}
-            </span>
-            <span className={`text-xs px-2 py-0.5 rounded font-bold ${
-              caseItem.status === '已结案' ? 'bg-emerald-500/30 text-emerald-100' :
-              caseItem.status === '审理中' ? 'bg-amber-500/30 text-amber-100' :
-              'bg-slate-500/30 text-slate-100'
-            }`}>
-              {caseItem.status}
-            </span>
-          </div>
-        </div>
-        <h4 className="text-sm font-bold text-white mt-1 truncate">
-          {caseItem.caseNo} - {caseItem.title}
+      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-3.5 flex-shrink-0">
+        {/* 第一行：案号 */}
+        <h4 className="text-base font-bold text-white truncate">
+          {caseItem.caseNo}
         </h4>
+        {/* 第二行：案由 + 状态 */}
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="text-sm text-white/85 truncate flex-1">
+            {caseItem.title}
+          </span>
+          <span className={`text-xs px-2 py-0.5 rounded font-bold flex-shrink-0 ${
+            caseItem.status === '已结案' ? 'bg-emerald-500/30 text-emerald-100' :
+            caseItem.status === '审理中' ? 'bg-amber-500/30 text-amber-100' :
+            'bg-slate-500/30 text-slate-100'
+          }`}>
+            {caseItem.status}
+          </span>
+        </div>
       </div>
 
       {/* Tab Navigation */}
       <div 
         ref={tabRef}
-        className="bg-white border-b border-slate-100 flex px-1 py-1 flex-shrink-0 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
+        className="bg-white border-b border-slate-100 flex px-2 py-1.5 flex-shrink-0 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none gap-1"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -224,7 +242,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 min-w-[56px] py-2 text-center text-xs font-bold transition-all rounded-lg whitespace-nowrap ${
+            className={`flex-1 min-w-[60px] py-2.5 text-center text-sm font-bold transition-all rounded-lg whitespace-nowrap ${
               activeTab === tab 
                 ? 'text-indigo-600 bg-indigo-50' 
                 : 'text-slate-500 hover:text-slate-800'
@@ -246,55 +264,81 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
           <div className="space-y-3 animate-fade-in">
             {/* Key Info Grid */}
             <div className="bg-white rounded-lg border border-slate-100 p-3">
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="bg-slate-50 rounded-lg p-2.5">
-                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1 text-xs">
                     <Calendar size={12} />
                     <span>立案日期</span>
                   </div>
-                  <span className="font-bold text-slate-800">{caseItem.startDate}</span>
+                  <span className="font-bold text-slate-800 text-sm">{caseItem.startDate}</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2.5">
-                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1 text-xs">
                     <Calendar size={12} />
                     <span>组庭日期</span>
                   </div>
-                  <span className="font-bold text-slate-800">2024-02-01</span>
+                  <span className="font-bold text-slate-800 text-sm">2024-02-01</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2.5">
-                  <div className="text-slate-500 mb-1">争议金额</div>
-                  <span className="font-bold text-amber-600">{formatCNY(caseItem.disputeAmount)}</span>
+                  <div className="text-slate-500 mb-1 text-xs">争议金额</div>
+                  <span className="font-bold text-amber-600 text-sm">{formatCNY(caseItem.disputeAmount)}</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2.5">
-                  <div className="text-slate-500 mb-1">仲裁费</div>
-                  <span className="font-bold text-slate-800">¥{Math.round(caseItem.disputeAmount * 0.01 / 10000)}万元</span>
+                  <div className="text-slate-500 mb-1 text-xs">仲裁费</div>
+                  <span className="font-bold text-slate-800 text-sm">¥{Math.round(caseItem.disputeAmount * 0.01 / 10000)}万元</span>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-2.5 col-span-2">
-                  <div className="flex items-center gap-1 text-slate-500 mb-1">
+                  <div className="flex items-center gap-1 text-slate-500 mb-1 text-xs">
                     <User size={12} />
                     <span>办案秘书</span>
                   </div>
-                  <span className="font-bold text-slate-800">王秘书</span>
+                  <span className="font-bold text-slate-800 text-sm">王秘书</span>
+                  <div className="mt-2 space-y-1.5">
+                    <div
+                      className="flex items-center gap-1.5 cursor-pointer group/copy"
+                      onClick={() => handleCopy('138-0000-0000', 'phone')}
+                      title="点击复制"
+                    >
+                      <Phone size={11} className="text-slate-400 group-hover/copy:text-indigo-500 transition-colors" />
+                      <span className="text-slate-600 group-hover/copy:text-indigo-600 transition-colors text-xs">138-0000-0000</span>
+                      {copiedField === 'phone' ? (
+                        <span className="text-[10px] text-emerald-500 font-bold">已复制</span>
+                      ) : (
+                        <Copy size={10} className="text-slate-300 group-hover/copy:text-indigo-500 transition-colors" />
+                      )}
+                    </div>
+                    <div
+                      className="flex items-center gap-1.5 cursor-pointer group/copy"
+                      onClick={() => handleCopy('wangmishu@gzac.org.cn', 'email')}
+                      title="点击复制"
+                    >
+                      <Mail size={11} className="text-slate-400 group-hover/copy:text-indigo-500 transition-colors" />
+                      <span className="text-slate-600 group-hover/copy:text-indigo-600 transition-colors text-xs">wangmishu@gzac.org.cn</span>
+                      {copiedField === 'email' ? (
+                        <span className="text-[10px] text-emerald-500 font-bold">已复制</span>
+                      ) : (
+                        <Copy size={10} className="text-slate-300 group-hover/copy:text-indigo-500 transition-colors" />
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Case Summary with AI watermark */}
             <div className="bg-white rounded-lg border border-slate-100 p-3 relative overflow-hidden">
-              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+              {/* AI watermark - 卡片右上角 */}
+              <div className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[10px] text-indigo-400 bg-indigo-50 px-1.5 py-0.5 rounded z-10">
+                <Sparkles size={10} />
+                <span>AI生成，仅供参考</span>
+              </div>
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-sm mb-2">
                 <FileText size={14} />
                 <span>案情摘要</span>
               </div>
-              <div className="text-xs text-slate-600 leading-relaxed relative">
-                {/* AI watermark */}
-                <div className="absolute top-0 right-0 flex items-center gap-1 text-[10px] text-indigo-400 bg-indigo-50 px-1.5 py-0.5 rounded">
-                  <Sparkles size={10} />
-                  <span>AI生成，仅供参考</span>
-                </div>
-                <p className="mt-4">
-                  {caseItem.description}
-                </p>
-              </div>
+              <p className="text-sm text-slate-600 leading-relaxed ">
+                {caseItem.description}
+              </p>
             </div>
           </div>
         )}
@@ -306,7 +350,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             <div className="bg-white rounded-lg border border-slate-100 p-3">
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
                 <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-0.5 rounded">申请人</span>
-                <span className="text-xs text-slate-500">共{applicants.length}位</span>
+                <span className="text-sm text-slate-500">共{applicants.length}位</span>
               </div>
               <div className="space-y-3">
                 {applicants.map((party, idx) => (
@@ -317,10 +361,10 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                       ) : (
                         <User size={14} className="text-indigo-500" />
                       )}
-                      <span className="font-bold text-slate-800 text-xs">{party.name}</span>
+                      <span className="font-bold text-slate-800 text-sm">{party.name}</span>
                       <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{party.attribute}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-slate-500">{party.idType}：</span>
                         <span className="text-slate-700">{party.idNo}</span>
@@ -347,7 +391,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             <div className="bg-white rounded-lg border border-slate-100 p-3">
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded">被申请人</span>
-                <span className="text-xs text-slate-500">共{respondents.length}位</span>
+                <span className="text-sm text-slate-500">共{respondents.length}位</span>
               </div>
               <div className="space-y-3">
                 {respondents.map((party, idx) => (
@@ -358,10 +402,10 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                       ) : (
                         <User size={14} className="text-red-500" />
                       )}
-                      <span className="font-bold text-slate-800 text-xs">{party.name}</span>
+                      <span className="font-bold text-slate-800 text-sm">{party.name}</span>
                       <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{party.attribute}</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <span className="text-slate-500">{party.idType}：</span>
                         <span className="text-slate-700">{party.idNo}</span>
@@ -391,24 +435,24 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
           <div className="space-y-3 animate-fade-in">
             {/* Facts and Reasons */}
             <div className="bg-white rounded-lg border border-slate-100 p-3">
-              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-sm mb-2">
                 <FileText size={14} />
                 <span>事实和理由</span>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-sm text-slate-600 leading-relaxed">
                 {arbitrationRequest.facts}
               </p>
             </div>
 
             {/* Request Items */}
             <div className="bg-white rounded-lg border border-slate-100 p-3">
-              <div className="flex items-center gap-1 text-slate-600 font-bold text-xs mb-2">
+              <div className="flex items-center gap-1 text-slate-600 font-bold text-sm mb-2">
                 <FileCheck size={14} />
                 <span>请求项</span>
               </div>
               <div className="space-y-2">
                 {arbitrationRequest.items.map((item, idx) => (
-                  <div key={idx} className="bg-indigo-50 rounded-lg p-2.5 text-xs text-slate-700 flex items-start gap-2">
+                  <div key={idx} className="bg-indigo-50 rounded-lg p-2.5 text-sm text-slate-700 flex items-start gap-2">
                     <span className="bg-indigo-500 text-white text-[10px] font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0">
                       {idx + 1}
                     </span>
@@ -431,7 +475,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                 placeholder="搜索材料名称、类别..."
                 value={materialSearch}
                 onChange={(e) => setMaterialSearch(e.target.value)}
-                className="flex-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                className="flex-1 text-sm text-slate-700 outline-none placeholder:text-slate-400"
               />
             </div>
 
@@ -440,8 +484,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
               items.length > 0 && (
                 <div key={category} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
                   <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-700">{category}</span>
-                    <span className="text-xs text-slate-500">{items.length}项</span>
+                    <span className="text-sm font-bold text-slate-700">{category}</span>
+                    <span className="text-sm text-slate-500">{items.length}项</span>
                   </div>
                   <div className="divide-y divide-slate-100">
                     {items.map((item) => (
@@ -453,13 +497,13 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                         <div className="flex items-center gap-2">
                           <FileText size={14} className="text-slate-400" />
                           <div>
-                            <div className="text-xs font-bold text-slate-800">{item.name}</div>
-                            <div className="text-[10px] text-slate-500 mt-0.5">
+                            <div className="text-sm font-bold text-slate-800">{item.name}</div>
+                            <div className="text-xs text-slate-500 mt-0.5">
                               {item.time} • {item.size}
                             </div>
                           </div>
                         </div>
-                        <button className="text-xs text-indigo-600 font-medium hover:text-indigo-700">
+                        <button className="text-sm text-indigo-600 font-medium hover:text-indigo-700">
                           查看
                         </button>
                       </div>
@@ -474,12 +518,54 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
         {/* Document Signature Tab */}
         {activeTab === 'signature' && (
           <div className="space-y-3 animate-fade-in">
+            {/* 庭审笔录附件 */}
+            <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <FileText size={14} className="text-indigo-500" />
+                  <span className="text-sm font-bold text-slate-700">庭审笔录</span>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  已上传
+                </span>
+              </div>
+
+              {/* 庭审笔录 PDF Attachment List */}
+              <div className="p-3 space-y-2">
+                {[
+                  { name: '庭审笔录_20260115.pdf', size: '3.2 MB', pages: 15 }
+                ].map((pdf, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setViewingPdf(pdf)}
+                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer group"
+                  >
+                    {/* PDF Icon */}
+                    <div className="w-10 h-12 bg-red-500 rounded flex flex-col items-center justify-center flex-shrink-0 shadow-sm">
+                      <span className="text-white text-[10px] font-black leading-none">PDF</span>
+                      <span className="text-red-200 text-[8px] mt-0.5">{pdf.pages}页</span>
+                    </div>
+                    {/* File Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pdf.name}</div>
+                      <div className="text-xs text-slate-400 mt-0.5">{pdf.size} • {pdf.pages}页</div>
+                    </div>
+                    {/* Preview Button */}
+                    <div className="flex items-center gap-1 text-indigo-500 text-sm font-bold flex-shrink-0">
+                      <span>预览</span>
+                      <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Document Preview */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
               <div className="flex items-center justify-between px-3 py-2.5 bg-slate-50 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
-                  <span className="text-xs font-bold text-slate-700">仲裁裁决书</span>
+                  <span className="text-sm font-bold text-slate-700">仲裁裁决书</span>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded font-bold ${
                   isSigned 
@@ -507,11 +593,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                     </div>
                     {/* File Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pdf.name}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{pdf.size} • {pdf.pages}页</div>
+                      <div className="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pdf.name}</div>
+                      <div className="text-xs text-slate-400 mt-0.5">{pdf.size} • {pdf.pages}页</div>
                     </div>
                     {/* Preview Button */}
-                    <div className="flex items-center gap-1 text-indigo-500 text-xs font-bold flex-shrink-0">
+                    <div className="flex items-center gap-1 text-indigo-500 text-sm font-bold flex-shrink-0">
                       <span>预览</span>
                       <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                     </div>
@@ -523,18 +609,18 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {/* Signature Confirmation */}
             {!isSigned ? (
               <div className="bg-white rounded-lg border border-slate-100 p-4 space-y-4">
-                <div className="flex items-center gap-2 text-slate-700 font-bold text-xs">
+                <div className="flex items-center gap-2 text-slate-700 font-bold text-sm">
                   <Shield size={14} className="text-indigo-500" />
                   <span>确认签名</span>
                 </div>
 
                 {/* Signature Method Selection */}
                 <div className="space-y-2">
-                  <span className="text-xs text-slate-500">选择验证方式</span>
+                  <span className="text-sm text-slate-500">选择验证方式</span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSignatureMethod('sms')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer border ${
                         signatureMethod === 'sms'
                           ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
                           : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
@@ -545,7 +631,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                     </button>
                     <button
                       onClick={() => setSignatureMethod('email')}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer border ${
                         signatureMethod === 'email'
                           ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
                           : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
@@ -559,7 +645,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
                 {/* Verification Code Input */}
                 <div className="space-y-2">
-                  <span className="text-xs text-slate-500">
+                  <span className="text-sm text-slate-500">
                     {signatureMethod === 'sms' ? '短信验证码' : '邮箱验证码'}
                   </span>
                   <div className="flex gap-2">
@@ -570,11 +656,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                       placeholder={signatureMethod === 'sms' ? '请输入短信验证码' : '请输入邮箱验证码'}
                       className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                     />
-                    <button className="px-4 py-2 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700 active:scale-95 transition-all whitespace-nowrap">
+                    <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 active:scale-95 transition-all whitespace-nowrap">
                       发送验证码
                     </button>
                   </div>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-xs text-slate-400">
                     {signatureMethod === 'sms' 
                       ? '验证码将发送至 138****0000' 
                       : '验证码将发送至 zha****@gzac.org.cn'}
@@ -615,11 +701,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                 <div className="w-12 h-12 bg-emerald-500 rounded-full mx-auto flex items-center justify-center">
                   <i className="fa-solid fa-check text-white text-lg"></i>
                 </div>
-                <div className="text-sm font-bold text-emerald-600">签名完成</div>
-                <div className="text-xs text-slate-500">
+                <div className="text-base font-bold text-emerald-600">签名完成</div>
+                <div className="text-sm text-slate-500">
                   签署时间：{new Date().toISOString().replace('T', ' ').substring(0, 16)}
                 </div>
-                <div className="text-xs text-slate-400 bg-white/50 rounded p-2 mt-2">
+                <div className="text-sm text-slate-400 bg-white/50 rounded p-2 mt-2">
                   CA数字签名编号：0x{Math.random().toString(16).substring(2, 16).toUpperCase()}
                 </div>
               </div>
@@ -633,10 +719,10 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {/* Case Header */}
             <div className="bg-white rounded-lg border border-slate-100 p-3">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-bold text-slate-900">{caseItem.caseNo}</h4>
+                <h4 className="text-base font-bold text-slate-900">{caseItem.caseNo}</h4>
                 <span className="text-xs bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded font-bold">核阅中</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-slate-500">申请人：</span>
                   <span className="text-slate-800">{caseItem.claimant}</span>
@@ -659,26 +745,26 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {/* Document Overview */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-700">文书概览</span>
+                <span className="text-sm font-bold text-slate-700">文书概览</span>
               </div>
               <div className="p-3 space-y-2">
                 <div>
-                  <span className="text-xs font-bold text-slate-700">仲裁请求</span>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  <span className="text-sm font-bold text-slate-700">仲裁请求</span>
+                  <p className="text-sm text-slate-600 mt-1 leading-relaxed">
                     1. 支付货款人民币1,000,000元<br/>
                     2. 支付逾期付款利息（以1,000,000元为基数，自2025年1月1日起至实际清偿之日止，按照LPR计算）<br/>
                     3. 本案仲裁费用由被申请人承担
                   </p>
                 </div>
                 <div className="border-t border-dashed border-slate-100 pt-2">
-                  <span className="text-xs font-bold text-slate-700">被申请人答辩意见</span>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  <span className="text-sm font-bold text-slate-700">被申请人答辩意见</span>
+                  <p className="text-sm text-slate-600 mt-1 leading-relaxed">
                     被申请人辩称：双方签订的合同中部分条款约定不明，且申请人交付的部分产品存在质量问题，有权拒绝支付相应货款。
                   </p>
                 </div>
                 <div className="border-t border-dashed border-slate-100 pt-2">
-                  <span className="text-xs font-bold text-slate-700">举证和质证</span>
-                  <div className="mt-1 space-y-1 text-xs text-slate-600">
+                  <span className="text-sm font-bold text-slate-700">举证和质证</span>
+                  <div className="mt-1 space-y-1 text-sm text-slate-600">
                     <p>• 申请人举证：《采购合同》、送货签收单、增值税发票</p>
                     <p>• 被申请人质证：对真实性无异议，主张签收单不能证明产品无质量问题</p>
                   </div>
@@ -689,8 +775,8 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {/* Review Flow Records */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">核阅流转记录</span>
-                <span className="text-[10px] text-slate-400">共 3 条流转记录</span>
+                <span className="text-sm font-bold text-slate-700">核阅流转记录</span>
+                <span className="text-xs text-slate-400">共 3 条流转记录</span>
               </div>
               <div className="p-3 space-y-0">
                 {/* Record 1: Secretary initiated */}
@@ -701,16 +787,16 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">测试秘书 发起核阅</span>
-                      <span className="text-[10px] text-slate-400">03-16 10:30</span>
+                      <span className="text-sm font-bold text-slate-800">测试秘书 发起核阅</span>
+                      <span className="text-xs text-slate-400">03-16 10:30</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">裁决书已初审完毕，庭审笔录已同步上传，请专家核阅。</p>
+                    <p className="text-sm text-slate-500 mt-1">裁决书已初审完毕，庭审笔录已同步上传，请专家核阅。</p>
                     <div className="flex gap-2 mt-2">
-                      <div className="flex items-center gap-1 text-[10px] text-indigo-500 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">
+                      <div className="flex items-center gap-1 text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">
                         <FileText size={10} />
                         <span>庭审笔录_2026102.pdf</span>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-indigo-500 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">
+                      <div className="flex items-center gap-1 text-xs text-indigo-500 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">
                         <FileText size={10} />
                         <span>裁决书草稿_v1.docx</span>
                       </div>
@@ -726,11 +812,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">一级核阅 - 李专家</span>
-                      <span className="text-[10px] text-slate-400">03-16 11:20</span>
+                      <span className="text-sm font-bold text-slate-800">一级核阅 - 李专家</span>
+                      <span className="text-xs text-slate-400">03-16 11:20</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">建议修改第三部分论述，逻辑需要更清晰。</p>
-                    <span className="inline-block mt-1 text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 font-bold">退回修改</span>
+                    <p className="text-sm text-slate-500 mt-1">建议修改第三部分论述，逻辑需要更清晰。</p>
+                    <span className="inline-block mt-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 font-bold">退回修改</span>
                   </div>
                 </div>
 
@@ -741,11 +827,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">测试秘书 修改中</span>
-                      <span className="text-[10px] text-slate-400">03-16 14:30</span>
+                      <span className="text-sm font-bold text-slate-800">测试秘书 修改中</span>
+                      <span className="text-xs text-slate-400">03-16 14:30</span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">正在根据一级核阅意见进行修改...</p>
-                    <span className="inline-block mt-1 text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-bold">修改中</span>
+                    <p className="text-sm text-slate-500 mt-1">正在根据一级核阅意见进行修改...</p>
+                    <span className="inline-block mt-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 font-bold">修改中</span>
                   </div>
                 </div>
               </div>
@@ -756,19 +842,19 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
-                  <span className="text-xs font-bold text-slate-700">裁决书草稿_v2.docx</span>
+                  <span className="text-sm font-bold text-slate-700">裁决书草稿_v2.docx</span>
                 </div>
-                <span className="text-[10px] text-slate-400">更新人：测试秘书</span>
+                <span className="text-xs text-slate-400">更新人：测试秘书</span>
               </div>
               <div className="p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">历史版本：</span>
+                  <span className="text-sm text-slate-500">历史版本：</span>
                   <div className="flex gap-1">
-                    <span className="text-[10px] text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">v1</span>
-                    <span className="text-[10px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-bold">v2（当前）</span>
+                    <span className="text-xs text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80">v1</span>
+                    <span className="text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 font-bold">v2（当前）</span>
                   </div>
                 </div>
-                <button className="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+                <button className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                   <FileText size={12} />
                   <span>查看裁决书全文</span>
                 </button>
@@ -778,12 +864,12 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
             {/* Upload Document */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">上传文书</span>
+                <span className="text-sm font-bold text-slate-700">上传文书</span>
                 <button 
                   onClick={() => setShowUploadForm(!showUploadForm)}
-                  className="text-[10px] text-indigo-500 cursor-pointer hover:underline flex items-center gap-1"
+                  className="text-xs text-indigo-500 cursor-pointer hover:underline flex items-center gap-1"
                 >
-                  <i className={`fa-solid ${showUploadForm ? 'fa-chevron-up' : 'fa-plus'} text-[8px]`}></i>
+                  <i className={`fa-solid ${showUploadForm ? 'fa-chevron-up' : 'fa-plus'} text-[10px]`}></i>
                   <span>{showUploadForm ? '收起' : '上传'}</span>
                 </button>
               </div>
@@ -791,13 +877,13 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                 <div className="p-3 space-y-3">
                   {/* Remind Target */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">提醒对象</label>
+                    <label className="text-sm font-bold text-slate-700">提醒对象</label>
                     <div className="flex flex-wrap gap-1.5">
                       {['办案秘书', '首席仲裁员', '边裁-赵东', '边裁-王琦'].map((target) => (
                         <button
                           key={target}
                           onClick={() => setUploadRemindTarget(target)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border ${
+                          className={`px-2.5 py-1 rounded-lg text-sm font-medium transition-all cursor-pointer border ${
                             uploadRemindTarget === target
                               ? 'bg-indigo-50 border-indigo-200 text-indigo-600'
                               : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
@@ -811,11 +897,11 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
                   {/* Remarks */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">备注</label>
+                    <label className="text-sm font-bold text-slate-700">备注</label>
                     <textarea
                       value={uploadRemark}
                       onChange={(e) => setUploadRemark(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
                       rows={2}
                       placeholder="请输入备注信息..."
                     />
@@ -823,13 +909,13 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
                   {/* Award Attachment */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">裁决书附件</label>
+                    <label className="text-sm font-bold text-slate-700">裁决书附件</label>
                     <div className="space-y-1.5">
                       {uploadAwardFiles.map((file, idx) => (
                         <div key={idx} className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1.5">
                           <div className="flex items-center gap-1.5">
                             <FileText size={12} className="text-indigo-500" />
-                            <span className="text-[11px] text-slate-700">{file}</span>
+                            <span className="text-sm text-slate-700">{file}</span>
                           </div>
                           <button 
                             onClick={() => setUploadAwardFiles(uploadAwardFiles.filter((_, i) => i !== idx))}
@@ -851,13 +937,13 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
 
                   {/* Other Attachments */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-700">其他附件</label>
+                    <label className="text-sm font-bold text-slate-700">其他附件</label>
                     <div className="space-y-1.5">
                       {uploadOtherFiles.map((file, idx) => (
                         <div key={idx} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5">
                           <div className="flex items-center gap-1.5">
                             <FileText size={12} className="text-slate-400" />
-                            <span className="text-[11px] text-slate-700">{file}</span>
+                            <span className="text-sm text-slate-700">{file}</span>
                           </div>
                           <button 
                             onClick={() => setUploadOtherFiles(uploadOtherFiles.filter((_, i) => i !== idx))}
@@ -869,7 +955,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                       ))}
                       <button
                         onClick={() => setUploadOtherFiles([...uploadOtherFiles, `补充材料_${uploadOtherFiles.length + 1}.pdf`])}
-                        className="w-full py-2 border-2 border-dashed border-slate-200 rounded-lg text-xs text-slate-400 hover:text-indigo-500 hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                        className="w-full py-2 border-2 border-dashed border-slate-200 rounded-lg text-sm text-slate-400 hover:text-indigo-500 hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                       >
                         <i className="fa-solid fa-plus text-[10px]"></i>
                         <span>添加其他附件</span>
@@ -878,7 +964,7 @@ export default function CaseDetail({ caseItem, onBack }: CaseDetailProps) {
                   </div>
 
                   {/* Submit */}
-                  <button className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5">
+                  <button className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1.5">
                     <i className="fa-solid fa-paper-plane text-[10px]"></i>
                     <span>提交上传</span>
                   </button>

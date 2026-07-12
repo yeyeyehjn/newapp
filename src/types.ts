@@ -46,6 +46,7 @@ export interface Case {
   formationDate?: string;
   secretary?: string;
   closeDate?: string;
+  closeMethod?: '裁决' | '调解' | '撤案';
   rules: string;
   commission: string;
   description: string;

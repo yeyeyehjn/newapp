@@ -45,59 +45,50 @@ export default function BankInfoEdit({ initialData, onBack, onSave }: BankInfoEd
           </h3>
           
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-600">开户银行</label>
+            
+              <div className="space-y-1.5">
+                <label className="text-base font-medium text-slate-600">开户银行</label>
                 <input
                   type="text"
                   value={formData.bank}
                   onChange={(e) => setFormData({...formData, bank: e.target.value})}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                 />
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-600">开户支行</label>
+              <div className="space-y-1.5">
+                <label className="text-base font-medium text-slate-600">开户支行</label>
                 <input
                   type="text"
                   value={formData.branch}
                   onChange={(e) => setFormData({...formData, branch: e.target.value})}
-                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                 />
               </div>
-            </div>
             
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">银行卡号</label>
+            <div className="space-y-1.5">
+              <label className="text-base font-medium text-slate-600">银行卡号</label>
               <input
                 type="text"
                 value={formData.accountNo}
                 onChange={(e) => setFormData({...formData, accountNo: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
             
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">账户户名</label>
+              <label className="text-base font-medium text-slate-600">账户户名</label>
               <input
+                disabled
                 type="text"
                 value={formData.accountName}
                 onChange={(e) => setFormData({...formData, accountName: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
           </div>
         </div>
 
-        {/* Warning Notice */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-2">
-          <div className="flex items-center gap-2 text-amber-800">
-            <ShieldCheck size={16} className="text-amber-600" />
-            <span className="text-sm font-bold">重要提示</span>
-          </div>
-          <p className="text-sm text-amber-700 leading-relaxed">
-            银行账户信息变更需携带本人有效身份证、特级聘书及广州CA盾硬件赴广州仲裁委本委现场柜台核准办理变动手续。
-          </p>
-        </div>
+        
       </div>
 
       {/* Footer Buttons */}

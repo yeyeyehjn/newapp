@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowLeft, FileText, AlertCircle, User, Building2 } from 'lucide-react';
+import { Search, ArrowLeft, FileText, AlertCircle, User, Building2, Clock, CheckCircle2 } from 'lucide-react';
 
 interface DeclarationItem {
   id: string;
@@ -19,7 +19,7 @@ interface DeclarationListProps {
 
 export default function DeclarationList({ onBack, onSelectItem }: DeclarationListProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'signed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'signed'>('pending');
 
   // Mock data for declarations
   const declarations: DeclarationItem[] = [
@@ -82,8 +82,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
     }
   ];
 
-  const statusTabs: { label: string; value: 'all' | 'pending' | 'signed' }[] = [
-    { label: '全部', value: 'all' },
+  const statusTabs: { label: string; value: 'pending' | 'signed' }[] = [
     { label: '待签署', value: 'pending' },
     { label: '已签署', value: 'signed' },
   ];
@@ -92,7 +91,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
   const filteredDeclarations = useMemo(() => {
     return declarations.filter((d) => {
       // Status filter
-      if (statusFilter !== 'all' && d.status !== statusFilter) {
+      if (d.status !== statusFilter) {
         return false;
       }
       // Search query
@@ -124,8 +123,8 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
         <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap">声明承诺书</div>
       </div>
 
-      {/* Search & Tabs Stick Area */}
-      <div className="bg-white border-b border-indigo-50 px-4 py-3 space-y-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
+      {/* Search Stick Area */}
+      <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
         {/* Search Input */}
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -136,35 +135,6 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
             placeholder="搜索案号、当事人、办案秘书..."
             className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
           />
-        </div>
-
-        {/* Status Tabs */}
-        <div className="flex gap-2">
-          {statusTabs.map((tab) => {
-            const isActive = statusFilter === tab.value;
-            const count = tab.value === 'all' 
-              ? declarations.length 
-              : declarations.filter(d => d.status === tab.value).length;
-
-            return (
-              <button
-                key={tab.value}
-                onClick={() => setStatusFilter(tab.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center gap-1 ${
-                  isActive 
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-900/40' 
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  isActive ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200/80 text-slate-500'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -193,37 +163,34 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
                   </span>
                 </div>
 
-                {/* Parties Info */}
+                {/* Info rows */}
                 <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">
-                  <div className="flex items-start gap-2">
-                    <Building2 size={12} className="text-emerald-500 mt-1 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-slate-500">申请人：</span>
-                      <span className="text-slate-800 truncate">{d.claimant}</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">申请人</span>
+                    <span className="text-slate-800 truncate flex-1 text-left">{d.claimant}</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Building2 size={12} className="text-red-400 mt-1 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-slate-500">被申请人：</span>
-                      <span className="text-slate-800 truncate">{d.respondent}</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 size={12} className="text-red-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">被申请人</span>
+                    <span className="text-slate-800 truncate flex-1 text-left">{d.respondent}</span>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm pt-1 text-left">
-                    <div className="flex flex-col space-y-0.5">
-                      <span className="text-sm text-slate-500">办案秘书</span>
-                      <span className="text-sm text-slate-700">{d.secretary}</span>
-                    </div>
-                    <div className="flex flex-col space-y-0.5">
-                      <span className="text-sm text-slate-500">仲裁员</span>
-                      <span className="text-sm text-slate-700">{d.arbitrator}</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <FileText size={12} className="text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
+                    <span className="text-slate-700 flex-1 text-left">{d.secretary}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText size={12} className="text-indigo-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁员</span>
+                    <span className="text-slate-700 flex-1 text-left">{d.arbitrator}</span>
                   </div>
 
                   {d.signedDate && (
-                    <div className="text-xs text-slate-400 pt-1">
-                      签署日期：{d.signedDate}
+                    <div className="flex items-center gap-2 pt-1">
+                      <FileText size={12} className="text-amber-400 flex-shrink-0" />
+                      <span className="text-slate-500 w-14 flex-shrink-0 text-left">签署日期</span>
+                      <span className="text-slate-700 flex-1 text-left">{d.signedDate}</span>
                     </div>
                   )}
                 </div>
@@ -235,13 +202,41 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
             <AlertCircle size={28} className="text-slate-300" />
             <span className="text-sm font-semibold text-slate-500">未检索到匹配的声明承诺书</span>
             <button 
-              onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+              onClick={() => { setSearchQuery(''); setStatusFilter('pending'); }}
               className="px-3 py-1.5 bg-indigo-50 text-indigo-500 text-sm rounded-lg cursor-pointer hover:bg-indigo-100/80 transition-colors"
             >
               清空搜索与过滤
             </button>
           </div>
         )}
+      </div>
+
+      {/* Bottom Status Tabs */}
+      <div className="bg-white/95 backdrop-blur-sm border-t border-slate-100 flex-shrink-0 shadow-[0_-2px_12px_rgba(0,0,0,0.05)] z-10">
+        <div className="flex">
+          {statusTabs.map((tab) => {
+            const isActive = statusFilter === tab.value;
+            const Icon = tab.value === 'pending' ? Clock : CheckCircle2;
+
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`flex-1 py-4 text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center justify-center gap-2 relative ${
+                  isActive
+                    ? 'text-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
+                <span>{tab.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

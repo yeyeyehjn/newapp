@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { TranscriptSignature } from '../types';
+import { PenTool, RotateCcw, Check } from 'lucide-react';
 
 interface TranscriptSignatureDetailProps {
   transcript: TranscriptSignature;
@@ -12,114 +13,110 @@ export default function TranscriptSignatureDetail({
   onBack,
   onSubmitSignature
 }: TranscriptSignatureDetailProps) {
-  const [isDrawing, setIsDrawing] = useState<boolean>(false);
-  const [hasSignature, setHasSignature] = useState<boolean>(false);
-  const [showPreviewModal, setShowPreviewModal] = useState<boolean>(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  // 手写签名相关状态
+  const canvasRef = useRef<HTMLCanvasElement>(null);       // 内联预览
+  const fullCanvasRef = useRef<HTMLCanvasElement>(null);   // 全屏签名画布
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showSignModal, setShowSignModal] = useState(false);
+  const [signatureError, setSignatureError] = useState('');
 
-  // Initialize canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
+  // ========== 手写签名逻辑（全屏模式） ==========
+  const initCanvas = (canvas: HTMLCanvasElement | null) => {
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    // Set drawing style
-    ctx.strokeStyle = '#1a1a1a';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#1e293b';
+    ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-  }, []);
-
-  // Clear canvas
-  const clearCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasSignature(false);
   };
 
-  // Get coordinates from event
-  const getCoordinates = (e: React.MouseEvent | React.TouchEvent): { x: number; y: number } | null => {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
+  const openSignModal = () => {
+    setShowSignModal(true);
+    setSignatureError('');
+    setTimeout(() => {
+      if (fullCanvasRef.current) {
+        if (hasSignature && canvasRef.current) {
+          const fctx = fullCanvasRef.current.getContext('2d');
+          if (fctx) fctx.drawImage(canvasRef.current, 0, 0, fullCanvasRef.current.width, fullCanvasRef.current.height);
+        }
+        initCanvas(fullCanvasRef.current);
+      }
+    }, 50);
+  };
 
+  const getPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = fullCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-
-    if ('touches' in e) {
-      const touch = e.touches[0];
-      return {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
-    } else {
-      return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-    }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  // Start drawing
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+  const startDraw = (e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
+    const ctx = fullCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
+    const { x, y } = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
     setIsDrawing(true);
-    const coords = getCoordinates(e);
-    if (coords) {
-      lastPointRef.current = coords;
-    }
   };
 
-  // Draw
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+  const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     e.preventDefault();
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
+    const ctx = fullCanvasRef.current?.getContext('2d');
     if (!ctx) return;
-
-    const coords = getCoordinates(e);
-    if (!coords || !lastPointRef.current) return;
-
-    ctx.beginPath();
-    ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
-    ctx.lineTo(coords.x, coords.y);
+    const { x, y } = getPos(e);
+    ctx.lineTo(x, y);
     ctx.stroke();
-
-    lastPointRef.current = coords;
-    setHasSignature(true);
   };
 
-  // Stop drawing
-  const stopDrawing = () => {
+  const stopDraw = () => {
     setIsDrawing(false);
-    lastPointRef.current = null;
   };
 
-  // Submit signature
+  const clearSignature = () => {
+    const canvas = fullCanvasRef.current;
+    if (!canvas) return;
+    canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const confirmSignature = () => {
+    const full = fullCanvasRef.current;
+    const preview = canvasRef.current;
+    if (!full || !preview) return;
+    const fctx = full.getContext('2d');
+    if (!fctx) return;
+    const data = fctx.getImageData(0, 0, full.width, full.height).data;
+    const isEmpty = !data.some((_, i) => i % 4 === 3 && data[i] > 0);
+    if (isEmpty) {
+      setSignatureError('请先完成手写签名后再确认');
+      return;
+    }
+    const pctx = preview.getContext('2d');
+    if (pctx) {
+      pctx.clearRect(0, 0, preview.width, preview.height);
+      pctx.drawImage(full, 0, 0, preview.width, preview.height);
+    }
+    setHasSignature(true);
+    setSignatureError('');
+    setShowSignModal(false);
+  };
+
   const handleSubmit = () => {
     if (!hasSignature) {
-      alert('请先完成签名');
+      setSignatureError('请先完成手写签名后再提交');
       return;
     }
     onSubmitSignature(transcript.id);
   };
+  // ========== 手写签名逻辑结束 ==========
 
   return (
-    <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden">
+    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col overflow-hidden animate-slide-in">
       {/* Header - 微信小程序子页面返回样式 */}
       <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button
@@ -139,9 +136,9 @@ export default function TranscriptSignatureDetail({
         {/* Case Info Card */}
         <div className="bg-white rounded-xl border border-slate-100 p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-slate-800">{transcript.caseNo}</span>
+            <span className="text-base font-bold text-slate-800">{transcript.caseNo}</span>
             <span
-              className={`px-2 py-1 rounded-lg text-xs font-medium ${
+              className={`px-2 py-1 rounded text-xs font-medium ${
                 transcript.status === 'pending'
                   ? 'bg-amber-100 text-amber-700'
                   : 'bg-emerald-100 text-emerald-700'
@@ -151,21 +148,21 @@ export default function TranscriptSignatureDetail({
             </span>
           </div>
 
-          <div className="space-y-2 text-sm text-slate-600">
+          <div className="space-y-2 text-base text-slate-600">
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16 shrink-0">申请人：</span>
+              <span className="text-slate-400 w-18 shrink-0 text-left">申请人：</span>
               <span className="truncate">{transcript.claimant}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16 shrink-0">被申请人：</span>
+              <span className="text-slate-400 w-18 shrink-0 text-left">被申请人：</span>
               <span className="truncate">{transcript.respondent}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16 shrink-0">办案秘书：</span>
+              <span className="text-slate-400 w-18 shrink-0 text-left">办案秘书：</span>
               <span className="truncate">{transcript.secretary}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16 shrink-0">开庭时间：</span>
+              <span className="text-slate-400 w-18 shrink-0 text-left">开庭时间：</span>
               <span className="truncate">{transcript.hearingTime}</span>
             </div>
           </div>
@@ -174,41 +171,49 @@ export default function TranscriptSignatureDetail({
         {/* Signature Panel */}
         <div className="bg-white rounded-xl border border-slate-100 p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-slate-800">手写签名</span>
-            <button
-              onClick={clearCanvas}
-              className="text-xs text-slate-500 hover:text-slate-700 flex items-center gap-1 transition-colors"
-            >
-              <i className="fa-solid fa-eraser"></i>
-              <span>清除</span>
-            </button>
+            <span className="flex items-center gap-1.5 text-base font-bold text-slate-800">
+              <PenTool size={14} className="text-indigo-500" />
+              手写签名
+            </span>
+            {hasSignature && (
+              <span className="flex items-center gap-1 text-xs text-emerald-600">
+                <Check size={12} />
+                已签名
+              </span>
+            )}
           </div>
 
-          {/* Canvas */}
-          <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 relative">
-            <canvas
-              ref={canvasRef}
-              className="w-full h-32 touch-none cursor-crosshair"
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              onTouchStart={startDrawing}
-              onTouchMove={draw}
-              onTouchEnd={stopDrawing}
-            />
+          {/* 点击打开全屏签名 */}
+          <div
+            onClick={openSignModal}
+            className={`relative bg-slate-50 border rounded-lg overflow-hidden cursor-pointer hover:border-indigo-300 transition-colors ${signatureError ? 'border-red-400' : 'border-slate-200'}`}
+            style={{ aspectRatio: '320/140' }}
+          >
+            <canvas ref={canvasRef} width={320} height={140} className="w-full h-full touch-none pointer-events-none" />
             {!hasSignature && (
-              <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm pointer-events-none">
-                请在此处签名
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-1">
+                <PenTool size={20} className="text-slate-300" />
+                <span className="text-sm text-slate-400">点击此处进行手写签名</span>
               </div>
             )}
           </div>
 
-          {/* Signature Tips */}
-          <div className="mt-3 text-xs text-slate-400 flex items-center gap-2">
-            <i className="fa-solid fa-info-circle"></i>
-            <span>请在上方区域手写签名，签名将用于笔录确认</span>
-          </div>
+          {signatureError && (
+            <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+              <span className="w-1 h-1 rounded-full bg-red-500" />
+              {signatureError}
+            </p>
+          )}
+
+          {hasSignature && (
+            <button
+              onClick={openSignModal}
+              className="mt-2 flex items-center gap-1 text-base text-slate-500 hover:text-indigo-500 transition-colors"
+            >
+              <RotateCcw size={12} />
+              重新签名
+            </button>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -216,7 +221,7 @@ export default function TranscriptSignatureDetail({
           {/* Preview Button */}
           <button
             onClick={() => setShowPreviewModal(true)}
-            className="flex-1 bg-white border border-slate-200 rounded-xl py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-white border border-slate-200 rounded-xl py-3 text-base font-medium text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
           >
             <i className="fa-solid fa-file-pdf"></i>
             <span>预览文件</span>
@@ -226,7 +231,7 @@ export default function TranscriptSignatureDetail({
           <button
             onClick={handleSubmit}
             disabled={transcript.status === 'signed' || !hasSignature}
-            className={`flex-1 rounded-xl py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 rounded-xl py-3 text-base font-medium flex items-center justify-center gap-2 transition-colors ${
               transcript.status === 'signed'
                 ? 'bg-emerald-100 text-emerald-700 cursor-not-allowed'
                 : hasSignature
@@ -249,9 +254,63 @@ export default function TranscriptSignatureDetail({
         </div>
       </div>
 
-      {/* Preview Modal */}
+      {/* 全屏手写签名 Modal - absolute 相对于手机框架 */}
+      {showSignModal && (
+        <div className="absolute inset-0 z-[200] bg-white flex flex-col animate-fade-in">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0">
+            <button
+              onClick={() => setShowSignModal(false)}
+              className="flex items-center gap-1 text-slate-600 font-medium text-sm"
+            >
+              <i className="fa-solid fa-chevron-left text-xs"></i>
+              返回
+            </button>
+            <span className="text-base font-bold text-slate-800">手写签名</span>
+            <button
+              onClick={clearSignature}
+              className="flex items-center gap-1 text-slate-500 hover:text-red-500 text-sm transition-colors"
+            >
+              <RotateCcw size={14} />
+              清除
+            </button>
+          </div>
+
+          {/* 签名区域 */}
+          <div className="flex-1 relative bg-slate-50">
+            <canvas
+              ref={fullCanvasRef}
+              width={400}
+              height={600}
+              onPointerDown={startDraw}
+              onPointerMove={draw}
+              onPointerUp={stopDraw}
+              onPointerLeave={stopDraw}
+              onPointerCancel={stopDraw}
+              className="w-full h-full touch-none"
+            />
+            {/* 引导线 */}
+            <div className="absolute left-8 right-8 bottom-24 border-b-2 border-dashed border-slate-300 pointer-events-none" />
+            <div className="absolute left-8 bottom-16 text-xs text-slate-400 pointer-events-none">
+              请在上方横线处签名
+            </div>
+          </div>
+
+          {/* 底部按钮 */}
+          <div className="flex-shrink-0 p-4 pb-6 border-t border-slate-100 bg-white">
+            <button
+              onClick={confirmSignature}
+              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-all active:scale-95 shadow-lg"
+            >
+              确认签名
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal - absolute 相对于手机框架 */}
       {showPreviewModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
             {/* Modal Header */}
             <div className="bg-[#ddecff] px-4 py-3 flex items-center justify-between border-b border-slate-100">

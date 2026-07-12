@@ -25,7 +25,8 @@ const generateMockCase = (
   startDate: string,
   formationDate: string,
   hearingDate: string,
-  secretary: string
+  secretary: string,
+  closeMethod?: '裁决' | '调解' | '撤案'
 ): Case => ({
   id,
   caseNo,
@@ -175,7 +176,7 @@ export const mockCases: Case[] = [
   {
     id: "4",
     caseNo: "(2025)穗仲案字第1921号",
-    title: "关于多维科技与其前研发总监王教授软件研发专利纠纷案",
+    title: "合同纠纷",
     claimant: "多维科技（广州）有限公司",
     claimantAgent: "环球律师事务所 - 江涛律师",
     respondent: "王某某 (自然人，前研发总监)",
@@ -209,7 +210,7 @@ export const mockCases: Case[] = [
   {
     id: "5",
     caseNo: "(2026)穗仲案字第0308号",
-    title: "关于众盛信托与乾坤置业金融借款及保证合同违约纠纷案",
+    title: "建设工程纠纷",
     claimant: "众盛信托股份有限公司",
     claimantAgent: "君泽君律师事务所 - 许华律师",
     respondent: "乾坤置业控股有限公司",

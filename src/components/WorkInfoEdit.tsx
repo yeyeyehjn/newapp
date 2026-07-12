@@ -45,32 +45,32 @@ export default function WorkInfoEdit({ initialData, onBack, onSave }: WorkInfoEd
           
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">工作单位</label>
+              <label className="text-base font-medium text-slate-600">工作单位</label>
               <input
                 type="text"
                 value={formData.company}
                 onChange={(e) => setFormData({...formData, company: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
             
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">现任职务</label>
+              <label className="text-base font-medium text-slate-600">现任职务</label>
               <input
                 type="text"
                 value={formData.position}
                 onChange={(e) => setFormData({...formData, position: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
             
             <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">行业资质</label>
+              <label className="text-base font-medium text-slate-600">行业资质</label>
               <input
                 type="text"
                 value={formData.qualification}
                 onChange={(e) => setFormData({...formData, qualification: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
           </div>

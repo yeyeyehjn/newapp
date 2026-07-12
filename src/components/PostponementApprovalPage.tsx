@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Search, AlertCircle, Building2, FileText, Clock, Calendar, CheckCircle2 } from 'lucide-react';
 import { PostponementApproval } from '../types';
 
 interface PostponementApprovalPageProps {
@@ -13,20 +14,22 @@ export default function PostponementApprovalPage({
   onBack
 }: PostponementApprovalPageProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'done'>('pending');
 
   // Status Tabs Definition
-  const statusTabs: { label: string; value: 'all' | 'pending' | 'approved' | 'rejected' }[] = [
-    { label: '全部', value: 'all' },
+  const statusTabs: { label: string; value: 'pending' | 'done' }[] = [
     { label: '待审批', value: 'pending' },
-    { label: '已审批', value: 'approved' },
+    { label: '已审批', value: 'done' },
   ];
 
   // Filtered approvals list based on status and search query
   const filteredApprovals = useMemo(() => {
     return approvals.filter((a) => {
       // 1. Status Filter
-      if (statusFilter !== 'all' && a.status !== statusFilter) {
+      if (statusFilter === 'pending' && a.status !== 'pending') {
+        return false;
+      }
+      if (statusFilter === 'done' && a.status === 'pending') {
         return false;
       }
       // 2. Search Query (matches caseNo, claimant, respondent, secretary)
@@ -47,13 +50,13 @@ export default function PostponementApprovalPage({
   const getStatusStyle = (status: 'pending' | 'approved' | 'rejected') => {
     switch (status) {
       case 'pending':
-        return 'bg-amber-100 text-amber-700';
+        return 'text-amber-500 bg-amber-50 border-amber-100';
       case 'approved':
-        return 'bg-emerald-100 text-emerald-700';
+        return 'text-emerald-500 bg-emerald-50 border-emerald-100';
       case 'rejected':
-        return 'bg-rose-100 text-rose-700';
+        return 'text-rose-500 bg-rose-50 border-rose-100';
       default:
-        return 'bg-slate-100 text-slate-600';
+        return 'text-slate-600 bg-slate-50 border-slate-100';
     }
   };
 
@@ -63,14 +66,16 @@ export default function PostponementApprovalPage({
       case 'pending':
         return '待审批';
       case 'approved':
-        return '已审批';
+        return '已通过';
+      case 'rejected':
+        return '已驳回';
       default:
         return status;
     }
   };
 
   return (
-    <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden">
+    <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
       {/* Header - 微信小程序子页面返回样式 */}
       <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button
@@ -85,92 +90,120 @@ export default function PostponementApprovalPage({
         </div>
       </div>
 
-      {/* Search & Tabs Area */}
-      <div className="bg-white border-b border-slate-100 px-4 py-3 flex-shrink-0 space-y-3 shadow-sm shadow-slate-900/5">
-        {/* Search Box */}
+      {/* Search Stick Area */}
+      <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
         <div className="relative">
-          <i className="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="搜索案号、申请人、被申请人..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-slate-50"
+            placeholder="搜索案号、当事人、办案秘书..."
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
           />
-        </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex gap-2">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setStatusFilter(tab.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                statusFilter === tab.value
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
         </div>
       </div>
 
       {/* Approvals List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-        {filteredApprovals.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
-            <i className="fa-solid fa-clock-rotate-left text-4xl mb-3 text-slate-300"></i>
-            <p className="text-sm">暂无延期审批记录</p>
-          </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {filteredApprovals.length > 0 ? (
+          filteredApprovals.map((a) => {
+            return (
+              <div
+                key={a.id}
+                onClick={() => onSelectApproval(a)}
+                className="bg-white rounded-lg border border-slate-100 p-4 hover:border-slate-200 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base text-slate-900 group-hover:text-indigo-500 transition-colors flex items-center gap-1.5">
+                    <FileText size={14} className="text-indigo-400" />
+                    {a.caseNo}
+                  </span>
+                  <span className={`text-sm p-0.5 px-1.5 rounded border ${getStatusStyle(a.status)}`}>
+                    {getStatusLabel(a.status)}
+                  </span>
+                </div>
+
+                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">申请人</span>
+                    <span className="text-slate-800 truncate flex-1 text-left">{a.claimant}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Building2 size={12} className="text-red-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">被申请人</span>
+                    <span className="text-slate-800 truncate flex-1 text-left">{a.respondent}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText size={12} className="text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
+                    <span className="text-slate-700 flex-1 text-left">{a.secretary}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText size={12} className="text-indigo-400 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁员</span>
+                    <span className="text-slate-700 flex-1 text-left">{a.arbitrator}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Clock size={12} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">原开庭</span>
+                    <span className="text-slate-700 flex-1 text-left">{a.originalHearingTime}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Calendar size={12} className="text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">申请延期</span>
+                    <span className="text-indigo-600 font-bold flex-1 text-left">{a.requestedTime}</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <FileText size={12} className="text-rose-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">延期原因</span>
+                    <span className="text-slate-700 flex-1 text-left">{a.reason}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })
         ) : (
-          filteredApprovals.map((approval) => (
-            <div
-              key={approval.id}
-              onClick={() => onSelectApproval(approval)}
-              className="bg-white rounded-xl border border-slate-100 p-4 cursor-pointer hover:border-indigo-200 hover:shadow-md transition-all group"
+          <div className="h-44 flex flex-col items-center justify-center text-center space-y-2 p-6 bg-white/50 rounded-xl border border-dashed border-slate-200">
+            <AlertCircle size={28} className="text-slate-300" />
+            <span className="text-sm font-semibold text-slate-500">未检索到匹配的延期审批记录</span>
+            <button
+              onClick={() => { setSearchQuery(''); setStatusFilter('pending'); }}
+              className="px-3 py-1.5 bg-indigo-50 text-indigo-500 text-sm rounded-lg cursor-pointer hover:bg-indigo-100/80 transition-colors"
             >
-              {/* Header Row: Case No + Status Badge */}
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-slate-800 truncate">
-                  {approval.caseNo}
-                </span>
-                <span
-                  className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusStyle(approval.status)}`}
-                >
-                  {getStatusLabel(approval.status)}
-                </span>
-              </div>
-
-              {/* Info Rows */}
-              <div className="space-y-2 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 w-16 shrink-0">申请人：</span>
-                  <span className="truncate">{approval.claimant}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 w-16 shrink-0">被申请人：</span>
-                  <span className="truncate">{approval.respondent}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 w-16 shrink-0">办案秘书：</span>
-                  <span className="truncate">{approval.secretary}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-400 w-16 shrink-0">仲裁员：</span>
-                  <span className="truncate">{approval.arbitrator}</span>
-                </div>
-              </div>
-
-              {/* Footer: Request Info */}
-              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
-                <span>延期原因：{approval.reason}</span>
-                <i className="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
-              </div>
-            </div>
-          ))
+              清空搜索与过滤
+            </button>
+          </div>
         )}
+      </div>
+
+      {/* Bottom Status Tabs */}
+      <div className="bg-white/95 backdrop-blur-sm border-t border-slate-100 flex-shrink-0 shadow-[0_-2px_12px_rgba(0,0,0,0.05)] z-10">
+        <div className="flex">
+          {statusTabs.map((tab) => {
+            const isActive = statusFilter === tab.value;
+            const Icon = tab.value === 'pending' ? Clock : CheckCircle2;
+
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setStatusFilter(tab.value)}
+                className={`flex-1 py-4 text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center justify-center gap-2 relative ${
+                  isActive
+                    ? 'text-indigo-600'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
+                <span>{tab.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-600 rounded-full"></span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -50,44 +50,33 @@ export default function PersonalInfoEdit({ initialData, onBack, onSave }: Person
             基本信息
           </h3>
           
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">中文姓名</label>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-base font-medium text-slate-600">姓名</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">聘用职称</label>
-              <input
-                type="text"
-                value={formData.ranking}
-                onChange={(e) => setFormData({...formData, ranking: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">手机号</label>
+            
+            <div className="space-y-1.5">
+              <label className="text-base font-medium text-slate-600">手机号</label>
               <input
                 type="text"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-600">联系邮箱</label>
+            <div className="space-y-1.5">
+              <label className="text-base font-medium text-slate-600">联系邮箱</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
           </div>
@@ -103,7 +92,7 @@ export default function PersonalInfoEdit({ initialData, onBack, onSave }: Person
           <div className="space-y-3">
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-600">居住地址</label>
+                <label className="text-base font-medium text-slate-600">居住地址</label>
                 <button
                   onClick={() => setFormData({...formData, preferredAddress: 'home'})}
                   className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
@@ -119,13 +108,13 @@ export default function PersonalInfoEdit({ initialData, onBack, onSave }: Person
                 type="text"
                 value={formData.homeAddress}
                 onChange={(e) => setFormData({...formData, homeAddress: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
             
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-600">联系地址</label>
+                <label className="text-base font-medium text-slate-600">联系地址</label>
                 <button
                   onClick={() => setFormData({...formData, preferredAddress: 'contact'})}
                   className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
@@ -141,13 +130,13 @@ export default function PersonalInfoEdit({ initialData, onBack, onSave }: Person
                 type="text"
                 value={formData.contactAddress}
                 onChange={(e) => setFormData({...formData, contactAddress: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
             
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-600">其他地址</label>
+                <label className="text-base font-medium text-slate-600">其他地址</label>
                 <button
                   onClick={() => setFormData({...formData, preferredAddress: 'other'})}
                   className={`text-xs px-2 py-1 rounded font-medium transition-colors ${
@@ -163,7 +152,7 @@ export default function PersonalInfoEdit({ initialData, onBack, onSave }: Person
                 type="text"
                 value={formData.otherAddress}
                 onChange={(e) => setFormData({...formData, otherAddress: e.target.value})}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-base focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
           </div>

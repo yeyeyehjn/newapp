@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   TrendingUp, CheckCircle2, ChevronRight, Award, FileText, Clock, HelpCircle
 } from 'lucide-react';
@@ -345,16 +345,173 @@ const DATA_MATRIX: Record<string, Record<string, QuarterData>> = {
   }
 };
 
+// ===== Aggregation helpers (year range / multi-quarter 统计合并) =====
+const ALL_QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4'];
+const CHART_QUARTER_NAMES = ['第一季度', '第二季度', '第三季度', '第四季度'];
+
+const parsePct = (v: string): number => parseFloat(v.replace('%', '')) || 0;
+const avg = (vals: number[]) => (vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0);
+
+function aggregateCourtCases(datas: QuarterData[]) {
+  return datas.reduce(
+    (acc, d) => ({
+      sole: acc.sole + d.courtCases.sole,
+      chief: acc.chief + d.courtCases.chief,
+      side: acc.side + d.courtCases.side,
+    }),
+    { sole: 0, chief: 0, side: 0 }
+  );
+}
+
+function aggregateTopCases(datas: QuarterData[]) {
+  const map = new Map<string, number>();
+  for (const d of datas) {
+    for (const t of d.topCases) {
+      map.set(t.name, (map.get(t.name) || 0) + t.count);
+    }
+  }
+  const total = Array.from(map.values()).reduce((a, b) => a + b, 0) || 1;
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count, ratio: Math.round((count / total) * 100) }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+}
+
+function aggregateIndicators(datas: QuarterData[]): QuarterData['indicators'] {
+  const fallback = DATA_MATRIX['2026'].all.indicators;
+  if (!datas.length) return fallback;
+  const settleVals = datas.map((d) => parsePct(d.indicators.settle.value));
+  const cancelVals = datas.map((d) => parsePct(d.indicators.cancel.value));
+  const delayVals = datas.map((d) => parsePct(d.indicators.delay.value));
+  // 涨跌/排名取所选区间最近一期的口径，百分比取算数平均
+  const ref = datas[datas.length - 1].indicators;
+  return {
+    settle: { value: avg(settleVals).toFixed(2) + '%', change: ref.settle.change, isUp: ref.settle.isUp, rank: ref.settle.rank },
+    cancel: { value: avg(cancelVals).toFixed(2) + '%', change: ref.cancel.change, isUp: ref.cancel.isUp, rank: ref.cancel.rank },
+    delay: { value: avg(delayVals).toFixed(2) + '%', change: ref.delay.change, isUp: ref.delay.isUp, rank: ref.delay.rank },
+  };
+}
+
+// 季度图表：年度范围模式下，对各年同季度比率取平均；季度模式下由调用方直接取该年全年数据
+function aggregateQuarterChart(datas: QuarterData[]) {
+  return CHART_QUARTER_NAMES.map((name, i) => ({
+    name,
+    settle: Math.round(avg(datas.map((d) => d.quarterChart[i]?.settle || 0))),
+    cancel: Math.round(avg(datas.map((d) => d.quarterChart[i]?.cancel || 0))),
+    delay: Math.round(avg(datas.map((d) => d.quarterChart[i]?.delay || 0))),
+  }));
+}
+
 export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: CaseStatsProps) {
-  const [selectedYear, setSelectedYear] = useState<string>('2026');
-  const [selectedQuarter, setSelectedQuarter] = useState<string>('all');
+  const builtInYears = useMemo(() => Object.keys(DATA_MATRIX).sort(), []); // 升序: ['2024','2025','2026']
+  // 自定义年份（用户可手动添加数据矩阵之外的年份）
+  const [customYears, setCustomYears] = useState<string[]>([]);
+  const availableYears = useMemo(
+    () => Array.from(new Set([...builtInYears, ...customYears])).sort(),
+    [builtInYears, customYears]
+  );
+  const displayYears = useMemo(() => [...availableYears].reverse(), [availableYears]);
+
+  // 自定义年份输入态
+  const [customYearInput, setCustomYearInput] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState<null | 'yearStart' | 'yearEnd' | 'quarterYear'>(null);
+
+  const addCustomYear = (raw: string): string | null => {
+    const y = raw.trim();
+    if (!/^\d{4}$/.test(y)) return null; // 必须为 4 位数字
+    if (!availableYears.includes(y)) {
+      setCustomYears((prev) => Array.from(new Set([...prev, y])).sort());
+    }
+    return y;
+  };
+
+  // 双维度筛选模型
+  type FilterMode = 'year' | 'quarter';
+  const [filterMode, setFilterMode] = useState<FilterMode>('year');
+  // 年度范围
+  const [yearStart, setYearStart] = useState<string>(builtInYears[0]);
+  const [yearEnd, setYearEnd] = useState<string>(builtInYears[builtInYears.length - 1]);
+  // 季度筛选
+  const [quarterYear, setQuarterYear] = useState<string>(builtInYears[builtInYears.length - 1]);
+  const [selectedQuarters, setSelectedQuarters] = useState<string[]>([...ALL_QUARTERS]);
+
   const [hoveredQuarterIndex, setHoveredQuarterIndex] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Retrieve filtered data safely
-  const yearConfig = DATA_MATRIX[selectedYear] || DATA_MATRIX['2026'];
-  const activeData = yearConfig[selectedQuarter] || yearConfig['all'];
+  // 筛选条件变更 -> 短暂加载态（实时刷新反馈）
+  useEffect(() => {
+    setIsLoading(true);
+    const t = setTimeout(() => setIsLoading(false), 320);
+    return () => clearTimeout(t);
+  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters]);
 
-  const { courtCases, topCases, indicators, quarterChart } = activeData;
+  // 切换季度（多选，至少保留 1 个）
+  const toggleQuarter = (q: string) => {
+    setSelectedQuarters((prev) => {
+      if (prev.includes(q)) {
+        const next = prev.filter((x) => x !== q);
+        return next.length ? next : prev; // 不允许清空至 0
+      }
+      return [...prev, q].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+    });
+  };
+
+  // 清除筛选 -> 回到全量视角
+  const handleClear = () => {
+    setFilterMode('year');
+    setYearStart(availableYears[0]);
+    setYearEnd(availableYears[availableYears.length - 1]);
+    setQuarterYear(availableYears[availableYears.length - 1]);
+    setSelectedQuarters([...ALL_QUARTERS]);
+  };
+
+  // 依据模式计算参与汇总的数据切片
+  const slicedDatas = useMemo(() => {
+    if (filterMode === 'year') {
+      return availableYears
+        .filter((y) => y >= yearStart && y <= yearEnd)
+        .map((y) => DATA_MATRIX[y]?.all)
+        .filter(Boolean) as QuarterData[];
+    }
+    return selectedQuarters
+      .map((q) => DATA_MATRIX[quarterYear]?.[q])
+      .filter(Boolean) as QuarterData[];
+  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters, availableYears]);
+
+  const courtCases = useMemo(() => aggregateCourtCases(slicedDatas), [slicedDatas]);
+  const topCases = useMemo(() => aggregateTopCases(slicedDatas), [slicedDatas]);
+  const indicators = useMemo(() => aggregateIndicators(slicedDatas), [slicedDatas]);
+
+  // 季度图表数据：年度范围 -> 跨年同季度平均；季度模式 -> 选中年的全年四个季度（用 activeQuarters 控制高亮）
+  const quarterChart = useMemo(() => {
+    if (filterMode === 'year') {
+      return aggregateQuarterChart(slicedDatas);
+    }
+    return DATA_MATRIX[quarterYear]?.all.quarterChart ?? DATA_MATRIX['2026'].all.quarterChart;
+  }, [filterMode, slicedDatas, quarterYear]);
+
+  // 图表高亮用的"激活季度"集合
+  const activeQuarters = filterMode === 'year' ? ALL_QUARTERS : selectedQuarters;
+
+  // 点击柱状图某季度：年度模式 -> 跳转季度模式并细筛该季度；季度模式 -> 切换该季度
+  const handleBarClick = (qKey: string) => {
+    if (filterMode === 'year') {
+      setFilterMode('quarter');
+      setQuarterYear(yearEnd);
+      setSelectedQuarters([qKey]);
+    } else {
+      toggleQuarter(qKey);
+    }
+  };
+
+  // 筛选范围摘要文案
+  const scopeSummary = useMemo(() => {
+    if (filterMode === 'year') {
+      const span = availableYears.filter((y) => y >= yearStart && y <= yearEnd).length;
+      return `${yearStart}年 — ${yearEnd}年 · 共 ${span} 个年度`;
+    }
+    return `${quarterYear}年 · 已选 ${selectedQuarters.length}/4 季度`;
+  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters, availableYears]);
   const totalCourtCases = courtCases.sole + courtCases.chief + courtCases.side;
   const safeTotal = totalCourtCases || 1;
   const solePct = (courtCases.sole / safeTotal) * 100;
@@ -383,69 +540,268 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
     <div className="flex-1 bg-slate-50 flex flex-col pb-6 overflow-hidden relative">
       
       {/* Scrollable View Container */}
-      <div className="flex-1 space-y-4 overflow-y-auto no-scrollbar w-full text-left">
+      <div className={`flex-1 space-y-4 overflow-y-auto no-scrollbar w-full text-left transition-opacity duration-200 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
         
         {/* TOP INTERACTIVE FILTER CARD */}
         <div id="stats_filter_card" className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5 select-none animate-fade-in">
           
 
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-            <h4 className="text-sm font-extrabold text-slate-800">筛选配置</h4>
+          {/* Header + 清除筛选 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+              <h4 className="text-sm font-extrabold text-slate-800">筛选配置</h4>
+              {isLoading && (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-[#1E62EC] animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E62EC] animate-ping"></span>
+                  统计中
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleClear}
+              className="text-[10px] font-extrabold text-slate-400 hover:text-[#1E62EC] bg-slate-50/80 hover:bg-blue-50/60 border border-slate-100 hover:border-blue-100 rounded-lg py-1 px-2.5 transition-colors cursor-pointer uppercase tracking-wide"
+            >
+              清除筛选 ↺
+            </button>
           </div>
 
           <div className="border-t border-dashed border-slate-200/80 my-2"></div>
 
-          {/* Year Filter Group */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择年度</span>
-            <div className="grid grid-cols-3 gap-2">
-              {['2026', '2025', '2024'].map((year) => {
-                const isActive = selectedYear === year;
-                return (
-                  <button
-                    key={year}
-                    onClick={() => setSelectedYear(year)}
-                    className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer ${
-                      isActive 
-                        ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10' 
-                        : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
-                    }`}
-                  >
-                    {year}年
-                  </button>
-                );
-              })}
-            </div>
+          {/* 维度切换 Tab：年度筛选 / 季度筛选 */}
+          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100/70 rounded-xl">
+            {([['year', '年度筛选'], ['quarter', '季度筛选']] as const).map(([mode, label]) => {
+              const isActive = filterMode === mode;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => setFilterMode(mode)}
+                  className={`py-1.5 text-xs font-black rounded-lg transition-all border outline-none cursor-pointer ${
+                    isActive
+                      ? 'bg-white text-[#1E62EC] border-white shadow-sm'
+                      : 'bg-transparent text-slate-500 border-transparent hover:text-slate-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Quarter Filter Group */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择季度</span>
-            <div className="grid grid-cols-5 gap-1.5">
-              {[
-                { label: '全年', value: 'all' },
-                { label: '一季度', value: 'Q1' },
-                { label: '二季度', value: 'Q2' },
-                { label: '三季度', value: 'Q3' },
-                { label: '四季度', value: 'Q4' }
-              ].map((q) => {
-                const isActive = selectedQuarter === q.value;
-                return (
+          {/* ===== 年度筛选：起始年份 ~ 结束年份（含端点的闭区间） ===== */}
+          {filterMode === 'year' && (
+            <>
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">起始年度</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {displayYears.map((year) => {
+                    const isDisabled = year > yearEnd; // 起始不得晚于结束
+                    const isActive = yearStart === year;
+                    const isCustom = customYears.includes(year);
+                    return (
+                      <button
+                        key={year}
+                        disabled={isDisabled}
+                        onClick={() => setYearStart(year)}
+                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none ${
+                          isActive
+                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10 cursor-pointer'
+                            : isDisabled
+                            ? 'bg-slate-50/40 text-slate-300 border-slate-100 cursor-not-allowed'
+                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800 cursor-pointer'
+                        }`}
+                      >
+                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
+                      </button>
+                    );
+                  })}
+                  {/* 自定义年份输入 */}
+                  {showCustomInput === 'yearStart' ? (
+                    <input
+                      autoFocus
+                      value={customYearInput}
+                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const y = addCustomYear(customYearInput);
+                          if (y) { setYearStart(y); setCustomYearInput(''); setShowCustomInput(null); }
+                        } else if (e.key === 'Escape') {
+                          setCustomYearInput(''); setShowCustomInput(null);
+                        }
+                      }}
+                      onBlur={() => {
+                        const y = addCustomYear(customYearInput);
+                        if (y) setYearStart(y);
+                        setCustomYearInput(''); setShowCustomInput(null);
+                      }}
+                      placeholder="如 2023"
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setShowCustomInput('yearStart'); setCustomYearInput(''); }}
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
+                    >
+                      + 自定义
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">结束年度</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {displayYears.map((year) => {
+                    const isDisabled = year < yearStart; // 结束不得早于起始
+                    const isActive = yearEnd === year;
+                    const isCustom = customYears.includes(year);
+                    return (
+                      <button
+                        key={year}
+                        disabled={isDisabled}
+                        onClick={() => setYearEnd(year)}
+                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none ${
+                          isActive
+                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10 cursor-pointer'
+                            : isDisabled
+                            ? 'bg-slate-50/40 text-slate-300 border-slate-100 cursor-not-allowed'
+                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800 cursor-pointer'
+                        }`}
+                      >
+                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
+                      </button>
+                    );
+                  })}
+                  {/* 自定义年份输入 */}
+                  {showCustomInput === 'yearEnd' ? (
+                    <input
+                      autoFocus
+                      value={customYearInput}
+                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const y = addCustomYear(customYearInput);
+                          if (y) { setYearEnd(y); setCustomYearInput(''); setShowCustomInput(null); }
+                        } else if (e.key === 'Escape') {
+                          setCustomYearInput(''); setShowCustomInput(null);
+                        }
+                      }}
+                      onBlur={() => {
+                        const y = addCustomYear(customYearInput);
+                        if (y) setYearEnd(y);
+                        setCustomYearInput(''); setShowCustomInput(null);
+                      }}
+                      placeholder="如 2027"
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setShowCustomInput('yearEnd'); setCustomYearInput(''); }}
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
+                    >
+                      + 自定义
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ===== 季度筛选：先选年份，再多选季度 ===== */}
+          {filterMode === 'quarter' && (
+            <>
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择年度</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {displayYears.map((year) => {
+                    const isActive = quarterYear === year;
+                    const isCustom = customYears.includes(year);
+                    return (
+                      <button
+                        key={year}
+                        onClick={() => setQuarterYear(year)}
+                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer ${
+                          isActive
+                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10'
+                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
+                        }`}
+                      >
+                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
+                      </button>
+                    );
+                  })}
+                  {/* 自定义年份输入 */}
+                  {showCustomInput === 'quarterYear' ? (
+                    <input
+                      autoFocus
+                      value={customYearInput}
+                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const y = addCustomYear(customYearInput);
+                          if (y) { setQuarterYear(y); setCustomYearInput(''); setShowCustomInput(null); }
+                        } else if (e.key === 'Escape') {
+                          setCustomYearInput(''); setShowCustomInput(null);
+                        }
+                      }}
+                      onBlur={() => {
+                        const y = addCustomYear(customYearInput);
+                        if (y) setQuarterYear(y);
+                        setCustomYearInput(''); setShowCustomInput(null);
+                      }}
+                      placeholder="如 2023"
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => { setShowCustomInput('quarterYear'); setCustomYearInput(''); }}
+                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
+                    >
+                      + 自定义
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择季度（可多选）</span>
                   <button
-                    key={q.value}
-                    onClick={() => setSelectedQuarter(q.value)}
-                    className={`py-1.5 px-1 text-[11px] font-bold rounded-lg text-center transition-all border outline-none cursor-pointer truncate ${
-                      isActive 
-                        ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-500/10' 
-                        : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50'
-                    }`}
+                    onClick={() =>
+                      setSelectedQuarters(selectedQuarters.length === 4 ? ['Q1'] : [...ALL_QUARTERS])
+                    }
+                    className="text-[10px] font-extrabold text-[#1E62EC] hover:underline cursor-pointer"
                   >
-                    {q.label}
+                    {selectedQuarters.length === 4 ? '取消全选' : '全选'}
                   </button>
-                );
-              })}
-            </div>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {ALL_QUARTERS.map((q) => {
+                    const isActive = selectedQuarters.includes(q);
+                    const labels: Record<string, string> = { Q1: '一季度', Q2: '二季度', Q3: '三季度', Q4: '四季度' };
+                    return (
+                      <button
+                        key={q}
+                        onClick={() => toggleQuarter(q)}
+                        className={`py-1.5 px-1 text-[11px] font-bold rounded-lg text-center transition-all border outline-none cursor-pointer truncate ${
+                          isActive
+                            ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-500/10'
+                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50'
+                        }`}
+                      >
+                        {labels[q]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* 当前筛选范围 / 结果反馈 */}
+          <div className="flex items-center justify-between text-[10px] font-bold rounded-xl bg-slate-50/70 border border-slate-100 px-3 py-2">
+            <span className="text-slate-500">{scopeSummary}</span>
+            <span className="text-[#1E62EC]">命中 {totalCourtCases} 件</span>
           </div>
         </div>
 
@@ -739,9 +1095,10 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               {/* Draw Vertical Columns dynamically */}
               {quarterChart.map((q, idx) => {
                 const xBase = 52 + idx * 62;
+                const qKey = `Q${idx + 1}`;
                 
                 // Opacity modifier based on selection
-                const isSelectedQ = selectedQuarter === 'all' || selectedQuarter === `Q${idx + 1}`;
+                const isSelectedQ = activeQuarters.includes(qKey);
                 const opacity = isSelectedQ ? 1.0 : 0.15;
 
                 // Percentages to pixels calculation:
@@ -762,7 +1119,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                       className="cursor-pointer font-bold"
                       onMouseEnter={() => setHoveredQuarterIndex(idx)}
                       onMouseLeave={() => setHoveredQuarterIndex(null)}
-                      onClick={() => setSelectedQuarter(`Q${idx + 1}`)}
+                      onClick={() => handleBarClick(qKey)}
                     />
 
                     {/* Blue bar: c决率 */}
@@ -811,10 +1168,10 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                     <text
                       x={xBase + 1}
                       y="153"
-                      fill={selectedQuarter === `Q${idx + 1}` ? '#1E62EC' : '#64748B'}
+                      fill={isSelectedQ ? '#1E62EC' : '#64748B'}
                       fontSize="9"
                       textAnchor="middle"
-                      className={`font-black tracking-wide ${selectedQuarter === `Q${idx + 1}` ? 'font-extrabold underline decoration-2 underline-offset-4' : ''}`}
+                      className={`font-black tracking-wide ${isSelectedQ ? 'font-extrabold underline decoration-2 underline-offset-4' : ''}`}
                     >
                       {q.name}
                     </text>
@@ -834,15 +1191,17 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   <span>调解: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].cancel}%</strong></span>
                   <span>撤案: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].delay}%</strong></span>
                 </div>
-              ) : selectedQuarter !== 'all' ? (
+              ) : filterMode === 'quarter' && selectedQuarters.length < 4 ? (
                 <button 
-                  onClick={() => setSelectedQuarter('all')}
+                  onClick={() => setSelectedQuarters([...ALL_QUARTERS])}
                   className="text-xs text-[#1E62EC] bg-blue-50/50 py-1 px-3 rounded-full border border-blue-100 font-extrabold hover:bg-blue-100/40 transition-colors uppercase cursor-pointer"
                 >
-                  清除单度筛选 ↺ 查看全局对比
+                  清除季度筛选 ↺ 查看全年对比
                 </button>
               ) : (
-                <span className="text-slate-400 italic">轻触或悬浮季度柱状图进行联动对齐分析</span>
+                <span className="text-slate-400 italic">
+                  {filterMode === 'year' ? '年度范围统计中 · 点击柱状图可进入季度细筛' : '轻触或悬浮季度柱状图进行联动对齐分析'}
+                </span>
               )}
             </div>
           </div>

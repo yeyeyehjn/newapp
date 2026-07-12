@@ -10,7 +10,7 @@ interface WorkbenchProps {
   onSelectCase: (caseItem: Case) => void;
   onSelectTaskDirect: (taskItem: Task) => void;
   selectedStatusFilter: CaseStatus | 'all';
-  onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'declarationList' | 'transcriptSignature' | 'transcriptSignatureDetail') => void;
+  onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'declarationList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'docSignatureList' | 'draftAwardList' | 'arbitrationKnowledge') => void;
   onToggleVersion?: () => void;
 }
 
@@ -464,7 +464,7 @@ export default function Workbench({
               <span className="w-1 h-3.5 bg-indigo-500 rounded-full inline-block"></span>
               <span>近3天待开庭日程</span>
             </span>
-            <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100/50 px-2 py-0.5 rounded ">
+            <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100/50 px-2 py-1 leading-none rounded ">
               {recentHearings.length} 场待开庭
             </span>
           </div>
@@ -523,7 +523,7 @@ export default function Workbench({
                         {/* Timeline Card Header */}
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`text-[10px]  px-1.5 py-0.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
+                            <span className={`text-[10px]  p-1.5 rounded border leading-none shrink-0 ${badgeStyle}`} >
                               {badgeText}
                             </span>
                             <span className="text-base  text-slate-800 truncate" >
@@ -535,27 +535,27 @@ export default function Workbench({
                         {/* Timeline Details */}
                         <div className="text-sm text-slate-500 gap-y-1">
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">申请人</span>
+                            <span className="text-slate-500 shrink-0 w-14">申请人</span>
                             <span className="truncate text-slate-700 font-medium">{claimant}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">被申请人</span>
+                            <span className="text-slate-500 shrink-0 w-14">被申请人</span>
                             <span className="truncate text-slate-700 font-medium">{respondent}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">开庭时间</span>
+                            <span className="text-slate-500 shrink-0 w-14">开庭时间</span>
                             <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
                           </div>
                           <div className="flex items-start  gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">开庭地点</span>
+                            <span className="text-slate-500 shrink-0 w-14">开庭地点</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
-                            <span className="text-slate-400 shrink-0 w-[60px]">办案秘书</span>
+                            <span className="text-slate-500 shrink-0 w-14">办案秘书</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 leading-normal">
-                            <span className="text-slate-400 shrink-0 w-[60px]">开庭用途</span>
+                            <span className="text-slate-500 shrink-0 w-14">开庭用途</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
                           </div>
                         </div>
@@ -604,7 +604,7 @@ export default function Workbench({
               <span className="w-1 h-3.5 bg-[#1E62EC] rounded-full inline-block"></span>
               <span>近期待办</span>
             </span>
-            <span className="text-[10px] text-rose-500 bg-rose-50/70 border border-rose-100 px-2 py-0.5 rounded ">
+            <span className="text-[10px] text-rose-500 bg-rose-50/70 border border-rose-100 p-1.5 leading-none rounded ">
               { (signedDeclaration ? 0 : 1) + (signedTranscript ? 0 : 2) + (approvedPostponement ? 0 : 1) + (signedDoc ? 0 : 1) + (draftedAward ? 0 : 3) } 项待办
             </span>
           </div>
@@ -641,7 +641,7 @@ export default function Workbench({
                 icon: 'fa-file-signature text-[#3F51B5]',
                 badgeCount: !signedDoc ? 1 : 0,
                 colorBg: 'bg-indigo-50/60',
-                action: () => onNavigateToSubPage('docSignatureList' as any)
+                action: () => onNavigateToSubPage('docSignatureList')
               },
               {
                 id: 'draft',
@@ -649,7 +649,7 @@ export default function Workbench({
                 icon: 'fa-file-pen text-[#E91E63]',
                 badgeCount: !draftedAward ? 3 : 0,
                 colorBg: 'bg-rose-50/60',
-                action: () => onNavigateToSubPage('draftAwardList' as any)
+                action: () => onNavigateToSubPage('draftAwardList')
               }
             ].map((srv) => (
               <button
@@ -663,13 +663,13 @@ export default function Workbench({
                   
                   {/* Digital notifications */}
                   {srv.badgeCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-rose-500 rounded-full border border-white text-[9px] font-bold text-white shadow-xs">
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-rose-500 rounded-xl border border-white text-[9px] font-bold text-white shadow-xs">
                       {srv.badgeCount}
                     </span>
                   )}
                 </div>
 
-                <span className="text-sm font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
+                <span className="text-sm pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>
@@ -716,11 +716,11 @@ export default function Workbench({
                 className="flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 py-1.5 rounded-xl active:scale-95 group relative"
               >
                 {/* Micro round background wrapper with soft gradient color */}
-                <div className={`relative w-11 h-11 ${srv.colorBg} rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
+                <div className={`relative w-11 h-11 ${srv.colorBg} rounded-xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
                   <i className={`fa-solid ${srv.icon} text-lg`}></i>
                 </div>
 
-                <span className="text-sm font-bold text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
+                <span className="text-sm pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-[#1E62EC] transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>
@@ -760,14 +760,14 @@ export default function Workbench({
           >
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-blue-50 text-[#1E62EC] rounded-md scale-95 origin-left">
+                <span className="text-[10px] p-1.5 leading-none bg-blue-50 text-[#1E62EC] rounded border border-blue-100 origin-left">
                   {featuredArticles[selectedArticleIndex].tag}
                 </span>
               </div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowGuideModal(true);
+                  onNavigateToSubPage('arbitrationKnowledge');
                 }}
                 className="text-sm text-[#1E62EC] hover:text-[#1148B5] font-black flex items-center gap-0.5 hover:underline transition-colors cursor-pointer"
               >
@@ -1675,7 +1675,7 @@ export default function Workbench({
               <span className="text-slate-400 font-bold block">等待您的CA防伪签章文书 (1份)</span>
               
               <div className="bg-indigo-50/45 border border-indigo-150 rounded-xl p-3 space-y-2">
-                <div className="flex justify-between items-center bg-indigo-50 px-2 py-1 rounded">
+                <div className="flex justify-between items-center bg-indigo-50 p-1.5 rounded">
                   <span className="font-extrabold text-indigo-900 font-mono text-[10.5px]">(2026)穗仲案字第0325号</span>
                   <span className="text-[9px] text-[#3F51B5] font-extrabold">终局裁决书评定稿</span>
                 </div>

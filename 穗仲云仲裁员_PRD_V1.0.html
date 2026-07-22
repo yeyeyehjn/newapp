@@ -1,0 +1,1990 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>穗仲云仲裁员 PRD V1.0</title>
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --bg: #ffffff;
+      --muted: #666;
+      --border: #e2e2e2;
+      --accent: #2563eb;
+      --code-bg: #f5f5f5;
+      --th-bg: #f8f8f8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --fg: #e0e0e0;
+        --bg: #1a1a1a;
+        --muted: #999;
+        --border: #333;
+        --accent: #60a5fa;
+        --code-bg: #2a2a2a;
+        --th-bg: #242424;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.8;
+      color: var(--fg);
+      background: var(--bg);
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    h1 { font-size: 1.6rem; margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+    h2 { font-size: 1.3rem; margin: 28px 0 12px; }
+    h3 { font-size: 1.1rem; margin: 20px 0 8px; }
+    h4 { font-size: 1rem; margin: 16px 0 8px; }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 24px; }
+    li { margin: 4px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.9rem; }
+    th, td { border: 1px solid var(--border); padding: 6px 12px; text-align: left; }
+    th { background: var(--th-bg); font-weight: 600; }
+    tr:nth-child(even) { background: var(--code-bg); }
+    code { background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.85em; }
+    pre { background: var(--code-bg); padding: 12px 16px; border-radius: 6px; overflow-x: auto; margin: 12px 0; }
+    pre code { background: none; padding: 0; }
+    blockquote { border-left: 4px solid var(--accent); padding-left: 16px; color: var(--muted); margin: 12px 0; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+    strong { font-weight: 600; }
+  </style>
+</head>
+<body>
+<h1>广州仲裁委员会 · 穗仲云仲裁员功能 PRD</h1>
+<h2>开发人员</h2>
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>前端</th>
+<th>后端</th>
+<th>测试</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>黄佳楠</td>
+<td><br /></td>
+<td><br /></td>
+<td><br /></td>
+</tr>
+</tbody></table>
+<h2>一、基础信息</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>对应原型</td>
+<td>微信小程序：首页工作台、案件列表、案件详情、任务中心、声明承诺书、笔录签名、延期审批、文书签名等 17 个功能模块</td>
+</tr>
+<tr>
+<td>接入方式</td>
+<td>微信小程序，底部 4 Tab 导航（首页 / 案件 / 待办 / 我的）+ 多级子页面</td>
+</tr>
+<tr>
+<td>操作角色</td>
+<td>广仲在聘仲裁员（首席 / 独任 / 边裁）</td>
+</tr>
+<tr>
+<td>所属模块</td>
+<td>穗仲云 · 仲裁员移动端</td>
+</tr>
+<tr>
+<td>页面入口</td>
+<td>微信小程序首页（工作台），底部 Tab 切换至案件、待办、我的</td>
+</tr>
+<tr>
+<td>核心目标</td>
+<td>仲裁员在移动端完成案件办理、待办处理、文书签章、庭审排期、延期审批、数据统计、个人档案管理等全流程仲裁业务</td>
+</tr>
+</tbody></table>
+<h2>二、角色权限与统一规则</h2>
+<h3>2.1 角色权限</h3>
+<ul>
+<li>查询该仲裁员负责的案件、待办事项。</li>
+</ul>
+<h3>2.2 统一规则</h3>
+<p><strong>签名规则：</strong></p>
+<ul>
+<li>手写签名采用 HTML5 Canvas 画板，支持触摸与鼠标手写。</li>
+</ul>
+<p><strong>列表页通用规则：</strong></p>
+<ul>
+<li>顶部搜索框 + 状态筛选 Tab（每个 Tab 带计数角标）。</li>
+<li>卡片式列表，状态徽章配色统一：待处理-琥珀色、已完成-绿色、已驳回-红色。</li>
+<li>空状态占位提示 + <code>清空搜索与过滤</code> 操作按钮。</li>
+</ul>
+<p><strong>导航规则：</strong></p>
+<ul>
+<li>所有子页面顶部采用微信小程序风格返回栏（左侧 <code>返回</code> + 居中标题）。</li>
+<li>底部 4 Tab 常驻（首页 / 案件 / 待办 / 我的），待办 Tab 显示未处理数量红色徽章。</li>
+</ul>
+<p><strong>数据展示规则：</strong></p>
+<ul>
+<li>金额智能格式化（超千万显示 <code>千万元</code>，超万显示 <code>万元</code>）。</li>
+<li>时间格式化与时间轴展示。</li>
+<li>统计图表采用 SVG 自绘（环形图、柱状图、进度条）。</li>
+</ul>
+<p><strong>本期暂不做：</strong></p>
+<ul>
+<li>智云数字法庭的实时开庭功能为概念展示，正式开庭能力待后续版本对接。</li>
+<li>裁决书全文在线编辑（当前仅预览 + PDF 附件上传）。</li>
+</ul>
+<p><strong>其他规则：</strong></p>
+<ul>
+<li>登录采用账号密码+手机/邮箱验证码或手机号码+人脸双因素校验，登录成功后自动跳转到首页工作台。</li>
+<li>退出登录需二次确认。</li>
+</ul>
+<h2>三、登录</h2>
+<h3>3.1 页面结构</h3>
+<p>登录页采用「方式选择 → 多步表单」两级结构，先选择登录方式，再进入对应的双因素验证流程。</p>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>品牌区</td>
+<td>顶部展示「穗」Logo 图标 +「广州仲裁委」品牌标识 + 标题「仲裁员端 · 安全登录」+ 引导文案</td>
+</tr>
+<tr>
+<td>方式选择区</td>
+<td>两张可选卡片：① 人脸识别登录（手机验证码 + 人脸活体识别）；② 账号密码登录（账号密码 + 绑定手机短信验证）</td>
+</tr>
+<tr>
+<td>步骤指示器</td>
+<td>进入表单后顶部展示 Stepper 进度条，标注当前步骤（共 2 步）</td>
+</tr>
+<tr>
+<td>表单区</td>
+<td>根据所选方式与步骤，动态展示对应字段（详见 3.2）</td>
+</tr>
+<tr>
+<td>操作区</td>
+<td><code>下一步</code> / <code>安全登录</code> 主按钮 + 协议勾选 + 忘记密码入口</td>
+</tr>
+<tr>
+<td>安全提示</td>
+<td>底部展示「CA 盾加密通道 · 数据全程脱敏」</td>
+</tr>
+</tbody></table>
+<h3>3.2 字段规则</h3>
+<h4>3.2.1 人脸识别登录</h4>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>字段</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第 1 步</td>
+<td>手机号码</td>
+<td>输入框（tel）</td>
+<td align="center">是</td>
+<td>11 位手机号，校验正则 <code>^1[3-9]\d{9}$</code></td>
+</tr>
+<tr>
+<td>第 1 步</td>
+<td>短信验证码</td>
+<td>输入框（tel）</td>
+<td align="center">是</td>
+<td>6 位纯数字，右侧附「获取验证码」按钮（60s 倒计时）</td>
+</tr>
+<tr>
+<td>第 2 步</td>
+<td>已验证手机号</td>
+<td>只读展示</td>
+<td align="center">—</td>
+<td>回显第 1 步手机号，带「已验证」标识</td>
+</tr>
+<tr>
+<td>第 2 步</td>
+<td>人脸识别</td>
+<td>采集区（点击触发）</td>
+<td align="center">是</td>
+<td>点击开始活体采集，采集成功后显示「已采集」标识，支持「重新采集」</td>
+</tr>
+</tbody></table>
+<h4>3.2.2 账号密码登录</h4>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>字段</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>第 1 步</td>
+<td>仲裁员账号</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>去空格后长度 ≥ 2</td>
+</tr>
+<tr>
+<td>第 1 步</td>
+<td>登录密码</td>
+<td>输入框（password）</td>
+<td align="center">是</td>
+<td>长度 ≥ 6，右侧附「显示/隐藏」切换按钮</td>
+</tr>
+<tr>
+<td>第 1 步</td>
+<td>忘记密码</td>
+<td>文本按钮</td>
+<td align="center">否</td>
+<td>右下角入口，跳转找回流程</td>
+</tr>
+<tr>
+<td>第 2 步</td>
+<td>账号绑定手机号</td>
+<td>只读展示</td>
+<td align="center">—</td>
+<td>系统根据账号自动回填绑定手机号（脱敏显示，如 <code>139****1234</code>）</td>
+</tr>
+<tr>
+<td>第 2 步</td>
+<td>短信验证码</td>
+<td>输入框（tel）</td>
+<td align="center">是</td>
+<td>6 位纯数字，右侧附「获取验证码」按钮（60s 倒计时）</td>
+</tr>
+</tbody></table>
+<h3>3.3 交互规则</h3>
+<p><strong>方式选择：</strong></p>
+<ul>
+<li>默认展示登录方式选择页，点击任一卡片进入对应登录流程。</li>
+<li>表单页左上角「返回」按钮：第 2 步返回第 1 步并清空验证码/人脸状态；第 1 步返回方式选择页并重置全部表单。</li>
+</ul>
+<p><strong>人脸识别登录：</strong></p>
+<ul>
+<li>第 1 步：校验手机号格式 + 验证码为 6 位 → 通过后进入第 2 步；失败则「下一步」按钮置灰。</li>
+<li>第 2 步：点击采集区开始人脸活体识别（约 2.2s），采集完成后显示「人脸采集成功」。</li>
+<li>点击「安全登录」：校验手机号、验证码、人脸均已采集 → 调用 <code>onLogin</code> 写入登录态。</li>
+</ul>
+<p><strong>账号密码登录：</strong></p>
+<ul>
+<li>第 1 步：校验账号（≥ 2 字符）+ 密码（≥ 6 位）→ 通过后系统根据账号查询绑定手机号（脱敏展示），进入第 2 步；失败则「下一步」按钮置灰。</li>
+<li>第 2 步：向绑定手机发送验证码（60s 倒计时），校验验证码为 6 位。</li>
+<li>点击「安全登录」：校验验证码通过 → 调用 <code>onLogin</code> 写入登录态。</li>
+</ul>
+<p><strong>验证码：</strong></p>
+<ul>
+<li>「获取验证码」按钮仅在手机号合法且倒计时为 0 时可点击；点击后进入 60s 倒计时，倒计时期间按钮文案变为「Xs 后重发」。</li>
+</ul>
+<p><strong>登录成功：</strong></p>
+<ul>
+<li>登录成功后自动跳转至首页工作台。</li>
+</ul>
+<h2>四、工作台首页</h2>
+<h3>4.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>顶部品牌区</td>
+<td>广仲品牌 Banner 图；<code>消息</code> 快捷入口（红色未读圆点，跳转消息通知页）；小程序控制组件（可切换 v1/v2）</td>
+</tr>
+<tr>
+<td>主题 Banner</td>
+<td><code>立信铸就广仲 · 创新赢得未来</code> 主题宣传卡片，含 3D 建筑示意图</td>
+</tr>
+<tr>
+<td>核心数据卡片</td>
+<td>Bento 网格布局：我的待办（左大卡，红色徽章，跳转待办 Tab）、在办案件（右上，跳转案件列表筛选审理中）、累计结案（右下，跳转案件列表筛选已结案）</td>
+</tr>
+<tr>
+<td>最新动态</td>
+<td>垂直滚屏跑马灯，每 4 秒自动滚动一条新闻/通知标题，点击查看动态详情弹窗；右侧分页指示点可手动切换</td>
+</tr>
+<tr>
+<td>近 3 天待开庭</td>
+<td>时间轴卡片，展示今天/明天/后天开庭状态徽章、案号、当事人、开庭时间地点、办案秘书；默认 3 场，可展开更多/收起；点击进入案件详情</td>
+</tr>
+<tr>
+<td>近期待办</td>
+<td>9 宫格图标入口，带未处理数量红色徽章：声明承诺书、笔录签名、延期审批、文书签名、草拟裁决书</td>
+</tr>
+<tr>
+<td>常用功能</td>
+<td>统计中心、我的聘书</td>
+</tr>
+<tr>
+<td>为你精选</td>
+<td>推荐文章卡片（仲裁员须知/审理指引标签），<code>换一换</code> 轮换，<code>更多内容</code> 打开仲裁指引弹窗</td>
+</tr>
+<tr>
+<td>弹窗区</td>
+<td>动态详情弹窗、裁决书模版与示范案例库弹窗、高效办案指引弹窗、智慧广仲云平台入口弹窗、仲裁员须知弹窗、智云数字法庭（概念展示）</td>
+</tr>
+</tbody></table>
+<h3>4.2 展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>字段/元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>核心数据卡片</td>
+<td>我的待办数量</td>
+<td>红色徽章显示数字，点击跳转待办 Tab</td>
+</tr>
+<tr>
+<td>核心数据卡片</td>
+<td>在办案件数</td>
+<td>实时取值，点击跳转案件列表（预设筛选 <code>审理中</code>）</td>
+</tr>
+<tr>
+<td>核心数据卡片</td>
+<td>累计结案数</td>
+<td>实时取值，点击跳转案件列表（预设筛选 <code>已结案</code>）</td>
+</tr>
+<tr>
+<td>最新动态</td>
+<td>滚动间隔</td>
+<td>4 秒/条</td>
+</tr>
+<tr>
+<td>最新动态</td>
+<td>动态详情弹窗</td>
+<td>展示标题、发布日期、信源、正文</td>
+</tr>
+<tr>
+<td>待开庭日程</td>
+<td>展示数量</td>
+<td>默认 3 场，<code>展开更多</code> 查看全部</td>
+</tr>
+<tr>
+<td>近期待办</td>
+<td>角标数量</td>
+<td>对应各任务模块的待处理数，实时更新</td>
+</tr>
+</tbody></table>
+<h3>4.3 交互规则</h3>
+<ul>
+<li>点击核心数据卡片 → 跳转对应列表页（带预设筛选条件）。</li>
+<li>点击最新动态条目 → 打开动态详情弹窗。</li>
+<li>点击待开庭时间轴卡片 → 进入对应案件详情。</li>
+<li>点击近期待办 9 宫格图标 → 跳转对应任务列表。</li>
+<li>点击 <code>换一换</code> → 轮换推荐文章；点击 <code>更多内容</code> → 打开仲裁指引弹窗。</li>
+</ul>
+<h2>五、案件列表</h2>
+<h3>5.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、标题、申请人、被申请人关键词模糊匹配</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 在办案件（审理中）/ 已结案件，每个 Tab 带计数角标</td>
+</tr>
+<tr>
+<td>筛选抽屉</td>
+<td>仲裁员类型（独任、首席、边裁）、经办秘书、标的、开庭日期、结案方式（裁决、调解、撤案）、快捷筛选（重大案件、即将延期、已延期）；支持 <code>重置筛选</code></td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片式展示，按组庭时间倒序</td>
+</tr>
+<tr>
+<td>空状态区</td>
+<td>空状态提示 + <code>清空搜索与过滤</code> 按钮</td>
+</tr>
+</tbody></table>
+<h3>5.2 卡片展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>案号</td>
+<td>完整展示</td>
+</tr>
+<tr>
+<td>状态徽章</td>
+<td>审理中  / 已结案，配色见统一规则</td>
+</tr>
+<tr>
+<td>申请人</td>
+<td>名称展示</td>
+</tr>
+<tr>
+<td>被申请人</td>
+<td>名称展示</td>
+</tr>
+<tr>
+<td>争议金额</td>
+<td>智能格式化（超千万显示 <code>千万元</code>）</td>
+</tr>
+<tr>
+<td>办案秘书</td>
+<td>姓名</td>
+</tr>
+<tr>
+<td>立案时间</td>
+<td>YYYY-MM-DD</td>
+</tr>
+<tr>
+<td>组庭时间</td>
+<td>YYYY-MM-DD</td>
+</tr>
+<tr>
+<td>仲裁员角色</td>
+<td>标签：首席 / 独任 / 边裁</td>
+</tr>
+<tr>
+<td>纠纷类别</td>
+<td>文字标签</td>
+</tr>
+</tbody></table>
+<h3>5.3 交互规则</h3>
+<ul>
+<li>输入关键词 → 实时模糊匹配刷新列表。</li>
+<li>切换状态 Tab → 按对应状态过滤。</li>
+<li>打开筛选抽屉 → 选择纠纷类别，点击 <code>重置筛选</code> 清空类别条件。</li>
+<li>点击案件卡片 → 进入案件详情。</li>
+</ul>
+<h2>六、案件详情</h2>
+<h3>6.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>返回栏</td>
+<td>左侧 <code>返回</code> + 居中案号标题</td>
+</tr>
+<tr>
+<td>渐变 Banner</td>
+<td>展示案号、案由、案件状态，右侧显示该仲裁员在该案件的待办数，点击待办数显示待办清单，点击进入对应的待办详情页</td>
+</tr>
+<tr>
+<td>Tab 导航</td>
+<td>可横向滑动，6 个 Tab：基本信息 / 当事人 / 仲裁请求 / 主要材料 / 文书签名 / 裁决书核阅</td>
+</tr>
+</tbody></table>
+<h3>6.2 各 Tab 展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>展示内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基本信息</td>
+<td>关键信息网格：立案日期、组庭日期、争议金额、仲裁费、办案秘书；秘书联系方式（电话/邮箱，点击一键复制，反馈 <code>已复制</code>）；案情摘要（AI 生成，带 <code>AI生成，仅供参考</code> 水印）</td>
+</tr>
+<tr>
+<td>当事人</td>
+<td>申请人 / 被申请人两区块，显示人数；每位当事人：属性（企业/自然人）、名称、证件类型及号码、手机、邮箱、法定地址</td>
+</tr>
+<tr>
+<td>仲裁请求</td>
+<td>事实和理由完整陈述；请求项编号列表（违约金、返还投资款、赔偿损失、仲裁费承担等）</td>
+</tr>
+<tr>
+<td>主要材料</td>
+<td>材料搜索（名称/类别/提交方）；按类别分组：申请书、申请人证据、被申请人证据、申请人答辩状、被申请人答辩状、其他材料；点击弹出预览弹窗，提供下载</td>
+</tr>
+<tr>
+<td>文书签名</td>
+<td>庭审笔录 PDF（从网上签名处获取）；仲裁裁决书 PDF（待签名/已签名）；签名流程：确认签名 → 成功反馈（提示语“签署成功”）</td>
+</tr>
+<tr>
+<td>裁决书核阅</td>
+<td>案件头部信息；文书概览（仲裁请求、答辩意见、举证质证）；核阅流转记录时间轴（角色头像/时间/意见/附件）；裁决书草稿版本管理（v1/v2 切换）；上传文书表单（提醒对象/备注/附件）；PDF 全屏预览弹窗</td>
+</tr>
+</tbody></table>
+<h3>6.3 交互规则</h3>
+<ul>
+<li>点击 Tab 标题 → 切换展示内容，支持横向滑动。</li>
+<li>支持从外部入口直接定位到指定 Tab（如文书签名列表进入时自动切到"文书签名"Tab，裁决书核阅列表进入时自动切到"裁决书核阅"Tab）。</li>
+<li>点击秘书电话/邮箱 → 复制到剪贴板，Toast <code>已复制</code>。</li>
+<li>点击材料条目 → 弹出预览弹窗。</li>
+<li>文书签名 Tab → 走签名流程（见 6.4）；庭审笔录未签名时点击 → 跳转笔录签名详情页，签名完成后返回案件详情页"文书签名"Tab。</li>
+<li>裁决书核阅 Tab → 走核阅/上传流程（见 6.5）。</li>
+<li>待办面板中点击"裁决书核阅"待办 → 切换到"裁决书核阅"Tab（不跳转子页面）。</li>
+</ul>
+<h3>6.4 文书签名流程</h3>
+<ul>
+<li>确认签名：点击后 loading 动画，调用 GDCA 签章接口</li>
+<li>签名成功：提示“签署成功”，并刷新签署状态</li>
+</ul>
+<h3>6.5 裁决书核阅流程</h3>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>查看核阅流转记录</td>
+<td>时间轴展示：秘书发起 → 一级核阅（退回/通过）→ 秘书修改中</td>
+</tr>
+<tr>
+<td>2</td>
+<td>查看裁决书草稿</td>
+<td>支持 v1/v2 版本切换，查看裁决书全文</td>
+</tr>
+<tr>
+<td>3</td>
+<td>上传文书</td>
+<td>选择提醒对象、填写备注、添加裁决书附件及其他附件，点击 <code>提交上传</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>PDF 预览</td>
+<td>全屏深色背景，模拟裁决书内容，带水印与页码，提供下载</td>
+</tr>
+</tbody></table>
+<h2>七、待办中心</h2>
+<h3>7.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>统计概览卡片</td>
+<td>6 张卡片纵向排列，每张可点击进入对应列表页面（独立子页面）</td>
+</tr>
+<tr>
+<td>详情子页面</td>
+<td>5 个子页面，分别对应 5 类待办的详情列表</td>
+</tr>
+<tr>
+<td>任务处理流程页</td>
+<td>3 种任务类型（裁决书签署 / 开庭排期 / 材料审阅）的处理弹窗/页面</td>
+</tr>
+</tbody></table>
+<h3>7.2 统计概览模块</h3>
+<p>待办中心顶部为统计概览区，共 6 张卡片纵向排列。每张卡片统一结构：左侧图标+标题、右侧待办总数（大字数字）+ 箭头、底部统计指标网格及进度条。点击整张卡片跳转至对应独立列表页。</p>
+<h4>7.2.1 待开庭提醒（红色）</h4>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>红色背景，法槌图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>待开庭总数 = 今日开庭数 + 临近 + 已排期数</td>
+</tr>
+<tr>
+<td>统计网格（3 列）</td>
+<td><strong>今日</strong>（红色）：开庭时间是今日的开庭数据<br /><strong>临近</strong>（琥珀色）：开庭时间是明天的开庭数据<br /><strong>已排期</strong>（绿色）：后天及之后的开庭数据</td>
+</tr>
+<tr>
+<td>本周开庭完成率</td>
+<td>底部进度条 + 文案；规则：<code>本周已开庭数 ÷ 本周总开庭数 × 100%</code>；当临近待排期数为 0 时显示 100%</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 待开庭列表（<code>pendingHearingList</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.2 声明承诺书（青色）</h4>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>青色（teal）背景，文件盾牌图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>未签署声明承诺书数量</td>
+</tr>
+<tr>
+<td>统计网格（2 列）</td>
+<td><strong>待签署</strong>（青色）：状态为未签署的承诺书数量<br /><strong>已签署</strong>（绿色）：状态为已签署的承诺书数量</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 声明承诺书列表（<code>declarationList</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.3 笔录签名（橙色）</h4>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>橙色背景，钢笔尖图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>未签名笔录数量</td>
+</tr>
+<tr>
+<td>统计网格（2 列）</td>
+<td><strong>待签署</strong>（橙色）：状态为未签名的笔录数量<br /><strong>已签署</strong>（灰色）：状态为已签名的笔录数量</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 笔录签名页（<code>transcriptSignature</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.4 延期审批（琥珀色）</h4>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>琥珀色背景，时钟图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>待审批（状态为 pending）的延期申请数量</td>
+</tr>
+<tr>
+<td>统计网格（2 列）</td>
+<td><strong>待审批</strong>（琥珀色）：状态为 pending 的延期申请数<br /><strong>已审批</strong>（绿色）：状态为 approved 或 rejected 的延期申请数</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 延期审批页（<code>postponementApproval</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.5 文书签名（靛蓝色）</h4>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>靛蓝色背景，文件签名图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>待签文书数 + 固定偏移量</td>
+</tr>
+<tr>
+<td>统计网格（2 列）</td>
+<td><strong>待签</strong>（靛蓝色）：当前待签署的裁决书等文书数<br /><strong>本月已签</strong>（天蓝色）：本月已完成 GDCA 签章的文书数</td>
+</tr>
+<tr>
+<td>年度完成率进度条</td>
+<td>底部进度条 + 文案；规则：<code>本年已签数 ÷ 本年度应签数 × 100%</code>；当待签数为 0 时进度条满格显示 100%<br />本年度应签数 = 该仲裁员名下点击结案时间为本年且需其签名的文书总数</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 文书签名列表（<code>docSignatureList</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.6 草拟裁决书（玫红色）</h4>
+<ul>
+<li>草拟裁决书为裁决书核阅模块</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>图标</td>
+<td>玫红色（rose）背景，文件编辑图标</td>
+</tr>
+<tr>
+<td>待办总数（右上角大字）</td>
+<td>待草拟裁决书数量</td>
+</tr>
+<tr>
+<td>统计网格（2 列）</td>
+<td><strong>待草拟</strong>（玫红色）：状态为待核阅的裁决书核阅数 + 案件已开庭且未结案的案件数<br /><strong>已提交</strong>（绿色）：状态为已提交核阅的裁决书核阅数</td>
+</tr>
+<tr>
+<td>点击跳转</td>
+<td>→ 草拟裁决书列表（<code>draftAwardList</code>）</td>
+</tr>
+</tbody></table>
+<h4>7.2.7 统计规则汇总</h4>
+<table>
+<thead>
+<tr>
+<th>卡片</th>
+<th>待办总数统计规则</th>
+<th>辅助统计指标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待开庭提醒</td>
+<td>今日开庭数 + 临近待排期数</td>
+<td>今日 / 临近 / 已排期；本周开庭完成率</td>
+</tr>
+<tr>
+<td>声明承诺书</td>
+<td><code>COUNT(状态 = 未签署)</code></td>
+<td>待签署 / 已签署</td>
+</tr>
+<tr>
+<td>笔录签名</td>
+<td><code>COUNT(状态 = 未签名)</code></td>
+<td>待签署 / 已签署</td>
+</tr>
+<tr>
+<td>延期审批</td>
+<td><code>COUNT(状态 = pending)</code></td>
+<td>待审批 / 已审批（approved + rejected）</td>
+</tr>
+<tr>
+<td>文书签名</td>
+<td><code>COUNT(状态 = 待签)</code> + 偏移量</td>
+<td>待签 / 本月已签；本年度应签数、已签数、年度完成率</td>
+</tr>
+<tr>
+<td>草拟裁决书</td>
+<td><code>COUNT(状态 = 待草拟)</code></td>
+<td>待草拟 / 已提交</td>
+</tr>
+</tbody></table>
+<h2>八、待开庭提醒</h2>
+<h3>8.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、申请人、被申请人、办案秘书、开庭用途、开庭地点关键词搜索</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>仅展示待开庭记录，按开庭时间升序排列</td>
+</tr>
+</tbody></table>
+<h3>8.2 卡片展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>案号</td>
+<td>完整展示</td>
+</tr>
+<tr>
+<td>申请人</td>
+<td>名称展示</td>
+</tr>
+<tr>
+<td>被申请人</td>
+<td>名称展示</td>
+</tr>
+<tr>
+<td>开庭时间</td>
+<td>高亮展示，YYYY-MM-DD HH:mm</td>
+</tr>
+<tr>
+<td>开庭地点</td>
+<td>—</td>
+</tr>
+<tr>
+<td>办案秘书</td>
+<td>姓名</td>
+</tr>
+<tr>
+<td>开庭用途</td>
+<td>开庭审理 / 质证开庭 / 辩论开庭等</td>
+</tr>
+</tbody></table>
+<h3>8.3 交互规则</h3>
+<ul>
+<li>点击案件卡片 → 进入案件详情。</li>
+</ul>
+<h2>九、声明承诺书</h2>
+<h3>9.1 列表页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、当事人、办案秘书关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 待签署（带计数） / 已签署</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章、申请人/被申请人、办案秘书、仲裁员、签署日期<br />查询规则：查询该仲裁员名下的待签署声明承诺书列表，已签署列表按签署日期降序排序</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>点击卡片进入签署详情页</td>
+</tr>
+</tbody></table>
+<h3>9.2 签署详情页字段规则</h3>
+<table>
+<thead>
+<tr>
+<th>分区</th>
+<th>字段/选项</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>仲裁员信息</td>
+<td>姓名</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>当前登录仲裁员姓名</td>
+</tr>
+<tr>
+<td>仲裁员信息</td>
+<td>手机</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>绑定手机号</td>
+</tr>
+<tr>
+<td>仲裁员信息</td>
+<td>工作单位</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>档案中的工作单位</td>
+</tr>
+<tr>
+<td>当事人信息</td>
+<td>申请人企业名称</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>—</td>
+</tr>
+<tr>
+<td>当事人信息</td>
+<td>被申请人企业名称</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>—</td>
+</tr>
+<tr>
+<td>当事人信息</td>
+<td>机构代码</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>—</td>
+</tr>
+<tr>
+<td>当事人信息</td>
+<td>代理人</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>—</td>
+</tr>
+<tr>
+<td>当事人信息</td>
+<td>地址</td>
+<td>只读</td>
+<td align="center">系统带出</td>
+<td>—</td>
+</tr>
+<tr>
+<td>仲裁员声明</td>
+<td>声明选项</td>
+<td>单选</td>
+<td align="center">是</td>
+<td>4 选 1：(1) 不存在回避事由，接受担任；(2) 存在附件第 __ 项回避事由，不接受；(3) 存在需披露情形（文本域）；(4) 存在其他事由，不接受</td>
+</tr>
+<tr>
+<td>声明选项 2</td>
+<td>回避事由项号</td>
+<td>输入框</td>
+<td align="center">条件必填</td>
+<td>选择声明选项 2 时必填；可查阅回避事由清单弹窗（含 10 项法定回避情形）</td>
+</tr>
+<tr>
+<td>声明选项 3</td>
+<td>披露情形描述</td>
+<td>多行文本</td>
+<td align="center">条件必填</td>
+<td>选择声明选项 3 时必填；并区分 3.1（不影响公正，接受）/ 3.2（影响公正，不接受）</td>
+</tr>
+<tr>
+<td>保密义务</td>
+<td>条款文本</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>展示保密义务 / 本人确知 / 本人承诺条款</td>
+</tr>
+<tr>
+<td>验证</td>
+<td>手写签名</td>
+<td>Canvas 画板</td>
+<td align="center">是</td>
+<td>手写签名内容</td>
+</tr>
+</tbody></table>
+<h3>9.3 交互规则</h3>
+<p><strong>提交确认：</strong></p>
+<ul>
+<li>校验全部必填项（含条件必填）→ 失败则定位到首个错误项。</li>
+<li>校验手写签名 → 失败则提示 <code>请先完成手写签名</code>。</li>
+<li>校验通过 → 提交签署，按钮进入 loading 状态。</li>
+<li>签署成功 → 归入本案数字一案一档，Toast <code>声明承诺书签署成功</code>。</li>
+</ul>
+<h2>十、笔录签名</h2>
+<h3>10.1 列表页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、申请人、被申请人、办案秘书关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 待签名 / 已签名（带计数）</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章、申请人/被申请人、办案秘书、仲裁员、开庭时间</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>点击卡片进入签名详情页</td>
+</tr>
+</tbody></table>
+<h3>10.2 签名详情页字段规则</h3>
+<table>
+<thead>
+<tr>
+<th>分区</th>
+<th>字段/元素</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>案件信息卡片</td>
+<td>案号</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>状态</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>待签名 / 已签名</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>当事人</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>申请人/被申请人</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>办案秘书</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>开庭时间</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>YYYY-MM-DD HH:mm</td>
+</tr>
+<tr>
+<td>签名面板</td>
+<td>手写签名</td>
+<td>Canvas 画板</td>
+<td align="center">是</td>
+<td>HTML5 Canvas，支持鼠标和触摸手写；<code>清除</code> 按钮可重置画板</td>
+</tr>
+</tbody></table>
+<h3>10.3 交互规则</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>清除签名</td>
+<td>点击后清空 Canvas 画板内容</td>
+</tr>
+<tr>
+<td>预览文件</td>
+<td>点击 <code>预览文件</code> → 弹出笔录预览弹窗（展示案件基本信息）</td>
+</tr>
+<tr>
+<td>提交签名</td>
+<td>校验 Canvas 是否已签名 → 未签名时提示 <code>请先完成手写签名</code>；校验通过后状态变为已签名</td>
+</tr>
+</tbody></table>
+<h2>十一、延期审批</h2>
+<h3>11.1 列表页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、申请人、被申请人、办案秘书关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 待审批 / 已审批（带计数）</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章（待审批/已审批）、当事人、办案秘书、仲裁员</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>点击卡片进入审批详情页</td>
+</tr>
+</tbody></table>
+<h3>11.2 审批详情页字段规则</h3>
+<table>
+<thead>
+<tr>
+<th>分区</th>
+<th>字段</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>案件信息卡片</td>
+<td>案号</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>当事人</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>申请人/被申请人</td>
+</tr>
+<tr>
+<td>案件信息卡片</td>
+<td>办案秘书</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>延期申请信息</td>
+<td>延期原因</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>当事人填写的延期理由</td>
+</tr>
+<tr>
+<td>延期申请信息</td>
+<td>原定开庭时间</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>YYYY-MM-DD HH:mm</td>
+</tr>
+<tr>
+<td>延期申请信息</td>
+<td>申请延期至</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>YYYY-MM-DD HH:mm</td>
+</tr>
+<tr>
+<td>延期申请信息</td>
+<td>申请时间</td>
+<td>只读</td>
+<td align="center">—</td>
+<td>YYYY-MM-DD HH:mm</td>
+</tr>
+</tbody></table>
+<h3>11.3 审批流转记录</h3>
+<p>时间轴展示，每条记录含：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>操作人</td>
+<td>姓名 + 角色</td>
+</tr>
+<tr>
+<td>时间</td>
+<td>YYYY-MM-DD HH:mm</td>
+</tr>
+<tr>
+<td>状态</td>
+<td>待审批 / 已审批</td>
+</tr>
+<tr>
+<td>审批意见</td>
+<td>文本内容（如有）</td>
+</tr>
+</tbody></table>
+<h3>11.4 交互规则</h3>
+<p><strong>同意延期：</strong></p>
+<ul>
+<li>触发入口：详情页底部 <code>同意延期</code>（绿色）按钮。</li>
+<li>点击后弹出审批弹窗：展示案号与申请延期至摘要，提供审批意见输入框（选填，最多 300 字）。</li>
+<li>确认后 → 状态变为 <code>已审批</code>，写入审批流转记录。</li>
+<li>Toast 提示：<code>已同意延期申请</code>。</li>
+</ul>
+<p><strong>驳回申请：</strong></p>
+<ul>
+<li>触发入口：详情页底部 <code>驳回申请</code>（红色）按钮。</li>
+<li>点击后弹出驳回弹窗：提供驳回原因输入框（必填，最多 500 字，未填写时确认按钮禁用）。</li>
+<li>确认后 → 状态变为 <code>已审批</code>，写入审批流转记录。</li>
+<li>Toast 提示：<code>已驳回延期申请</code>。</li>
+</ul>
+<h2>十二、文书签名</h2>
+<h3>12.1 列表页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、当事人、办案秘书、文书标题关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 待签名 / 已签名（带计数）</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章、当事人、办案秘书、仲裁员、文书标题（仲裁裁决书/调解书）、签名日期</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>点击卡片进入案件详情（文书签名 Tab）进行 GDCA 签章</td>
+</tr>
+</tbody></table>
+<h3>12.2 交互规则</h3>
+<ul>
+<li>点击列表卡片 → 跳转案件详情页，自动定位到 <code>文书签名</code> Tab。</li>
+<li>签名流程同 6.4 文书签名流程。</li>
+</ul>
+<h2>十三、草拟裁决书</h2>
+<ul>
+<li>该模块为裁决书核阅模块，流程同 6.5 裁决书核阅流程。</li>
+</ul>
+<h3>13.1 列表页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、当事人、办案秘书、案由关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 待草拟 / 已草拟（带计数）</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章、当事人、办案秘书、案由、草拟日期</td>
+</tr>
+<tr>
+<td>操作</td>
+<td>点击卡片进入案件详情，自动定位到裁决书核阅 Tab</td>
+</tr>
+</tbody></table>
+<h3>13.2 交互规则</h3>
+<ul>
+<li>点击列表卡片 → 跳转案件详情页的 <code>裁决书核阅</code> Tab。</li>
+<li>草拟流程同 6.5 裁决书核阅流程。</li>
+</ul>
+<h2>十四、案件讨论</h2>
+<h3>14.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>顶部标识区</td>
+<td><code>在案合议交流室</code> 标识，绿色脉动指示灯</td>
+</tr>
+<tr>
+<td>案件/庭室切换</td>
+<td>下拉选择器，切换不同案件的讨论室（显示为 <code>XX 号庭</code>）</td>
+</tr>
+<tr>
+<td>聊天消息流</td>
+<td>区分自己（右侧蓝色气泡）与他人（左侧白色气泡）；含发送人角色标签（办案秘书/合议庭成员/首席仲裁员）、头像、内容、时间</td>
+</tr>
+<tr>
+<td>快捷回复区</td>
+<td>底部预设常用回复短语，点击直接发送</td>
+</tr>
+<tr>
+<td>自定义输入区</td>
+<td>文本输入框 + 发送按钮（纸飞机图标）</td>
+</tr>
+</tbody></table>
+<h3>14.2 交互规则</h3>
+<ul>
+<li>自动滚动到最新消息。</li>
+<li>点击快捷回复短语 → 立即发送该短语。</li>
+<li>输入文本后点击发送按钮 → 发送消息，清空输入框。</li>
+</ul>
+<h2>十五、统计中心</h2>
+<h3>15.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>筛选配置区</td>
+<td>筛选标题 + <code>清除筛选</code> 按钮 + 快捷筛选按钮组（今年 / 近半年 / 近三个月）+ 自定义日期范围（起始日期、结束日期选择器）+ 范围摘要文案（<code>日期 ~ 日期 · 共 N 天</code>）</td>
+</tr>
+<tr>
+<td>新收案件情况</td>
+<td>环形图（独任 / 首席 / 边裁三类案件数及占比），环心显示总案件数；下方三块图例可点击跳转案件列表</td>
+</tr>
+<tr>
+<td>在办案件情况</td>
+<td>双格统计：在办数（非已结案案件数）、已延期数（有待开庭且过期的案件数）；已延期 &gt;0 时玫红高亮；点击跳转案件列表</td>
+</tr>
+<tr>
+<td>办结案件情况</td>
+<td>办结数（总数，含同比）+ 分项构成三格：裁决率、调解率、撤案率（各含同比涨跌 ▲绿色 / ▼红色）；点击各项跳转案件列表</td>
+</tr>
+<tr>
+<td>图表区</td>
+<td>Top5 案由进度条列表 + 裁调撤季度柱状图</td>
+</tr>
+</tbody></table>
+<h3>15.2 筛选规则</h3>
+<table>
+<thead>
+<tr>
+<th>筛选方式</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>快捷筛选</td>
+<td>三按钮：<code>今年</code>（当年 1/1 ~ 今日）、<code>近半年</code>（今日前推 6 个月）、<code>近三个月</code>（今日前推 3 个月）；选中态高亮蓝色，手动改日期时自动取消高亮</td>
+</tr>
+<tr>
+<td>自定义日期范围</td>
+<td>起始日期 + 结束日期两个日期选择器；若起 &gt; 结，自动纠正互换；范围变更触发短暂加载态（半透明 + <code>统计中</code> 脉冲指示器）</td>
+</tr>
+<tr>
+<td>清除筛选</td>
+<td>点击 <code>清除筛选 ↺</code> → 回到默认"今年"范围</td>
+</tr>
+<tr>
+<td>数据聚合逻辑</td>
+<td>按日期范围与各年度季度区间取交集，纳入匹配的季度数据；多季度/跨年时，案件数求和、比率取算数平均、涨跌及排名取区间最近一期口径</td>
+</tr>
+</tbody></table>
+<h3>15.3 图表展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>图板</th>
+<th>类型</th>
+<th>展示内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新收案件情况</td>
+<td>环形图</td>
+<td>独任（蓝 <code>#1E62EC</code>）/ 首席（橙 <code>#F59E0B</code>）/ 边裁（绿 <code>#74C080</code>）三类案件数及占比，环心显示总案件数；下方三块图例可点击跳转案件列表</td>
+</tr>
+<tr>
+<td>在办案件情况</td>
+<td>指标卡片</td>
+<td>在办数（非已结案案件数）、已延期数（有待开庭且过期的案件数）；已延期 &gt;0 时玫红高亮</td>
+</tr>
+<tr>
+<td>办结案件情况</td>
+<td>指标卡片</td>
+<td>办结数（总数，含同比涨跌）+ 分项构成三格：裁决率、调解率、撤案率（各含同比涨跌 ▲绿色 / ▼红色）</td>
+</tr>
+<tr>
+<td>办理案件 Top5 案由</td>
+<td>进度条</td>
+<td>横向进度条列表（TOP5 案由），显示件数与占比；点击案由名跳转案件列表</td>
+</tr>
+<tr>
+<td>裁调撤情况</td>
+<td>柱状图</td>
+<td>四季度 × 三类指标（裁决率-蓝、调解率-橙、撤案率-绿），悬浮/点击高亮显示 Tooltip；日期范围覆盖到的季度高亮，未覆盖季度置灰；点击柱体聚焦到该季度日期范围</td>
+</tr>
+</tbody></table>
+<h3>15.4 交互规则</h3>
+<ul>
+<li>切换快捷筛选 / 修改日期范围 → 触发短暂加载态（~320ms），所有图表数据实时刷新。</li>
+<li>点击柱状图某季度柱体 → 将日期范围聚焦到该季度（基于当前结束日期所在年），图表数据同步更新。</li>
+<li>点击 <code>清除筛选</code> → 重置为"今年"范围。</li>
+<li>点击新收案件情况图例（独任 / 首席 / 边裁） → 跳转案件列表。</li>
+<li>点击在办案件情况（在办数 / 已延期数） → 跳转案件列表。</li>
+<li>点击办结案件情况各项（办结数 / 裁决率 / 调解率 / 撤案率） → 跳转案件列表。</li>
+<li>点击 Top5 案由列表中任意案由 → 跳转案件列表。</li>
+</ul>
+<h2>十六、消息通知</h2>
+<h3>16.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tab 区</td>
+<td>全部 / 未读（未读数量红色徽章）</td>
+</tr>
+<tr>
+<td>操作区</td>
+<td>有未读时显示 <code>全部已读</code> 按钮</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>通知列表，按时间倒序</td>
+</tr>
+</tbody></table>
+<h3>16.2 通知展示规则</h3>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通知类别</td>
+<td>系统通知（红色图标）/ 业务提醒（蓝色图标）/ 签章合议（琥珀色图标）</td>
+</tr>
+<tr>
+<td>标题</td>
+<td>通知标题</td>
+</tr>
+<tr>
+<td>内容</td>
+<td>通知正文摘要（审理期限届满预警、庭审时段变更、裁决书合签通知、当事人补充质证提交等）</td>
+</tr>
+<tr>
+<td>时间</td>
+<td>发送时间</td>
+</tr>
+<tr>
+<td>未读标识</td>
+<td>未读通知左侧靛蓝色强调条 + 圆点指示</td>
+</tr>
+</tbody></table>
+<h3>16.3 交互规则</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全部已读</td>
+<td>一键将所有未读通知标记为已读，按钮消失</td>
+</tr>
+<tr>
+<td>点击通知</td>
+<td>切换该通知已读/未读状态</td>
+</tr>
+<tr>
+<td>空状态</td>
+<td>展示 <code>空空如也</code> 占位</td>
+</tr>
+</tbody></table>
+<h2>十七、酬金单</h2>
+<h3>17.1 页面结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>搜索区</td>
+<td>按案号、经办秘书关键词搜索</td>
+</tr>
+<tr>
+<td>状态 Tab</td>
+<td>全部 / 已发酬金（绿色）/ 待发酬金（琥珀色）（带计数）</td>
+</tr>
+<tr>
+<td>列表区</td>
+<td>卡片展示：案号、状态徽章、经办秘书、税前酬金金额（¥ 千分位格式）</td>
+</tr>
+</tbody></table>
+<h3>17.2 报酬规则弹窗</h3>
+<table>
+<thead>
+<tr>
+<th>分区</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>报酬计算标准</td>
+<td>按争议金额分档：100 万以下 3000-5000 元、100-500 万 5000-8000 元、500 万以上 8000-15000 元；涉外/特殊案件可上浮 20%-50%</td>
+</tr>
+<tr>
+<td>发放时间规定</td>
+<td>结案签裁决书后 15 个工作日内</td>
+</tr>
+<tr>
+<td>税务处理</td>
+<td>依法代扣代缴个人所得税</td>
+</tr>
+<tr>
+<td>特殊情况处理</td>
+<td>中止/撤回/和解按工作量比例；主动回避或违纪解聘不予发放</td>
+</tr>
+</tbody></table>
+<h3>17.3 交互规则</h3>
+<ul>
+<li>点击 <code>报酬规则说明</code> → 弹出报酬规则弹窗。</li>
+<li>列表为空时展示空状态提示。</li>
+</ul>
+<h2>十八、我的聘书</h2>
+<h3>18.1 页面结构</h3>
+<ul>
+<li>存在多个聘书，点击聘书预览PDF，支持下载</li>
+</ul>
+<h2>十九、个人中心</h2>
+<h3>19.1 个人主页结构</h3>
+<table>
+<thead>
+<tr>
+<th>区块</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>头部区</td>
+<td>头像（可上传/更换）、姓名、聘用职称徽章（特级）、所属单位、专业特长标签</td>
+</tr>
+<tr>
+<td>酬金单入口</td>
+<td>卡片形式，点击跳转酬金单页面</td>
+</tr>
+<tr>
+<td>个人信息</td>
+<td>手风琴展开：姓名、职称、手机、邮箱、三类地址（含 <code>首选</code> 标记）、专业特长 → 编辑入口</td>
+</tr>
+<tr>
+<td>工作单位</td>
+<td>手风琴展开：单位名称、现任职务、行业资质 → 编辑入口</td>
+</tr>
+<tr>
+<td>个人履历</td>
+<td>手风琴展开：学历与执业经历时间轴、核心代表著作</td>
+</tr>
+<tr>
+<td>银行账号</td>
+<td>手风琴展开：仿真银行卡卡片（开户银行、支行、卡号、户名）→ 编辑入口</td>
+</tr>
+<tr>
+<td>退出登录</td>
+<td>二次确认弹窗，确认退出登录后跳转登录页</td>
+</tr>
+</tbody></table>
+<h3>19.2 编辑页字段规则</h3>
+<table>
+<thead>
+<tr>
+<th>编辑页</th>
+<th>字段</th>
+<th>组件</th>
+<th align="center">必填</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>个人信息编辑</td>
+<td>中文姓名</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>聘用职称</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>手机号</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>11 位数字</td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>联系邮箱</td>
+<td>输入框</td>
+<td align="center">否</td>
+<td>邮箱格式校验</td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>居住地址</td>
+<td>输入框</td>
+<td align="center">否</td>
+<td>可 <code>设为首选</code></td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>联系地址</td>
+<td>输入框</td>
+<td align="center">否</td>
+<td>可 <code>设为首选</code></td>
+</tr>
+<tr>
+<td>个人信息编辑</td>
+<td>其他地址</td>
+<td>输入框</td>
+<td align="center">否</td>
+<td>可 <code>设为首选</code></td>
+</tr>
+<tr>
+<td>工作单位编辑</td>
+<td>工作单位</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+<tr>
+<td>工作单位编辑</td>
+<td>现任职务</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+<tr>
+<td>工作单位编辑</td>
+<td>行业资质</td>
+<td>输入框</td>
+<td align="center">否</td>
+<td>—</td>
+</tr>
+<tr>
+<td>银行账号编辑</td>
+<td>开户银行</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>黄色 <code>重要提示</code>：银行账户变更需携带身份证、特级聘书及广州 CA 盾到现场柜台办理</td>
+</tr>
+<tr>
+<td>银行账号编辑</td>
+<td>开户支行</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+<tr>
+<td>银行账号编辑</td>
+<td>银行卡号</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>数字</td>
+</tr>
+<tr>
+<td>银行账号编辑</td>
+<td>账户户名</td>
+<td>输入框</td>
+<td align="center">是</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<h3>19.3 交互规则</h3>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>上传/更换头像</td>
+<td>点击头像 → 选择图片上传</td>
+</tr>
+<tr>
+<td>设为首选地址</td>
+<td>点击地址旁 <code>设为首选</code> → 切换首选标记，同时取消其他地址的首选标记</td>
+</tr>
+<tr>
+<td>进入编辑页</td>
+<td>点击分区中的 <code>编辑</code> 入口 → 进入对应编辑页</td>
+</tr>
+<tr>
+<td>保存修改</td>
+<td>校验必填项 → 通过后保存并返回个人主页，Toast <code>保存成功</code></td>
+</tr>
+<tr>
+<td>取消编辑</td>
+<td>点击 <code>取消</code> → 不保存直接返回个人主页</td>
+</tr>
+<tr>
+<td>退出登录</td>
+<td>点击 <code>退出登录</code> → 弹出二次确认弹窗（提示清除 CA 核验口令）→ 确认后退出至登录页</td>
+</tr>
+</tbody></table>
+<h2>二十、状态流转与审批规则</h2>
+<h3>20.1 案件状态</h3>
+<table>
+<thead>
+<tr>
+<th>状态值</th>
+<th>展示文案</th>
+<th>标签颜色</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>processing</code></td>
+<td>审理中</td>
+<td>蓝色</td>
+<td>案件审理进行中</td>
+</tr>
+<tr>
+<td><code>pending</code></td>
+<td>待开庭</td>
+<td>琥珀色</td>
+<td>已排期等待开庭</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td>已结案</td>
+<td>绿色</td>
+<td>案件审理终结，终态</td>
+</tr>
+<tr>
+<td><code>signing</code></td>
+<td>待签名</td>
+<td>红色</td>
+<td>文书待签名</td>
+</tr>
+</tbody></table>
+<h3>20.2 延期审批状态流转</h3>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>触发动作</th>
+<th>下一状态</th>
+<th>触发方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待审批</td>
+<td>同意延期</td>
+<td>已审批</td>
+<td>仲裁员</td>
+<td>需可选填写审批意见</td>
+</tr>
+<tr>
+<td>待审批</td>
+<td>驳回申请</td>
+<td>已驳回</td>
+<td>仲裁员</td>
+<td>需必填驳回原因</td>
+</tr>
+</tbody></table>
+<h3>20.3 声明承诺书状态流转</h3>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>触发动作</th>
+<th>下一状态</th>
+<th>触发方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待签署</td>
+<td>提交确认</td>
+<td>已签署</td>
+<td>仲裁员</td>
+<td>需短信验证码验证</td>
+</tr>
+</tbody></table>
+<h3>20.4 笔录签名状态流转</h3>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>触发动作</th>
+<th>下一状态</th>
+<th>触发方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待签名</td>
+<td>提交签名</td>
+<td>已签名</td>
+<td>仲裁员</td>
+<td>需完成 Canvas 手写签名</td>
+</tr>
+</tbody></table>
+<h3>20.5 文书签名状态流转</h3>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>触发动作</th>
+<th>下一状态</th>
+<th>触发方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待签名</td>
+<td>确认签名</td>
+<td>已签名</td>
+<td>仲裁员</td>
+<td>需短信/邮箱验证码 + CA 数字证书盾核签</td>
+</tr>
+</tbody></table>
+<h3>20.6 草拟裁决书状态流转</h3>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>触发动作</th>
+<th>下一状态</th>
+<th>触发方</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>待草拟</td>
+<td>提交上传</td>
+<td>已草拟</td>
+<td>仲裁员</td>
+<td>上传裁决书附件</td>
+</tr>
+</tbody></table>
+<h2>二十一、异常与边界场景</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>处理规则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>登录账号或密码为空</td>
+<td>阻断登录，定位到首个空字段</td>
+</tr>
+<tr>
+<td>登录密码错误</td>
+<td>提示 <code>账号或密码错误</code></td>
+</tr>
+<tr>
+<td>声明承诺书未选声明选项</td>
+<td>阻断提交，定位到声明选项区</td>
+</tr>
+<tr>
+<td>声明承诺书短信验证码错误</td>
+<td>阻断提交，提示 <code>验证码错误或已过期</code></td>
+</tr>
+<tr>
+<td>笔录签名未完成手写签名</td>
+<td>阻断提交，提示 <code>请先完成手写签名</code></td>
+</tr>
+<tr>
+<td>延期审批驳回未填驳回原因</td>
+<td>阻断提交，确认按钮保持禁用状态</td>
+</tr>
+<tr>
+<td>文书签名验证码错误</td>
+<td>阻断签名，提示 <code>验证码错误或已过期</code></td>
+</tr>
+<tr>
+<td>CA 数字证书盾验证失败</td>
+<td>阻断签章操作，提示 <code>CA 证书验证失败，请重试</code></td>
+</tr>
+<tr>
+<td>案件列表无搜索结果</td>
+<td>展示空状态 + <code>清空搜索与过滤</code> 按钮</td>
+</tr>
+<tr>
+<td>待开庭列表为空</td>
+<td>展示空状态提示</td>
+</tr>
+<tr>
+<td>消息通知列表为空</td>
+<td>展示 <code>空空如也</code> 占位</td>
+</tr>
+<tr>
+<td>酬金单列表为空</td>
+<td>展示空状态提示</td>
+</tr>
+<tr>
+<td>材料审阅未全部阅读即提交</td>
+<td>阻断提交，提示 <code>请先阅读全部材料</code></td>
+</tr>
+<tr>
+<td>个人信息编辑手机号格式错误</td>
+<td>阻断保存，定位到手机号字段</td>
+</tr>
+<tr>
+<td>个人信息编辑邮箱格式错误</td>
+<td>阻断保存，定位到邮箱字段</td>
+</tr>
+<tr>
+<td>银行账号编辑卡号非数字</td>
+<td>阻断保存，定位到卡号字段</td>
+</tr>
+<tr>
+<td>前端重复点击提交</td>
+<td>提交后按钮立即禁用，不可重复点击</td>
+</tr>
+<tr>
+<td>后端重复接收同一次提交</td>
+<td>按幂等规则处理，不得生成重复记录</td>
+</tr>
+<tr>
+<td>导出聘书 PDF 失败</td>
+<td>提示 <code>导出失败，请重试</code></td>
+</tr>
+</tbody></table>
+<h2>二十二、待确认事项</h2>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>问题</th>
+<th>当前状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T-01</td>
+<td>智云数字法庭是否本期上线，还是作为概念展示</td>
+<td>待产品确认</td>
+</tr>
+<tr>
+<td>T-02</td>
+<td>裁决书全文在线编辑能力排期</td>
+<td>待产品确认</td>
+</tr>
+</tbody></table>
+<p>| T-03 | 消息通知是否需要接入微信小程序订阅消息推送    | 待产品确认   |
+| T-04 | 案件讨论即时通讯是否需要历史消息持久化与分页加载 | 待产品确认   |</p>
+
+</body>
+</html>

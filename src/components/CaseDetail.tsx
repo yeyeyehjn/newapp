@@ -2,10 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, FileText, Download, Search, User, Building2, FileCheck, Sparkles, Shield, Mail, Phone, Copy, X, PenTool, ChevronRight, ChevronDown, Bell, Paperclip, Clock, AlertTriangle, CircleDollarSign, Receipt } from 'lucide-react';
 import { Case } from '../types';
 
+type CaseDetailTab = 'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review';
+
 interface CaseDetailProps {
   caseItem: Case;
   onBack: () => void;
   onNavigateToSubPage?: (page: string) => void;
+  initialTab?: CaseDetailTab;
+  onSignTranscript?: (transcript: { id: string; name: string; pages: number; size: string }) => void;
 }
 
 interface PartyInfo {
@@ -123,8 +127,8 @@ function PdfFileIcon({ pages }: { pages: number }) {
   );
 }
 
-export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage }: CaseDetailProps) {
-  const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review'>('basic');
+export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, initialTab, onSignTranscript }: CaseDetailProps) {
+  const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review'>(initialTab || 'basic');
   const [viewingMaterial, setViewingMaterial] = useState<MaterialItem | null>(null);
   const [materialSearch, setMaterialSearch] = useState('');
   const [isSigned, setIsSigned] = useState(false);
@@ -188,7 +192,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage }: Ca
   // 本案件待办列表
   const caseTodos = [
     { id: 'todo1', type: '延期审批', title: '您有 1 件延期审批待处理', desc: '李明申请将2月20日开庭延期至3月5日', severity: 'urgent' as const, target: 'postponementApproval' },
-    { id: 'todo2', type: '文书签名', title: '您有 2 件文书签名待处理', desc: '2份庭审笔录等待您签名确认', severity: 'normal' as const, target: 'transcriptSignature' },
+    { id: 'todo2', type: '笔录签名', title: '您有 2 件笔录签名待处理', desc: '2份庭审笔录等待您签名确认', severity: 'normal' as const, target: 'transcriptSignature' },
     { id: 'todo3', type: '裁决书核阅', title: '您有 1 件裁决书核阅待处理', desc: '测试秘书已提交裁决书草稿v2', severity: 'normal' as const, target: 'draftAwardList' },
   ];
 
@@ -628,7 +632,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage }: Ca
                         setViewingPdf({ name: pdf.name, size: pdf.size, pages: pdf.pages });
                       } else {
                         // 未签名 -> 跳转笔录签名详情页
-                        onNavigateToSubPage?.('transcriptSignature');
+                        onSignTranscript?.({ id: pdf.id, name: pdf.name, pages: pdf.pages, size: pdf.size });
                       }
                     }}
                     className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group ${
@@ -1035,7 +1039,13 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage }: Ca
                   key={todo.id}
                   onClick={() => {
                     setShowTodoPanel(false);
-                    onNavigateToSubPage?.(todo.target);
+                    if (todo.target === 'draftAwardList') {
+                      // 裁决书核阅 → 切换到核阅 tab
+                      setActiveTab('review');
+                    } else {
+                      // 延期审批/笔录签名 → 跳转子页面
+                      onNavigateToSubPage?.(todo.target);
+                    }
                   }}
                   className="w-full flex items-start gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer text-left group"
                 >

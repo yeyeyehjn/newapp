@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  TrendingUp, CheckCircle2, ChevronRight, Award, FileText, Clock, HelpCircle
+  TrendingUp, CheckCircle2, ChevronRight, Award, FileText, Clock, HelpCircle, XCircle
 } from 'lucide-react';
 import { Case, CaseStatus } from '../types';
 
@@ -345,9 +345,16 @@ const DATA_MATRIX: Record<string, Record<string, QuarterData>> = {
   }
 };
 
-// ===== Aggregation helpers (year range / multi-quarter 统计合并) =====
+// ===== Aggregation helpers (date range 统计合并) =====
 const ALL_QUARTERS = ['Q1', 'Q2', 'Q3', 'Q4'];
 const CHART_QUARTER_NAMES = ['第一季度', '第二季度', '第三季度', '第四季度'];
+// 季度对应月份区间（用于将日期范围映射到 DATA_MATRIX 的季度键）
+const QUARTER_DATES: Record<string, { start: string; end: string }> = {
+  Q1: { start: '01-01', end: '03-31' },
+  Q2: { start: '04-01', end: '06-30' },
+  Q3: { start: '07-01', end: '09-30' },
+  Q4: { start: '10-01', end: '12-31' },
+};
 
 const parsePct = (v: string): number => parseFloat(v.replace('%', '')) || 0;
 const avg = (vals: number[]) => (vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0);
@@ -403,37 +410,19 @@ function aggregateQuarterChart(datas: QuarterData[]) {
 }
 
 export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: CaseStatsProps) {
-  const builtInYears = useMemo(() => Object.keys(DATA_MATRIX).sort(), []); // 升序: ['2024','2025','2026']
-  // 自定义年份（用户可手动添加数据矩阵之外的年份）
-  const [customYears, setCustomYears] = useState<string[]>([]);
-  const availableYears = useMemo(
-    () => Array.from(new Set([...builtInYears, ...customYears])).sort(),
-    [builtInYears, customYears]
-  );
-  const displayYears = useMemo(() => [...availableYears].reverse(), [availableYears]);
+  const today = useMemo(() => new Date(), []);
+  const todayStr = useMemo(() => {
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }, [today]);
 
-  // 自定义年份输入态
-  const [customYearInput, setCustomYearInput] = useState('');
-  const [showCustomInput, setShowCustomInput] = useState<null | 'yearStart' | 'yearEnd' | 'quarterYear'>(null);
-
-  const addCustomYear = (raw: string): string | null => {
-    const y = raw.trim();
-    if (!/^\d{4}$/.test(y)) return null; // 必须为 4 位数字
-    if (!availableYears.includes(y)) {
-      setCustomYears((prev) => Array.from(new Set([...prev, y])).sort());
-    }
-    return y;
-  };
-
-  // 双维度筛选模型
-  type FilterMode = 'year' | 'quarter';
-  const [filterMode, setFilterMode] = useState<FilterMode>('year');
-  // 年度范围
-  const [yearStart, setYearStart] = useState<string>(builtInYears[0]);
-  const [yearEnd, setYearEnd] = useState<string>(builtInYears[builtInYears.length - 1]);
-  // 季度筛选
-  const [quarterYear, setQuarterYear] = useState<string>(builtInYears[builtInYears.length - 1]);
-  const [selectedQuarters, setSelectedQuarters] = useState<string[]>([...ALL_QUARTERS]);
+  // 日期范围筛选模型：起始日期 ~ 结束日期 + 快捷筛选
+  type QuickFilter = 'year' | 'halfYear' | 'quarter';
+  const [startDate, setStartDate] = useState<string>(`${today.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState<string>(todayStr);
+  const [activeQuickFilter, setActiveQuickFilter] = useState<QuickFilter | null>('year');
 
   const [hoveredQuarterIndex, setHoveredQuarterIndex] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -443,80 +432,143 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
     setIsLoading(true);
     const t = setTimeout(() => setIsLoading(false), 320);
     return () => clearTimeout(t);
-  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters]);
+  }, [startDate, endDate]);
 
-  // 切换季度（多选，至少保留 1 个）
-  const toggleQuarter = (q: string) => {
-    setSelectedQuarters((prev) => {
-      if (prev.includes(q)) {
-        const next = prev.filter((x) => x !== q);
-        return next.length ? next : prev; // 不允许清空至 0
-      }
-      return [...prev, q].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
-    });
-  };
-
-  // 清除筛选 -> 回到全量视角
-  const handleClear = () => {
-    setFilterMode('year');
-    setYearStart(availableYears[0]);
-    setYearEnd(availableYears[availableYears.length - 1]);
-    setQuarterYear(availableYears[availableYears.length - 1]);
-    setSelectedQuarters([...ALL_QUARTERS]);
-  };
-
-  // 依据模式计算参与汇总的数据切片
-  const slicedDatas = useMemo(() => {
-    if (filterMode === 'year') {
-      return availableYears
-        .filter((y) => y >= yearStart && y <= yearEnd)
-        .map((y) => DATA_MATRIX[y]?.all)
-        .filter(Boolean) as QuarterData[];
+  // 应用快捷筛选：今年 / 近半年 / 近三个月
+  const applyQuickFilter = (filter: QuickFilter) => {
+    const now = new Date();
+    const fmt = (dt: Date) => {
+      const yy = dt.getFullYear();
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const dd = String(dt.getDate()).padStart(2, '0');
+      return `${yy}-${mm}-${dd}`;
+    };
+    const end = fmt(now);
+    let start: string;
+    if (filter === 'year') {
+      start = `${now.getFullYear()}-01-01`;
+    } else if (filter === 'halfYear') {
+      const past = new Date(now);
+      past.setMonth(past.getMonth() - 6);
+      start = fmt(past);
+    } else {
+      const past = new Date(now);
+      past.setMonth(past.getMonth() - 3);
+      start = fmt(past);
     }
-    return selectedQuarters
-      .map((q) => DATA_MATRIX[quarterYear]?.[q])
-      .filter(Boolean) as QuarterData[];
-  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters, availableYears]);
+    setStartDate(start);
+    setEndDate(end);
+    setActiveQuickFilter(filter);
+  };
+
+  // 手动修改日期时清除快捷筛选高亮
+  const handleStartDateChange = (v: string) => {
+    if (!v) return;
+    setStartDate(v);
+    setActiveQuickFilter(null);
+  };
+  const handleEndDateChange = (v: string) => {
+    if (!v) return;
+    setEndDate(v);
+    setActiveQuickFilter(null);
+  };
+
+  // 清除筛选 -> 回到默认"今年"
+  const handleClear = () => {
+    setStartDate(`${today.getFullYear()}-01-01`);
+    setEndDate(todayStr);
+    setActiveQuickFilter('year');
+  };
+
+  // 校验日期：起 <= 结；若用户反向输入，自动纠正
+  const safeStart = startDate <= endDate ? startDate : endDate;
+  const safeEnd = startDate <= endDate ? endDate : startDate;
+
+  // 依据日期范围筛选：遍历 DATA_MATRIX，季度日期区间与筛选区间有交集即纳入
+  const slicedDatas = useMemo(() => {
+    const datas: QuarterData[] = [];
+    for (const year of Object.keys(DATA_MATRIX).sort()) {
+      for (const q of ALL_QUARTERS) {
+        const qStart = `${year}-${QUARTER_DATES[q].start}`;
+        const qEnd = `${year}-${QUARTER_DATES[q].end}`;
+        if (qStart <= safeEnd && qEnd >= safeStart) {
+          const d = DATA_MATRIX[year]?.[q];
+          if (d) datas.push(d);
+        }
+      }
+    }
+    return datas;
+  }, [safeStart, safeEnd]);
 
   const courtCases = useMemo(() => aggregateCourtCases(slicedDatas), [slicedDatas]);
   const topCases = useMemo(() => aggregateTopCases(slicedDatas), [slicedDatas]);
   const indicators = useMemo(() => aggregateIndicators(slicedDatas), [slicedDatas]);
 
-  // 季度图表数据：年度范围 -> 跨年同季度平均；季度模式 -> 选中年的全年四个季度（用 activeQuarters 控制高亮）
-  const quarterChart = useMemo(() => {
-    if (filterMode === 'year') {
-      return aggregateQuarterChart(slicedDatas);
+  // 办结数（含同比）：办结数 = 范围内 courtCases 总和；同比基于范围内最近两期同口径对比
+  const closedCount = useMemo(() => {
+    const total = courtCases.sole + courtCases.chief + courtCases.side;
+    const last = slicedDatas[slicedDatas.length - 1];
+    const prev = slicedDatas[slicedDatas.length - 2];
+    if (last && prev) {
+      const lastTotal = last.courtCases.sole + last.courtCases.chief + last.courtCases.side;
+      const prevTotal = prev.courtCases.sole + prev.courtCases.chief + prev.courtCases.side;
+      if (prevTotal > 0) {
+        const diff = ((lastTotal - prevTotal) / prevTotal) * 100;
+        return {
+          value: total,
+          change: Math.abs(Math.round(diff * 10) / 10) + '%',
+          isUp: diff >= 0,
+        };
+      }
     }
-    return DATA_MATRIX[quarterYear]?.all.quarterChart ?? DATA_MATRIX['2026'].all.quarterChart;
-  }, [filterMode, slicedDatas, quarterYear]);
+    // 退化：取区间最近一期 settle 的同比口径
+    const ref = indicators.settle;
+    return { value: total, change: ref.change, isUp: ref.isUp };
+  }, [courtCases, slicedDatas, indicators]);
 
-  // 图表高亮用的"激活季度"集合
-  const activeQuarters = filterMode === 'year' ? ALL_QUARTERS : selectedQuarters;
+  // 季度图表：对范围内各年同季度比率取平均（跨季度/跨年）
+  const quarterChart = useMemo(() => aggregateQuarterChart(slicedDatas), [slicedDatas]);
 
-  // 点击柱状图某季度：年度模式 -> 跳转季度模式并细筛该季度；季度模式 -> 切换该季度
+  // 图表高亮用的"激活季度"集合：日期范围覆盖到的季度
+  const activeQuarters = useMemo(() => {
+    const set = new Set<string>();
+    for (const year of Object.keys(DATA_MATRIX)) {
+      for (const q of ALL_QUARTERS) {
+        const qStart = `${year}-${QUARTER_DATES[q].start}`;
+        const qEnd = `${year}-${QUARTER_DATES[q].end}`;
+        if (qStart <= safeEnd && qEnd >= safeStart) set.add(q);
+      }
+    }
+    return Array.from(set);
+  }, [safeStart, safeEnd]);
+
+  // 点击柱状图某季度 -> 将日期范围聚焦到该季度（基于当前结束日期所在年）
   const handleBarClick = (qKey: string) => {
-    if (filterMode === 'year') {
-      setFilterMode('quarter');
-      setQuarterYear(yearEnd);
-      setSelectedQuarters([qKey]);
-    } else {
-      toggleQuarter(qKey);
-    }
+    const year = safeEnd.slice(0, 4);
+    if (!DATA_MATRIX[year]) return;
+    setStartDate(`${year}-${QUARTER_DATES[qKey].start}`);
+    setEndDate(`${year}-${QUARTER_DATES[qKey].end}`);
+    setActiveQuickFilter(null);
   };
 
   // 筛选范围摘要文案
   const scopeSummary = useMemo(() => {
-    if (filterMode === 'year') {
-      const span = availableYears.filter((y) => y >= yearStart && y <= yearEnd).length;
-      return `${yearStart}年 — ${yearEnd}年 · 共 ${span} 个年度`;
-    }
-    return `${quarterYear}年 · 已选 ${selectedQuarters.length}/4 季度`;
-  }, [filterMode, yearStart, yearEnd, quarterYear, selectedQuarters, availableYears]);
+    const ms = new Date(safeEnd).getTime() - new Date(safeStart).getTime();
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
+    return `${safeStart} ~ ${safeEnd} · 共 ${days} 天`;
+  }, [safeStart, safeEnd]);
   const totalCourtCases = courtCases.sole + courtCases.chief + courtCases.side;
   const safeTotal = totalCourtCases || 1;
   const solePct = (courtCases.sole / safeTotal) * 100;
   const chiefPct = (courtCases.chief / safeTotal) * 100;
   const sidePct = (courtCases.side / safeTotal) * 100;
+
+  // 在办案件情况：基于真实 cases 数据统计
+  const pendingCount = useMemo(() => cases.filter((c) => c.status !== '已结案').length, [cases]);
+  const delayedCount = useMemo(() => {
+    const todayStr = today.toISOString().split('T')[0];
+    return cases.filter((c) => c.hearings.some((h) => h.status === '待开庭' && h.hearingTime < todayStr)).length;
+  }, [cases, today]);
 
   // Circle/Ring formula variables for customizable dimensions
   const radius = 38;
@@ -543,16 +595,16 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
       <div className={`flex-1 space-y-4 overflow-y-auto no-scrollbar w-full text-left transition-opacity duration-200 ${isLoading ? 'opacity-50' : 'opacity-100'}`}>
         
         {/* TOP INTERACTIVE FILTER CARD */}
-        <div id="stats_filter_card" className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3.5 select-none animate-fade-in">
+        <div id="stats_filter_card" className="bg-white rounded-2xl p-4 border border-slate-100 space-y-3.5 select-none animate-fade-in">
           
 
           {/* Header + 清除筛选 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-              <h4 className="text-sm font-extrabold text-slate-800">筛选配置</h4>
+              <h4 className="text-lg font-extrabold text-slate-800">筛选配置</h4>
               {isLoading && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-[#1E62EC] animate-pulse">
+                <span className="flex items-center gap-1 text-sm font-bold text-[#1E62EC] animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1E62EC] animate-ping"></span>
                   统计中
                 </span>
@@ -560,7 +612,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
             </div>
             <button
               onClick={handleClear}
-              className="text-[10px] font-extrabold text-slate-400 hover:text-[#1E62EC] bg-slate-50/80 hover:bg-blue-50/60 border border-slate-100 hover:border-blue-100 rounded-lg py-1 px-2.5 transition-colors cursor-pointer uppercase tracking-wide"
+              className="text-sm text-slate-400 hover:text-[#1E62EC] bg-slate-50/80 hover:bg-blue-50/60 border border-slate-100 hover:border-blue-100 rounded-lg py-1 px-2.5 transition-colors cursor-pointer uppercase tracking-wide"
             >
               清除筛选 ↺
             </button>
@@ -568,248 +620,68 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
 
           <div className="border-t border-dashed border-slate-200/80 my-2"></div>
 
-          {/* 维度切换 Tab：年度筛选 / 季度筛选 */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100/70 rounded-xl">
-            {([['year', '年度筛选'], ['quarter', '季度筛选']] as const).map(([mode, label]) => {
-              const isActive = filterMode === mode;
-              return (
-                <button
-                  key={mode}
-                  onClick={() => setFilterMode(mode)}
-                  className={`py-1.5 text-xs font-black rounded-lg transition-all border outline-none cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-[#1E62EC] border-white shadow-sm'
-                      : 'bg-transparent text-slate-500 border-transparent hover:text-slate-700'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ===== 年度筛选：起始年份 ~ 结束年份（含端点的闭区间） ===== */}
-          {filterMode === 'year' && (
-            <>
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">起始年度</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {displayYears.map((year) => {
-                    const isDisabled = year > yearEnd; // 起始不得晚于结束
-                    const isActive = yearStart === year;
-                    const isCustom = customYears.includes(year);
-                    return (
-                      <button
-                        key={year}
-                        disabled={isDisabled}
-                        onClick={() => setYearStart(year)}
-                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none ${
-                          isActive
-                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10 cursor-pointer'
-                            : isDisabled
-                            ? 'bg-slate-50/40 text-slate-300 border-slate-100 cursor-not-allowed'
-                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800 cursor-pointer'
-                        }`}
-                      >
-                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
-                      </button>
-                    );
-                  })}
-                  {/* 自定义年份输入 */}
-                  {showCustomInput === 'yearStart' ? (
-                    <input
-                      autoFocus
-                      value={customYearInput}
-                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const y = addCustomYear(customYearInput);
-                          if (y) { setYearStart(y); setCustomYearInput(''); setShowCustomInput(null); }
-                        } else if (e.key === 'Escape') {
-                          setCustomYearInput(''); setShowCustomInput(null);
-                        }
-                      }}
-                      onBlur={() => {
-                        const y = addCustomYear(customYearInput);
-                        if (y) setYearStart(y);
-                        setCustomYearInput(''); setShowCustomInput(null);
-                      }}
-                      placeholder="如 2023"
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { setShowCustomInput('yearStart'); setCustomYearInput(''); }}
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
-                    >
-                      + 自定义
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">结束年度</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {displayYears.map((year) => {
-                    const isDisabled = year < yearStart; // 结束不得早于起始
-                    const isActive = yearEnd === year;
-                    const isCustom = customYears.includes(year);
-                    return (
-                      <button
-                        key={year}
-                        disabled={isDisabled}
-                        onClick={() => setYearEnd(year)}
-                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none ${
-                          isActive
-                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10 cursor-pointer'
-                            : isDisabled
-                            ? 'bg-slate-50/40 text-slate-300 border-slate-100 cursor-not-allowed'
-                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800 cursor-pointer'
-                        }`}
-                      >
-                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
-                      </button>
-                    );
-                  })}
-                  {/* 自定义年份输入 */}
-                  {showCustomInput === 'yearEnd' ? (
-                    <input
-                      autoFocus
-                      value={customYearInput}
-                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const y = addCustomYear(customYearInput);
-                          if (y) { setYearEnd(y); setCustomYearInput(''); setShowCustomInput(null); }
-                        } else if (e.key === 'Escape') {
-                          setCustomYearInput(''); setShowCustomInput(null);
-                        }
-                      }}
-                      onBlur={() => {
-                        const y = addCustomYear(customYearInput);
-                        if (y) setYearEnd(y);
-                        setCustomYearInput(''); setShowCustomInput(null);
-                      }}
-                      placeholder="如 2027"
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { setShowCustomInput('yearEnd'); setCustomYearInput(''); }}
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
-                    >
-                      + 自定义
-                    </button>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ===== 季度筛选：先选年份，再多选季度 ===== */}
-          {filterMode === 'quarter' && (
-            <>
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择年度</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {displayYears.map((year) => {
-                    const isActive = quarterYear === year;
-                    const isCustom = customYears.includes(year);
-                    return (
-                      <button
-                        key={year}
-                        onClick={() => setQuarterYear(year)}
-                        className={`py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer ${
-                          isActive
-                            ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10'
-                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
-                        }`}
-                      >
-                        {year}年{isCustom && <span className="ml-0.5 text-[8px] opacity-60">★</span>}
-                      </button>
-                    );
-                  })}
-                  {/* 自定义年份输入 */}
-                  {showCustomInput === 'quarterYear' ? (
-                    <input
-                      autoFocus
-                      value={customYearInput}
-                      onChange={(e) => setCustomYearInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const y = addCustomYear(customYearInput);
-                          if (y) { setQuarterYear(y); setCustomYearInput(''); setShowCustomInput(null); }
-                        } else if (e.key === 'Escape') {
-                          setCustomYearInput(''); setShowCustomInput(null);
-                        }
-                      }}
-                      onBlur={() => {
-                        const y = addCustomYear(customYearInput);
-                        if (y) setQuarterYear(y);
-                        setCustomYearInput(''); setShowCustomInput(null);
-                      }}
-                      placeholder="如 2023"
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none bg-white text-[#1E62EC] border-[#1E62EC] text-center w-full"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => { setShowCustomInput('quarterYear'); setCustomYearInput(''); }}
-                      className="py-2 px-3 text-xs font-black rounded-xl transition-all border outline-none cursor-pointer bg-slate-50/80 text-slate-400 border-dashed border-slate-200 hover:text-[#1E62EC] hover:border-[#1E62EC]"
-                    >
-                      + 自定义
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide block">选择季度（可多选）</span>
+          {/* 快捷筛选：今年 / 近半年 / 近三个月 */}
+          <div className="space-y-1.5">
+            <span className="text-sm text-slate-400  uppercase tracking-wide block">快捷筛选</span>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: 'year' as const, label: '今年' },
+                { key: 'halfYear' as const, label: '近半年' },
+                { key: 'quarter' as const, label: '近三个月' },
+              ]).map(({ key, label }) => {
+                const isActive = activeQuickFilter === key;
+                return (
                   <button
-                    onClick={() =>
-                      setSelectedQuarters(selectedQuarters.length === 4 ? ['Q1'] : [...ALL_QUARTERS])
-                    }
-                    className="text-[10px] font-extrabold text-[#1E62EC] hover:underline cursor-pointer"
+                    key={key}
+                    onClick={() => applyQuickFilter(key)}
+                    className={`py-1.5 px-3 text-base   rounded-xl transition-all border outline-none cursor-pointer ${
+                      isActive
+                        ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10'
+                        : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
                   >
-                    {selectedQuarters.length === 4 ? '取消全选' : '全选'}
+                    {label}
                   </button>
-                </div>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {ALL_QUARTERS.map((q) => {
-                    const isActive = selectedQuarters.includes(q);
-                    const labels: Record<string, string> = { Q1: '一季度', Q2: '二季度', Q3: '三季度', Q4: '四季度' };
-                    return (
-                      <button
-                        key={q}
-                        onClick={() => toggleQuarter(q)}
-                        className={`py-1.5 px-1 text-[11px] font-bold rounded-lg text-center transition-all border outline-none cursor-pointer truncate ${
-                          isActive
-                            ? 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-500/10'
-                            : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50'
-                        }`}
-                      >
-                        {labels[q]}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* 当前筛选范围 / 结果反馈 */}
-          <div className="flex items-center justify-between text-[10px] font-bold rounded-xl bg-slate-50/70 border border-slate-100 px-3 py-2">
-            <span className="text-slate-500">{scopeSummary}</span>
-            <span className="text-[#1E62EC]">命中 {totalCourtCases} 件</span>
+                );
+              })}
+            </div>
           </div>
+
+          {/* 自定义日期范围 */}
+          <div className="space-y-1.5">
+            <span className="text-sm text-slate-400  uppercase tracking-wide block">自定义日期范围</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400   block">起始日期</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  max={endDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  className="w-full py-2 px-3 text-base  rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-[#1E62EC] focus:bg-white focus:text-[#1E62EC] transition-all cursor-pointer"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm text-slate-400  block">结束日期</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  min={startDate}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
+                  className="w-full py-2 px-3 text-base rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-[#1E62EC] focus:bg-white focus:text-[#1E62EC] transition-all cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
+          
         </div>
 
         {/* 1. 组庭情况 CARD (Ring/Donut Chart with bottom statistics) */}
-        <div id="arbitration_court_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+        <div id="arbitration_court_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 space-y-4">
           <div className="flex items-center gap-2">
             <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-            <h4 className="text-sm font-extrabold text-slate-800">组庭情况</h4>
+            <h4 className="text-lg font-extrabold text-slate-800">新收案件情况</h4>
           </div>
 
           <div className="border-t border-dashed border-slate-200/80 my-2"></div>
@@ -877,52 +749,185 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               </svg>
               {/* Inner absolute label block inside the donut/ring hole */}
               <div className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none">
-                <span className="text-xl font-black text-slate-800 leading-none">{totalCourtCases}</span>
-                <span className="text-[10px] text-slate-400 font-extrabold tracking-wider mt-1">总案件数</span>
+                <span className="text-lg font-black text-slate-800 leading-none">{totalCourtCases}</span>
+                <span className="text-sm text-slate-400 font-extrabold tracking-wider mt-1">总案件数</span>
               </div>
             </div>
 
             {/* Legend Details below the ring */}
             <div className="grid grid-cols-3 gap-2 w-full pt-3.5 border-t border-dashed border-slate-100">
               {/* Row 1: 独任 */}
-              <div id="stat_sole" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+              <div id="stat_sole" onClick={() => onNavigateToTab(1)} className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100 cursor-pointer">
                 <div className="flex items-center gap-1 mb-1">
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colorBlue }}></span>
-                  <span className="text-[11px] font-bold text-slate-500">独任</span>
+                  <span className="text-sm  text-slate-500">独任</span>
                 </div>
-                <span className="text-xs font-black text-slate-800">{courtCases.sole}件</span>
-                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({solePct.toFixed(1)}%)</span>
+                <span className="text-base font-black text-slate-800">{courtCases.sole}件</span>
+                <span className="text-sm text-slate-400  mt-0.5">({solePct.toFixed(1)}%)</span>
               </div>
 
               {/* Row 2: 首席 */}
-              <div id="stat_chief" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+              <div id="stat_chief" onClick={() => onNavigateToTab(1)} className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100 cursor-pointer">
                 <div className="flex items-center gap-1 mb-1">
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: '#9CCAFF' }}></span>
-                  <span className="text-[11px] font-bold text-slate-500">首席</span>
+                  <span className="text-sm  text-slate-500">首席</span>
                 </div>
-                <span className="text-xs font-black text-slate-800">{courtCases.chief}件</span>
-                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({chiefPct.toFixed(1)}%)</span>
+                <span className="text-base font-black text-slate-800">{courtCases.chief}件</span>
+                <span className="text-sm text-slate-400  mt-0.5">({chiefPct.toFixed(1)}%)</span>
               </div>
 
               {/* Row 3: 边裁 */}
-              <div id="stat_side" className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100">
+              <div id="stat_side" onClick={() => onNavigateToTab(1)} className="flex flex-col items-center p-2 rounded-xl bg-slate-50/40 hover:bg-slate-50/80 transition-all text-center border border-transparent hover:border-slate-100 cursor-pointer">
                 <div className="flex items-center gap-1 mb-1">
                   <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: colorGreen }}></span>
-                  <span className="text-[11px] font-bold text-slate-500">边裁</span>
+                  <span className="text-sm  text-slate-500">边裁</span>
                 </div>
-                <span className="text-xs font-black text-slate-800">{courtCases.side}件</span>
-                <span className="text-[9px] text-slate-400 font-bold mt-0.5">({sidePct.toFixed(1)}%)</span>
+                <span className="text-base font-black text-slate-800">{courtCases.side}件</span>
+                <span className="text-sm text-slate-400  mt-0.5">({sidePct.toFixed(1)}%)</span>
               </div>
             </div>
 
           </div>
         </div>
 
-        {/* 2. 办理案件的Top5案由 CARD */}
-        <div id="top_disputes_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
+        {/* 2.5 在办案件情况 CARD */}
+        <div id="pending_cases_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 space-y-3">
           <div className="flex items-center gap-2">
             <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-            <h4 className="text-sm font-extrabold text-slate-800">办理案件的Top5案由</h4>
+            <h4 className="text-lg font-extrabold text-slate-800">在办案件情况</h4>
+          </div>
+
+          <div className="border-t border-dashed border-slate-200/80"></div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {/* 在办数 */}
+            <div
+              onClick={() => onNavigateToTab(1)}
+              className="flex flex-col gap-1 py-2.5 px-3 rounded-lg bg-slate-50/60 hover:bg-blue-50/50  transition-all cursor-pointer"
+            >
+              <span className="text-sm text-slate-500">在办数</span>
+              <span className="text-lg font-black text-[#1E62EC] leading-none font-mono tabular-nums">{pendingCount}件</span>
+            </div>
+
+            {/* 已延期数 */}
+            <div
+              onClick={() => onNavigateToTab(1)}
+              className={`flex flex-col gap-1 py-2.5 px-3 rounded-lg  transition-all cursor-pointer ${delayedCount > 0 ? 'bg-rose-50/60 hover:bg-rose-50 ' : 'bg-slate-50/60 hover:bg-slate-50'}`}
+            >
+              <span className="text-sm text-slate-500">已延期数</span>
+              <span className={`text-lg font-black leading-none font-mono tabular-nums ${delayedCount > 0 ? 'text-rose-500' : 'text-slate-700'}`}>{delayedCount}件</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. 办结案件情况 CARD — Data Ledger typeset */}
+        <div id="metrics_summary_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 space-y-3">
+          {/* 标题 + 同比提示 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+              <h4 className="text-lg font-extrabold text-slate-800">办结案件情况</h4>
+            </div>
+            <div className="flex items-center gap-1 text-xs  text-slate-400">
+              <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+              同比
+            </div>
+          </div>
+
+          <div className="border-t border-dashed border-slate-200/80"></div>
+
+          {/* 办结数 — 父级总数 (dominant typographic weight) */}
+          <div
+            onClick={() => onNavigateToTab(1)}
+            className="flex items-end justify-between cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#1E62EC] flex items-center justify-center text-white flex-shrink-0">
+                <CheckCircle2 size={16} />
+              </div>
+              <div>
+                <div className="text-sm font-bold text-slate-400 leading-none mb-1">办结数</div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-black text-slate-900 font-mono tabular-nums leading-none tracking-tight">
+                    {closedCount.value}
+                  </span>
+                  <span className="text-sm  text-slate-400">件</span>
+                </div>
+              </div>
+            </div>
+            <span className={`text-sm font-black font-mono tabular-nums flex items-center gap-0.5 ${closedCount.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+              {closedCount.isUp ? '▲' : '▼'} {closedCount.change}
+            </span>
+          </div>
+
+          {/* 树形连接器：父→子 */}
+          <div className="flex items-center gap-2 pl-4 -mt-1">
+            <div className="w-px h-3 bg-slate-200"></div>
+            <div className="flex-1 h-px bg-slate-100"></div>
+            <span className="text-xs  text-slate-300 tracking-wide">分析结果</span>
+            <div className="flex-1 h-px bg-slate-100"></div>
+          </div>
+
+          {/* 子项：三率 (inset, lighter weight) */}
+          <div className="grid grid-cols-3 gap-2 pl-4">
+            {/* 裁决率 */}
+            <div
+              onClick={() => onNavigateToTab(1)}
+              className="flex flex-col gap-1 py-2 px-2.5 rounded-lg bg-slate-50/60 hover:bg-blue-50/50 border border-transparent hover:border-[#1E62EC]/20 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                <Award size={11} className="text-[#1E62EC]" />
+                <span className="text-sm  text-slate-500">裁决率</span>
+              </div>
+              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+                {indicators.settle.value}
+              </span>
+              <span className={`text-sm font-black font-mono tabular-nums ${indicators.settle.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                {indicators.settle.isUp ? '▲' : '▼'} {indicators.settle.change}
+              </span>
+            </div>
+
+            {/* 调解率 */}
+            <div
+              onClick={() => onNavigateToTab(1)}
+              className="flex flex-col gap-1 py-2 px-2.5 rounded-lg bg-slate-50/60 hover:bg-amber-50/50 border border-transparent hover:border-amber-400/20 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                <FileText size={11} className="text-amber-500" />
+                <span className="text-sm  text-slate-500">调解率</span>
+              </div>
+              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+                {indicators.cancel.value}
+              </span>
+              <span className={`text-sm font-black font-mono tabular-nums ${indicators.cancel.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                {indicators.cancel.isUp ? '▲' : '▼'} {indicators.cancel.change}
+              </span>
+            </div>
+
+            {/* 撤案率 */}
+            <div
+              onClick={() => onNavigateToTab(1)}
+              className="flex flex-col gap-1 py-2 px-2.5 rounded-lg bg-slate-50/60 hover:bg-rose-50/50 border border-transparent hover:border-rose-400/20 transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-1">
+                <XCircle size={11} className="text-rose-500" />
+                <span className="text-sm  text-slate-500">撤案率</span>
+              </div>
+              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+                {indicators.delay.value}
+              </span>
+              <span className={`text-sm font-black font-mono tabular-nums ${indicators.delay.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
+                {indicators.delay.isUp ? '▲' : '▼'} {indicators.delay.change}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. 办理案件的Top5案由 CARD */}
+        <div id="top_disputes_card" className="bg-white rounded-2xl p-4.5 border border-slate-100  space-y-4">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <h4 className="text-lg font-extrabold text-slate-800">办理案件的Top5案由</h4>
           </div>
 
           <div className="border-t border-dashed border-slate-200/80 my-2"></div>
@@ -941,10 +946,10 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                 ? 'bg-indigo-500' 
                 : 'bg-rose-400';
               return (
-                <div key={item.name} className="space-y-1">
+                <div key={item.name} onClick={() => onNavigateToTab(1)} className="space-y-1 cursor-pointer">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-xs font-extrabold text-slate-700">{item.name}</span>
-                    <span className="text-2xs text-slate-400 font-bold">
+                    <span className="text-base  text-slate-700 hover:text-[#1E62EC] transition-colors">{item.name}</span>
+                    <span className="text-sm text-slate-400">
                       {item.count}件案件 占比{item.ratio}%
                     </span>
                   </div>
@@ -960,252 +965,6 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           </div>
         </div>
 
-        {/* 3. 办结案件情况如下 CARD */}
-        <div id="metrics_summary_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-            <h4 className="text-sm font-extrabold text-slate-800">办理案件情况</h4>
-          </div>
-
-          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
-
-          {/* List layout matching precisely */}
-          <div className="space-y-4 pt-1">
-            {/* Row 1: Settle */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
-                  <Award size={18} />
-                </div>
-                <div>
-                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
-                    <span>结案率</span>
-                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.settle.value}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-right">
-                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.settle.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
-                  {indicators.settle.isUp ? '▲' : '▼'} {indicators.settle.change}
-                </span>
-                
-              </div>
-            </div>
-
-            {/* Row 2: Cancel */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
-                  <FileText size={18} />
-                </div>
-                <div>
-                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
-                    <span>调撤率</span>
-                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.cancel.value}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-right">
-                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.cancel.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
-                  {indicators.cancel.isUp ? '▲' : '▼'} {indicators.cancel.change}
-                </span>
-                
-              </div>
-            </div>
-
-            {/* Row 3: Delay */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-[#1E62EC]">
-                  <Clock size={18} />
-                </div>
-                <div>
-                  <div className="text-xs font-black text-slate-700 flex items-baseline gap-1">
-                    <span>延期率</span>
-                    <span className="text-sm font-extrabold text-[#1E62EC]">{indicators.delay.value}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 text-right">
-                <span className={`text-xs font-black flex items-center gap-0.5 ${indicators.delay.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
-                  {indicators.delay.isUp ? '▲' : '▼'} {indicators.delay.change}
-                </span>
-                
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. 结案情况 (Column Chart with Quarters) CARD */}
-        <div id="chart_quarters_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 shadow-sm space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
-            <h4 className="text-sm font-extrabold text-slate-800">裁调撤情况</h4>
-          </div>
-
-          <div className="border-t border-dashed border-slate-200/80 my-2"></div>
-
-          {/* Interactive Custom SVG Column Chart styled with rounded caps */}
-          <div className="relative pt-2">
-            {/* Custom dotted legend */}
-            <div className="flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 select-none mb-3">
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorBlue }}></span> 裁决率
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorOrange }}></span> 调解率
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorGreen }}></span> 撤案率
-              </span>
-            </div>
-            <svg viewBox="0 0 300 160" className="w-full h-auto overflow-visible select-none">
-              {/* Dashed Horizontal Grid Lines */}
-              {[20, 50, 80, 110, 140].map((y, idx) => (
-                <line 
-                  key={idx} 
-                  x1="30" 
-                  y1={y} 
-                  x2="290" 
-                  y2={y} 
-                  stroke="#F1F5F9" 
-                  strokeWidth="1.2" 
-                  strokeDasharray="4,4" 
-                />
-              ))}
-              
-              {/* Solid Base Axis */}
-              <line x1="30" y1="140" x2="290" y2="140" stroke="#E2E8F0" strokeWidth="1.5" />
-
-              {/* Y Axis percentage markers */}
-              {['100%', '80%', '60%', '40%', '20%', '0%'].map((txt, idx) => (
-                <text
-                  key={idx}
-                  x="22"
-                  y={20 + idx * 24}
-                  fill="#94A3B8"
-                  fontSize="8.5"
-                  textAnchor="end"
-                  className="font-extrabold"
-                >
-                  {txt}
-                </text>
-              ))}
-
-              {/* Draw Vertical Columns dynamically */}
-              {quarterChart.map((q, idx) => {
-                const xBase = 52 + idx * 62;
-                const qKey = `Q${idx + 1}`;
-                
-                // Opacity modifier based on selection
-                const isSelectedQ = activeQuarters.includes(qKey);
-                const opacity = isSelectedQ ? 1.0 : 0.15;
-
-                // Percentages to pixels calculation:
-                // height is max 120 pixels (from y=20 to y=140)
-                const hSettle = (q.settle / 100) * 120;
-                const hCancel = (q.cancel / 100) * 120;
-                const hDelay = (q.delay / 100) * 120;
-
-                return (
-                  <g key={q.name} style={{ transition: 'opacity 0.4s' }}>
-                    {/* Background trigger container for interactivity */}
-                    <rect 
-                      x={xBase - 15}
-                      y="15"
-                      width="50"
-                      height="125"
-                      fill="transparent"
-                      className="cursor-pointer font-bold"
-                      onMouseEnter={() => setHoveredQuarterIndex(idx)}
-                      onMouseLeave={() => setHoveredQuarterIndex(null)}
-                      onClick={() => handleBarClick(qKey)}
-                    />
-
-                    {/* Blue bar: c决率 */}
-                    {q.settle > 0 && (
-                      <rect
-                        x={xBase - 10}
-                        y={140 - hSettle}
-                        width="6"
-                        height={hSettle}
-                        fill={colorBlue}
-                        rx="2"
-                        ry="2"
-                        opacity={opacity}
-                      />
-                    )}
-
-                    {/* Orange bar: 调解率 */}
-                    {q.cancel > 0 && (
-                      <rect
-                        x={xBase - 2}
-                        y={140 - hCancel}
-                        width="6"
-                        height={hCancel}
-                        fill={colorOrange}
-                        rx="2"
-                        ry="2"
-                        opacity={opacity}
-                      />
-                    )}
-
-                    {/* Green bar: 撤案率 */}
-                    {q.delay > 0 && (
-                      <rect
-                        x={xBase + 6}
-                        y={140 - hDelay}
-                        width="6"
-                        height={hDelay}
-                        fill={colorGreen}
-                        rx="2"
-                        ry="2"
-                        opacity={opacity}
-                      />
-                    )}
-
-                    {/* Text Label at standard base */}
-                    <text
-                      x={xBase + 1}
-                      y="153"
-                      fill={isSelectedQ ? '#1E62EC' : '#64748B'}
-                      fontSize="9"
-                      textAnchor="middle"
-                      className={`font-black tracking-wide ${isSelectedQ ? 'font-extrabold underline decoration-2 underline-offset-4' : ''}`}
-                    >
-                      {q.name}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* Hover Tooltip display box */}
-            <div className="h-10 flex justify-center items-center mt-2.5 select-none text-2xs z-30">
-              {hoveredQuarterIndex !== null ? (
-                <div className="bg-slate-900 text-white rounded-xl py-1.5 px-3 flex items-center space-x-3.5 shadow-md border border-slate-800 animate-fade-in font-bold text-center">
-                  <span className="text-[#9CCAFF]">
-                    {quarterChart[hoveredQuarterIndex].name}
-                  </span>
-                  <span>裁决: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].settle}%</strong></span>
-                  <span>调解: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].cancel}%</strong></span>
-                  <span>撤案: <strong className="text-white font-heavy">{quarterChart[hoveredQuarterIndex].delay}%</strong></span>
-                </div>
-              ) : filterMode === 'quarter' && selectedQuarters.length < 4 ? (
-                <button 
-                  onClick={() => setSelectedQuarters([...ALL_QUARTERS])}
-                  className="text-xs text-[#1E62EC] bg-blue-50/50 py-1 px-3 rounded-full border border-blue-100 font-extrabold hover:bg-blue-100/40 transition-colors uppercase cursor-pointer"
-                >
-                  清除季度筛选 ↺ 查看全年对比
-                </button>
-              ) : (
-                <span className="text-slate-400 italic">
-                  {filterMode === 'year' ? '年度范围统计中 · 点击柱状图可进入季度细筛' : '轻触或悬浮季度柱状图进行联动对齐分析'}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
 
       </div>
 

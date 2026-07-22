@@ -58,6 +58,10 @@ export default function App() {
   const [selectedTranscript, setSelectedTranscript] = useState<TranscriptSignature | null>(null);
   const [selectedApproval, setSelectedApproval] = useState<PostponementApproval | null>(null);
   const [selectedDeclaration, setSelectedDeclaration] = useState<any>(null);
+  // 案件详情页初始 tab（从文书签名列表进入时直接定位到“文书签名”）
+  const [caseDetailInitialTab, setCaseDetailInitialTab] = useState<'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review'>('basic');
+  // 标记笔录签名详情页是否由案件详情页进入（用于返回时回到案件详情而非笔录列表）
+  const [transcriptDetailFromCase, setTranscriptDetailFromCase] = useState<boolean>(false);
   
   // Global filters - 默认查询在办案件
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
@@ -150,6 +154,38 @@ export default function App() {
     setSelectedCase(null);
     setSelectedTranscript(null);
     setSelectedApproval(null);
+    setCaseDetailInitialTab('basic');
+    setTranscriptDetailFromCase(false);
+  };
+
+  // 从案件详情页的“文书签名”tab 点击庭审笔录“去签名”按钮
+  // 直接进入笔录签名详情页，并标记返回时回到案件详情页
+  const handleSignTranscriptFromCase = (transcript: { id: string; name: string; pages: number; size: string }) => {
+    if (!selectedCase) return;
+    // 优先复用同案号下已有的待签名笔录数据
+    let transcriptSig = transcriptSignatures.find(
+      t => t.caseNo === selectedCase.caseNo && t.status === 'pending'
+    );
+    if (!transcriptSig) {
+      // 从文件名解析庭审时间（如 庭审笔录_20260120.pdf -> 2026-01-20）
+      const dateMatch = transcript.name.match(/(\d{4})(\d{2})(\d{2})/);
+      const hearingTime = dateMatch
+        ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]} 09:00-12:00`
+        : '庭审当日 09:00-12:00';
+      transcriptSig = {
+        id: `ts_case_${transcript.id}`,
+        caseNo: selectedCase.caseNo,
+        claimant: selectedCase.claimant,
+        respondent: selectedCase.respondent,
+        secretary: selectedCase.secretary || '李文浩',
+        arbitrator: selectedCase.role === '首席' ? '张明（首席）' : selectedCase.role === '独任' ? '张明（独任）' : '张明（边裁）',
+        hearingTime,
+        status: 'pending'
+      };
+    }
+    setSelectedTranscript(transcriptSig);
+    setTranscriptDetailFromCase(true);
+    setActiveSubPage('transcriptSignatureDetail');
   };
 
   // Submit transcript signature
@@ -159,6 +195,7 @@ export default function App() {
     );
     setActiveSubPage(null);
     setSelectedTranscript(null);
+    setTranscriptDetailFromCase(false);
   };
 
   // Approve postponement
@@ -273,8 +310,15 @@ export default function App() {
           <TranscriptSignatureDetail
             transcript={selectedTranscript}
             onBack={() => {
-              setActiveSubPage('transcriptSignature');
+              if (transcriptDetailFromCase) {
+                // 由案件详情页进入 -> 返回案件详情页的“文书签名”模块
+                setCaseDetailInitialTab('signature');
+                setActiveSubPage('caseDetail');
+              } else {
+                setActiveSubPage('transcriptSignature');
+              }
               setSelectedTranscript(null);
+              setTranscriptDetailFromCase(false);
             }}
             onSubmitSignature={handleSubmitTranscriptSignature}
           />
@@ -333,6 +377,8 @@ export default function App() {
             caseItem={selectedCase}
             onBack={handleBackFromSubPage}
             onNavigateToSubPage={(page) => handleNavigateToSubPage(page as any)}
+            initialTab={caseDetailInitialTab}
+            onSignTranscript={handleSignTranscriptFromCase}
           />
         )}
 
@@ -386,6 +432,8 @@ export default function App() {
                   });
                 }
               }
+              // 直接定位到案件详情页的“文书签名”模块
+              setCaseDetailInitialTab('signature');
               setActiveSubPage('caseDetail');
             }}
           />
@@ -411,6 +459,8 @@ export default function App() {
                   });
                 }
               }
+              // 直接定位到案件详情页的"裁决书核阅"模块
+              setCaseDetailInitialTab('review');
               setActiveSubPage('caseDetail');
             }}
           />

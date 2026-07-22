@@ -29,7 +29,7 @@ const isMajor = (c: Case): boolean => {
 
 export default function CaseList({ cases, onSelectCase }: CaseListProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
   const [showFilterDrawer, setShowFilterDrawer] = useState<boolean>(false);
 
   // New filter states
@@ -53,9 +53,10 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
 
   // Status Tabs Definition
   const statusTabs: { label: string; value: CaseStatus | 'all' }[] = [
-    { label: '全部', value: 'all' },
+    
     { label: '在办案件', value: '审理中' },
     { label: '已结案件', value: '已结案' },
+    { label: '全部', value: 'all' },
   ];
 
   // Role options
@@ -224,9 +225,79 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
           />
           {/* Filter Panel */}
           <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 animate-slide-down shadow-lg z-30 relative space-y-2.5 order-first">
-            
-            {/* Role Filter */}
+           
+            {/* Secretary Filter */}
             <div className="flex items-start gap-3">
+              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+                经办秘书
+              </span>
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={selectedSecretary}
+                  onChange={(e) => setSelectedSecretary(e.target.value)}
+                  placeholder="搜索经办秘书姓名"
+                  className="w-full px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Amount Range Filter */}
+            <div className="flex items-start gap-3 mt-2">
+              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+                标的区间
+              </span>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    value={amountRange[0] === 0 ? '' : amountRange[0]}
+                    onChange={(e) => setAmountRange([Number(e.target.value) || 0, amountRange[1]])}
+                    placeholder="标的下限"
+                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
+                </div>
+                <span className="text-slate-400 text-sm">-</span>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    min={0}
+                    value={amountRange[1] === 100000 ? '' : amountRange[1]}
+                    onChange={(e) => setAmountRange([amountRange[0], Number(e.target.value) || 100000])}
+                    placeholder="标的上限"
+                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Hearing Date Range Filter */}
+            <div className="flex items-start gap-3 mt-2">
+              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+                开庭日期
+              </span>
+              <div className="flex items-center gap-2 flex-1">
+                <input
+                  type="date"
+                  value={hearingDateRange[0]}
+                  onChange={(e) => setHearingDateRange([e.target.value, hearingDateRange[1]])}
+                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                />
+                <span className="text-slate-400 text-sm">-</span>
+                <input
+                  type="date"
+                  value={hearingDateRange[1]}
+                  onChange={(e) => setHearingDateRange([hearingDateRange[0], e.target.value])}
+                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Role Filter */}
+            <div className="flex items-start gap-3 mt-2">
               <span className="text-base  text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
                 类型
               </span>
@@ -247,78 +318,8 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
               </div>
             </div>
 
-            {/* Secretary Filter */}
-            <div className="flex items-start gap-3 mt-1">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                经办秘书
-              </span>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={selectedSecretary}
-                  onChange={(e) => setSelectedSecretary(e.target.value)}
-                  placeholder="搜索经办秘书姓名"
-                  className="w-full px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Amount Range Filter */}
-            <div className="flex items-start gap-3 mt-1">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                标的区间
-              </span>
-              <div className="flex items-center gap-2 flex-1">
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min={0}
-                    value={amountRange[0] === 0 ? '' : amountRange[0]}
-                    onChange={(e) => setAmountRange([Number(e.target.value) || 0, amountRange[1]])}
-                    placeholder="标的下限"
-                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
-                </div>
-                <span className="text-slate-400 text-sm">~</span>
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min={0}
-                    value={amountRange[1] === 100000 ? '' : amountRange[1]}
-                    onChange={(e) => setAmountRange([amountRange[0], Number(e.target.value) || 100000])}
-                    placeholder="标的上限"
-                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Hearing Date Range Filter */}
-            <div className="flex items-start gap-3 mt-1">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                开庭日期
-              </span>
-              <div className="flex items-center gap-2 flex-1">
-                <input
-                  type="date"
-                  value={hearingDateRange[0]}
-                  onChange={(e) => setHearingDateRange([e.target.value, hearingDateRange[1]])}
-                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-                <span className="text-slate-400 text-sm">~</span>
-                <input
-                  type="date"
-                  value={hearingDateRange[1]}
-                  onChange={(e) => setHearingDateRange([hearingDateRange[0], e.target.value])}
-                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
-
             {/* Close Method Filter */}
-            <div className="flex items-start gap-3 mt-1">
+            <div className="flex items-start gap-3 mt-2">
               <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
                 结案方式
               </span>
@@ -340,7 +341,7 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
             </div>
 
             {/* Quick Filter */}
-            <div className="flex items-start gap-3 mt-1">
+            <div className="flex items-start gap-3 mt-2">
               <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
                 快捷筛选
               </span>
@@ -395,10 +396,14 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
                                    c.role === '独任' ? 'text-purple-500 bg-purple-50 border border-purple-100/80' :
                                    'text-slate-500 bg-slate-50 border border-slate-100';
 
-            const statusColorClass = c.status === '审理中' ? 'text-indigo-500 bg-indigo-50/60 border-indigo-100' :
-                                     c.status === '已结案' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' :
-                                     c.status === '待开庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
-                                     'text-rose-500 bg-rose-50 border-rose-100';
+            const statusColorClass = selectedStatusFilter === '审理中'
+              ? (delayed ? 'text-red-500 bg-red-50 border-red-100'
+                : nearDelayed ? 'text-amber-500 bg-amber-50 border-amber-100'
+                : 'text-indigo-500 bg-indigo-50/60 border-indigo-100')
+              : c.status === '已结案' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' :
+                 c.status === '待开庭' ? 'text-amber-500 bg-amber-50 border-amber-100' :
+                 c.status === '审理中' ? 'text-indigo-500 bg-indigo-50/60 border-indigo-100' :
+                 'text-rose-500 bg-rose-50 border-rose-100';
 
             return (
               <div
@@ -414,7 +419,9 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
                     {major && <Star size={14} className="text-yellow-400 fill-yellow-400" />}
                   </span>
                   <span className={`text-sm p-0.5 px-1.5 rounded border ${statusColorClass}`}>
-                    {c.status}
+                    {selectedStatusFilter === '审理中'
+                      ? (delayed ? '已延期' : nearDelayed ? '即将延期' : '审理中')
+                      : c.status}
                   </span>
                 </div>
 

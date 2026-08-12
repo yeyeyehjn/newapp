@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import {
-  User, Building2, FileText, CreditCard, LogOut, ShieldCheck,
-  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera,
-  Phone, Mail, Home, Edit3, Star, Wallet
+import { 
+  User, Building2, FileText, CreditCard, LogOut, ShieldCheck, 
+  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera, 
+  Phone, Mail, Home, Edit3, Star
 } from 'lucide-react';
 import { ArbitratorProfile } from '../types';
 
@@ -40,10 +40,9 @@ interface MyProfileProps {
   workInfo: WorkInfo;
   bankInfo: BankInfo;
   onSetPreferredAddress: (type: 'home' | 'contact' | 'other') => void;
-  onNavigateToRemuneration?: () => void;
 }
 
-export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, onSetPreferredAddress, onNavigateToRemuneration }: MyProfileProps) {
+export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, onSetPreferredAddress }: MyProfileProps) {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | undefined>(profile.avatar);
@@ -81,7 +80,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
   };
 
   return (
-    <div className="flex-1 bg-slate-50/75 flex flex-col overflow-y-auto no-scrollbar pb-10 relative">
+    <div className="flex-1 bg-slate-50/75 flex flex-col overflow-y-auto no-scrollbar pb-10">
       {/* Top Professional Header - Inspired by homepage's elegant blue gradient */}
       <div className="bg-gradient-to-b from-[#DCEBFF] via-[#EEF5FF] to-slate-50/10 px-4 pt-6 pb-6 flex-shrink-0 relative overflow-hidden text-left">
         
@@ -123,22 +122,22 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
           {/* User Identity Details */}
           <div className="flex-1 min-w-0 pt-0.5">
             <div className="flex items-center flex-wrap gap-2 mb-1.5">
-              <h1 className="text-lg font-black text-slate-800 tracking-tight leading-none">
+              <h1 className="text-[17px] font-black text-slate-800 tracking-tight leading-none">
                 {profile.name}
               </h1>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-sm  bg-white/95 text-[#1E62EC] border border-blue-100/50 shadow-2xs">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-black bg-white/95 text-[#1E62EC] border border-blue-100/50 shadow-2xs">
                 <Award size={10} className="text-[#1E62EC]" />
                 {profile.ranking}
               </span>
             </div>
-            <p className="text-sm text-slate-500  truncate mb-2">
+            <p className="text-[12.5px] text-slate-500 font-bold truncate mb-2">
               广州市社会科学院政治法律研究所
             </p>
             
             {/* Minor specialties badges */}
             <div className="flex flex-wrap gap-1">
               {profile.specialties.map((spec, idx) => (
-                <span key={idx} className="bg-white/80 border border-slate-100 text-sm  text-[#1E62EC] px-2 py-0.5 rounded-md shadow-2xs">
+                <span key={idx} className="bg-white/80 border border-slate-100 text-[10.5px] font-bold text-[#1E62EC] px-2 py-0.5 rounded-md shadow-2xs">
                   {spec}
                 </span>
               ))}
@@ -149,25 +148,6 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
       {/* Main Profile Functional Body */}
       <div className="p-4 space-y-3 z-[1]">
-        
-        {/* SECTION 0: 酬金单模块 (Remuneration) */}
-        <div className="bg-white rounded-lg border border-slate-100 overflow-hidden transition-all duration-300">
-          <div
-            onClick={() => onNavigateToRemuneration?.()}
-            className="w-full p-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors text-left cursor-pointer"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100/50 text-emerald-600">
-                <Wallet size={15} />
-              </div>
-              <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-800 leading-none">酬金单</h3>
-                <p className="text-sm text-slate-500 font-medium">案件酬劳明细及结算统计</p>
-              </div>
-            </div>
-            <ChevronRight size={14} className="text-slate-500" />
-          </div>
-        </div>
         
         {/* SECTION 1: 个人信息 (Personal Info) */}
         <div className="bg-white rounded-lg border border-slate-100  overflow-hidden transition-all duration-300">
@@ -180,7 +160,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <User size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-800 leading-none">个人信息</h3>
+                <h3 className="text-sm font-bold text-slate-800 leading-none">个人信息</h3>
                 <p className="text-sm text-slate-500 font-medium">姓名、联系方式、地址信息</p>  
               </div>
             </div>
@@ -306,7 +286,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <Building2 size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-800 leading-none">工作单位</h3>
+                <h3 className="text-sm font-bold text-slate-800 leading-none">工作单位</h3>
                 <p className="text-sm text-slate-500 font-medium">执业/研究单位及当前岗位</p>
               </div>
             </div>
@@ -363,7 +343,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <FileText size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-800 leading-none">个人履历</h3>
+                <h3 className="text-sm font-bold text-slate-800 leading-none">个人履历</h3>
                 <p className="text-sm text-slate-500 font-medium">学术背景、执业年限及学术专著</p>
               </div>
             </div>
@@ -423,7 +403,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <CreditCard size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-base font-bold text-slate-800 leading-none">银行账号信息</h3>
+                <h3 className="text-sm font-bold text-slate-800 leading-none">银行账号信息</h3>
                 <p className="text-sm text-slate-500 font-medium">本庭办案报酬与津贴发放指定账户</p>
               </div>
             </div>
@@ -454,10 +434,12 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                   
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
-                      <span className="text-sm tracking-widest text-indigo-200 uppercase block">开户银行</span>
-                      <h4 className="block text-sm text-white truncate">{bankInfo.bank}</h4>
+                      <span className="text-sm tracking-widest text-indigo-200 uppercase font-bold">仲裁员专款汇账卡</span>
+                      <h4 className="font-bold text-sm text-white truncate">{bankInfo.bank}</h4>
                     </div>
-                    
+                    <span className="text-sm bg-white/20 border border-white/10 text-white px-1.5 py-0.5 rounded font-bold font-mono">
+                      {bankInfo.branch}
+                    </span>
                   </div>
 
                   <div className="space-y-1">
@@ -468,12 +450,17 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                   </div>
 
                   <div className="flex justify-between items-end border-t border-white/10 pt-2 text-sm text-indigo-100 font-medium">
-                    <span className="truncate">账户户名：<strong className="text-white ">{bankInfo.accountName}</strong></span>
-                    
+                    <span className="truncate">账户户名：<strong className="text-white font-bold">{bankInfo.accountName}</strong></span>
+                    <div className="flex items-center gap-1 text-emerald-300">
+                      <ShieldCheck size={11} />
+                      <span className="font-bold">已通过CA盾实名绑定</span>
+                    </div>
                   </div>
                 </div>
                 
-                
+                <p className="text-sm text-slate-500 font-medium leading-relaxed text-center px-2">
+                  提示：如需变更账报银行卡，请携带本人有效身份证、特级聘书及广州CA盾硬件赴广州仲裁委本委现场柜台核准办理变动手续。
+                </p>
               </div>
             </div>
           )}
@@ -496,41 +483,33 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
       {/* Logout Confirmation Dialog Modal */}
       {showExitConfirm && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          {/* Backdrop click cancels */}
-          <div
-            className="absolute inset-0"
-            onClick={() => setShowExitConfirm(false)}
-          />
-          <div className="relative bg-white rounded-2xl w-[280px] overflow-hidden shadow-2xl animate-scale-up">
-            {/* 图标 + 标题 */}
-            <div className="pt-6 pb-4 px-4 text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center bg-rose-100">
-                <LogOut size={24} className="text-rose-600" />
-              </div>
-              <div className="text-base font-bold text-slate-800 mb-1">确认退出登录？</div>
-              <div className="text-sm text-slate-500">
-                退出后需重新登录
-              </div>
+        <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-5">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-5 border border-slate-100 shadow-xl space-y-4 animate-scale-up text-left">
+            <div className="space-y-1">
+              <span className="text-sm bg-red-50 text-red-600 border border-red-100/60 px-2 py-0.5 rounded font-bold font-mono">
+                SECURITY EXIT
+              </span>
+              <h3 className="text-sm font-bold text-slate-800">确认安全退出账号吗？</h3>
+              <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                退出后，系统将清除本地CA联存证明核验口令，再次进入需要重新进行双因子指纹及数字CA盾签注校验。
+              </p>
             </div>
-
-            {/* 确认按钮 */}
-            <div className="border-t border-slate-100 flex">
-              <button
+            
+            <div className="flex items-center gap-2.5">
+              <button 
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 font-medium py-2.5 text-sm rounded-md transition-all cursor-pointer border border-slate-200"
               >
                 取消
               </button>
-              <div className="w-px bg-slate-100" />
-              <button
+              <button 
                 onClick={() => {
                   setShowExitConfirm(false);
                   onLogout();
                 }}
-                className="flex-1 py-3 text-sm font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 text-sm rounded-xl transition-all cursor-pointer border border-red-500 shadow-md shadow-red-200"
               >
-                确认退出
+                安全退出
               </button>
             </div>
           </div>

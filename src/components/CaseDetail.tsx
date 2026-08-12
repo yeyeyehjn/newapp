@@ -131,9 +131,8 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
   const [activeTab, setActiveTab] = useState<'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review'>(initialTab || 'basic');
   const [viewingMaterial, setViewingMaterial] = useState<MaterialItem | null>(null);
   const [materialSearch, setMaterialSearch] = useState('');
-  const [isSigned, setIsSigned] = useState(false);
+  const [viewingPdf, setViewingPdf] = useState<{ name: string; size: string; pages: number; signed?: boolean } | null>(null);
   const [isSigning, setIsSigning] = useState(false);
-  const [viewingPdf, setViewingPdf] = useState<{ name: string; size: string; pages: number } | null>(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploadRemindTarget, setUploadRemindTarget] = useState('');
   const [uploadRemark, setUploadRemark] = useState('');
@@ -188,6 +187,31 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
     { id: 't2', name: '庭审笔录_20260120.pdf', size: '2.8 MB', pages: 12, signed: false, signTime: '' },
     { id: 't3', name: '庭审笔录_20260205.pdf', size: '4.1 MB', pages: 18, signed: false, signTime: '' },
   ]);
+
+  // 仲裁裁决书列表（多条，带签名状态）
+  const [awardList, setAwardList] = useState([
+    { id: 'a1', name: '仲裁裁决书.pdf', size: '2.8 MB', pages: 12, signed: false, signTime: '' },
+    { id: 'a2', name: '仲裁裁决书_补充意见.pdf', size: '1.6 MB', pages: 8, signed: true, signTime: '2026-02-10 14:30' },
+    { id: 'a3', name: '仲裁裁决书_更正版.pdf', size: '2.5 MB', pages: 11, signed: true, signTime: '2026-02-15 09:12' },
+  ]);
+
+  // 待签名的裁决书（仅 1 份）
+  const pendingAward = awardList.find(a => !a.signed);
+  const signedAwards = awardList.filter(a => a.signed);
+
+  // 确认签名裁决书
+  const handleSignAward = () => {
+    if (!pendingAward || isSigning) return;
+    setIsSigning(true);
+    setTimeout(() => {
+      setAwardList(prev => prev.map(a => !a.signed ? {
+        ...a,
+        signed: true,
+        signTime: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      } : a));
+      setIsSigning(false);
+    }, 1500);
+  };
 
   // 本案件待办列表
   const caseTodos = [
@@ -324,8 +348,8 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
         </div>
       </div>
 
-      {/* Simplified Banner - 右侧待办入口 */}
-      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-3.5 flex-shrink-0">
+      {/* Case Banner - 专业克制风格 */}
+      <div className="bg-indigo-600 text-white px-4 py-3.5 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             {/* 第一行：案号 */}
@@ -334,7 +358,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             </h4>
             {/* 第二行：案由标签 + 状态 */}
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-sm font-medium bg-white/20 px-2 py-0.5 rounded">
+              <span className="text-sm font-medium bg-white/15 px-2 py-0.5 rounded">
                 {caseItem.title}
               </span>
               <span className={`text-sm px-2 py-0.5 rounded font-medium flex-shrink-0 ${
@@ -349,7 +373,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
           {/* 右侧：待办数 */}
           <button
             onClick={() => setShowTodoPanel(true)}
-            className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 rounded-full px-2.5 py-1 transition-colors cursor-pointer flex-shrink-0"
+            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-full px-2.5 py-1 transition-colors cursor-pointer flex-shrink-0"
           >
             <Bell size={13} className="text-white" />
             <span className="text-sm font-bold text-white">{caseTodos.length}</span>
@@ -629,7 +653,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                     key={pdf.id}
                     onClick={() => {
                       if (pdf.signed) {
-                        setViewingPdf({ name: pdf.name, size: pdf.size, pages: pdf.pages });
+                        setViewingPdf({ name: pdf.name, size: pdf.size, pages: pdf.pages, signed: pdf.signed });
                       } else {
                         // 未签名 -> 跳转笔录签名详情页
                         onSignTranscript?.({ id: pdf.id, name: pdf.name, pages: pdf.pages, size: pdf.size });
@@ -682,64 +706,86 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               </div>
             </div>
 
-            {/* Document Preview */}
+            {/* 仲裁裁决书 - 已签名模块（可能多份，在上） */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
               <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <FileText size={14} className="text-indigo-500" />
-                  <span className="text-base font-bold text-slate-700">仲裁裁决书</span>
+                  <FileText size={14} className="text-emerald-500" />
+                  <span className="text-base font-bold text-slate-700">仲裁裁决书 · 已签名</span>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded  ${
-                  isSigned
-                    ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                    : 'bg-amber-50 text-amber-600 border border-amber-100'
-                }`}>
-                  {isSigned ? '已签名' : '待签名'}
+                <span className="text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">
+                  已签 {signedAwards.length} 份
                 </span>
               </div>
 
-              {/* PDF Attachment List */}
               <div className="p-3 space-y-2">
-                {[
-                  { name: '仲裁裁决书.pdf', size: '2.8 MB', pages: 12 }
-                ].map((pdf, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setViewingPdf(pdf)}
-                    className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer group"
-                  >
-                    {/* PDF Icon */}
-                    <PdfFileIcon pages={pdf.pages} />
-                    {/* File Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pdf.name}</div>
-                      <div className="text-sm text-slate-500 mt-0.5">{pdf.pages}页</div>
+                {signedAwards.length > 0 ? (
+                  signedAwards.map((pdf) => (
+                    <div
+                      key={pdf.id}
+                      onClick={() => setViewingPdf({ name: pdf.name, size: pdf.size, pages: pdf.pages, signed: pdf.signed })}
+                      className="flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group bg-emerald-50/40 border-slate-100 hover:border-indigo-200"
+                    >
+                      <PdfFileIcon pages={pdf.pages} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pdf.name}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-emerald-600 font-medium">已签名 · {pdf.signTime}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm flex-shrink-0 text-slate-400">
+                        <span>预览</span>
+                        <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
+                      </div>
                     </div>
-                    {/* Preview Button */}
-                    <div className="flex items-center gap-1 text-indigo-500 text-sm flex-shrink-0">
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-sm text-slate-400">
+                    <i className="fa-regular fa-folder-open text-slate-300 text-2xl mb-2"></i>
+                    <div>暂无已签名裁决书</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 仲裁裁决书 - 待签名模块（仅 1 份，在下） */}
+            {pendingAward && (
+              <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <FileText size={14} className="text-amber-500" />
+                    <span className="text-base font-bold text-slate-700">仲裁裁决书 · 待签名</span>
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">
+                    待签 1 份
+                  </span>
+                </div>
+
+                <div className="p-3 space-y-2">
+                  <div
+                    onClick={() => setViewingPdf({ name: pendingAward.name, size: pendingAward.size, pages: pendingAward.pages, signed: pendingAward.signed })}
+                    className="flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group bg-amber-50/40 border-amber-100 hover:border-amber-300"
+                  >
+                    <PdfFileIcon pages={pendingAward.pages} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-slate-800 truncate group-hover:text-indigo-600 transition-colors">{pendingAward.name}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-amber-600">未签名</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm flex-shrink-0 text-slate-400">
                       <span>预览</span>
                       <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            {/* Signature Confirmation - 直接确认，无需短信/邮箱验证 */}
-            {!isSigned ? (
-              <div>
-                
-                {/* Sign Button */}
+                {/* 确认签名按钮 */}
                 <button
-                  onClick={() => {
-                    setIsSigning(true);
-                    setTimeout(() => {
-                      setIsSigning(false);
-                      setIsSigned(true);
-                    }, 1500);
-                  }}
+                  onClick={handleSignAward}
                   disabled={isSigning}
-                  className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-600/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 m-3 mt-0"
+                  style={{ width: 'calc(100% - 1.5rem)' }}
                 >
                   {isSigning ? (
                     <>
@@ -753,19 +799,6 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                     </>
                   )}
                 </button>
-              </div>
-            ) : (
-              <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 text-center space-y-2">
-                <div className="w-12 h-12 bg-emerald-500 rounded-full mx-auto flex items-center justify-center">
-                  <i className="fa-solid fa-check text-white text-lg"></i>
-                </div>
-                <div className="text-sm font-bold text-emerald-600">签名完成</div>
-                <div className="text-sm text-slate-500">
-                  签署时间：{new Date().toISOString().replace('T', ' ').substring(0, 16)}
-                </div>
-                <div className="text-sm text-slate-500 bg-white/50 rounded p-2 mt-2">
-                  CA数字签名编号：0x{Math.random().toString(16).substring(2, 16).toUpperCase()}
-                </div>
               </div>
             )}
           </div>
@@ -1163,7 +1196,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                 </div>
               )}
 
-              {isSigned && (
+              {viewingPdf.signed && (
                 <div className="border-t border-emerald-200 pt-3 flex items-center justify-end gap-2">
                   <Shield size={14} className="text-emerald-500" />
                   <span className="text-emerald-600 font-bold text-xs">CA数字签名已确认</span>

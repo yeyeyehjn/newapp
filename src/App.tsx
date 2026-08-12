@@ -31,10 +31,8 @@ import TranscriptSignatureDetail from './components/TranscriptSignatureDetail';
 import PostponementApprovalPage from './components/PostponementApprovalPage';
 import PostponementApprovalDetail from './components/PostponementApprovalDetail';
 import PendingHearingList from './components/PendingHearingList';
-import ArbitrationKnowledge from './components/ArbitrationKnowledge';
-import LoginPage from './components/LoginPage';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -58,10 +56,6 @@ export default function App() {
   const [selectedTranscript, setSelectedTranscript] = useState<TranscriptSignature | null>(null);
   const [selectedApproval, setSelectedApproval] = useState<PostponementApproval | null>(null);
   const [selectedDeclaration, setSelectedDeclaration] = useState<any>(null);
-  // 案件详情页初始 tab（从文书签名列表进入时直接定位到“文书签名”）
-  const [caseDetailInitialTab, setCaseDetailInitialTab] = useState<'basic' | 'parties' | 'requests' | 'materials' | 'signature' | 'review'>('basic');
-  // 标记笔录签名详情页是否由案件详情页进入（用于返回时回到案件详情而非笔录列表）
-  const [transcriptDetailFromCase, setTranscriptDetailFromCase] = useState<boolean>(false);
   
   // Global filters - 默认查询在办案件
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
@@ -144,7 +138,7 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList') => {
     setActiveSubPage(page);
   };
 
@@ -154,38 +148,6 @@ export default function App() {
     setSelectedCase(null);
     setSelectedTranscript(null);
     setSelectedApproval(null);
-    setCaseDetailInitialTab('basic');
-    setTranscriptDetailFromCase(false);
-  };
-
-  // 从案件详情页的“文书签名”tab 点击庭审笔录“去签名”按钮
-  // 直接进入笔录签名详情页，并标记返回时回到案件详情页
-  const handleSignTranscriptFromCase = (transcript: { id: string; name: string; pages: number; size: string }) => {
-    if (!selectedCase) return;
-    // 优先复用同案号下已有的待签名笔录数据
-    let transcriptSig = transcriptSignatures.find(
-      t => t.caseNo === selectedCase.caseNo && t.status === 'pending'
-    );
-    if (!transcriptSig) {
-      // 从文件名解析庭审时间（如 庭审笔录_20260120.pdf -> 2026-01-20）
-      const dateMatch = transcript.name.match(/(\d{4})(\d{2})(\d{2})/);
-      const hearingTime = dateMatch
-        ? `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]} 09:00-12:00`
-        : '庭审当日 09:00-12:00';
-      transcriptSig = {
-        id: `ts_case_${transcript.id}`,
-        caseNo: selectedCase.caseNo,
-        claimant: selectedCase.claimant,
-        respondent: selectedCase.respondent,
-        secretary: selectedCase.secretary || '李文浩',
-        arbitrator: selectedCase.role === '首席' ? '张明（首席）' : selectedCase.role === '独任' ? '张明（独任）' : '张明（边裁）',
-        hearingTime,
-        status: 'pending'
-      };
-    }
-    setSelectedTranscript(transcriptSig);
-    setTranscriptDetailFromCase(true);
-    setActiveSubPage('transcriptSignatureDetail');
   };
 
   // Submit transcript signature
@@ -195,7 +157,6 @@ export default function App() {
     );
     setActiveSubPage(null);
     setSelectedTranscript(null);
-    setTranscriptDetailFromCase(false);
   };
 
   // Approve postponement
@@ -239,14 +200,47 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <MiniProgramContainer>
-        <LoginPage
-          onLogin={() => {
-            setIsLoggedIn(true);
-            setActiveTab(0);
-            setActiveSubPage(null);
-            setSelectedCase(null);
-          }}
-        />
+        <div className="flex-1 bg-gradient-to-br from-[#0B0F19] via-[#111827] to-[#1E293B] text-white flex flex-col justify-center items-center p-6 text-center select-none animate-fade-in font-sans relative">
+          <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping text-indigo-500"></span>
+            <span className="text-xs font-black tracking-widest text-slate-500">广州仲裁委 • 智慧专网盾</span>
+          </div>
+
+          <div className="space-y-6 w-full max-w-xs">
+            {/* Animated Ring Icon */}
+            <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border border-indigo-500/20 animate-pulse" />
+              <div className="absolute inset-2 rounded-full border border-indigo-400/40 animate-pulse" />
+              <div className="absolute inset-4 rounded-full bg-[#111827] border border-indigo-500/80 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+                <i className="fa-solid fa-lock text-indigo-400 text-xl animate-pulse"></i>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-base font-black tracking-tight text-[#F3F4F6]">仲裁端双因子登录认证</h1>
+              <p className="text-xs text-slate-500 leading-normal px-2">
+                检测到您未载入本委CA防伪专效证书盾，为保证合议内容秘密度及数据，请点击指纹核验或一键进行数字建连登录。
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-3">
+              <button 
+                onClick={() => {
+                  setIsLoggedIn(true);
+                  setActiveTab(0); // auto reset tab to workbench
+                }}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-heavy p-3 text-sm rounded-2xl cursor-pointer transition-all border border-indigo-600 shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2"
+              >
+                <i className="fa-solid fa-fingerprint text-xs"></i>
+                <span>双因子安全一键核签登录</span>
+              </button>
+              
+              <div className="text-2xs text-slate-500 font-mono">
+                硬件指纹及数字校验盾 ID: ARB-2018-0925
+              </div>
+            </div>
+          </div>
+        </div>
       </MiniProgramContainer>
     );
   }
@@ -310,15 +304,8 @@ export default function App() {
           <TranscriptSignatureDetail
             transcript={selectedTranscript}
             onBack={() => {
-              if (transcriptDetailFromCase) {
-                // 由案件详情页进入 -> 返回案件详情页的“文书签名”模块
-                setCaseDetailInitialTab('signature');
-                setActiveSubPage('caseDetail');
-              } else {
-                setActiveSubPage('transcriptSignature');
-              }
+              setActiveSubPage('transcriptSignature');
               setSelectedTranscript(null);
-              setTranscriptDetailFromCase(false);
             }}
             onSubmitSignature={handleSubmitTranscriptSignature}
           />
@@ -376,9 +363,6 @@ export default function App() {
           <CaseDetail
             caseItem={selectedCase}
             onBack={handleBackFromSubPage}
-            onNavigateToSubPage={(page) => handleNavigateToSubPage(page as any)}
-            initialTab={caseDetailInitialTab}
-            onSignTranscript={handleSignTranscriptFromCase}
           />
         )}
 
@@ -432,8 +416,6 @@ export default function App() {
                   });
                 }
               }
-              // 直接定位到案件详情页的“文书签名”模块
-              setCaseDetailInitialTab('signature');
               setActiveSubPage('caseDetail');
             }}
           />
@@ -459,8 +441,6 @@ export default function App() {
                   });
                 }
               }
-              // 直接定位到案件详情页的"裁决书核阅"模块
-              setCaseDetailInitialTab('review');
               setActiveSubPage('caseDetail');
             }}
           />
@@ -488,14 +468,6 @@ export default function App() {
               }
               setActiveSubPage('caseDetail');
             }}
-          />
-        )}
-
-        {/* 仲裁知识库子页面 */}
-        {activeSubPage === 'arbitrationKnowledge' && (
-          <ArbitrationKnowledge
-            userName={mockArbitrator.name}
-            onBack={handleBackFromSubPage}
           />
         )}
 
@@ -539,6 +511,8 @@ export default function App() {
         {!activeSubPage && activeTab === 1 && (
           <CaseList
             cases={cases}
+            selectedStatusFilter={selectedStatusFilter}
+            onFilterStatusChange={setSelectedStatusFilter}
             onSelectCase={(caseItem) => {
               setSelectedCase(caseItem);
               setActiveSubPage('caseDetail');
@@ -569,13 +543,11 @@ export default function App() {
             workInfo={workInfo}
             bankInfo={bankInfo}
             onSetPreferredAddress={(type) => setPersonalInfo({...personalInfo, preferredAddress: type})}
-            onNavigateToRemuneration={() => handleNavigateToSubPage('remuneration')}
           />
         )}
       </div>
 
       {/* WeChat Mini Program Styled Bottom Navigation Bar */}
-      {!activeSubPage && (
       <div className="h-14 bg-white border-t border-slate-100 flex items-center justify-around select-none z-40 flex-shrink-0">
         {[
           { label: '首页', icon: 'fa-house', index: 0 },
@@ -612,7 +584,6 @@ export default function App() {
           );
         })}
       </div>
-      )}
     </MiniProgramContainer>
   );
 }

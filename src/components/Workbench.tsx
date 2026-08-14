@@ -12,6 +12,7 @@ interface WorkbenchProps {
   selectedStatusFilter: CaseStatus | 'all';
   onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'declarationList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'docSignatureList' | 'draftAwardList' | 'arbitrationKnowledge') => void;
   onToggleVersion?: () => void;
+  onQuickFilter?: (filter: 'none' | 'major' | 'nearDelayed' | 'delayed') => void;
 }
 
 export default function Workbench({ 
@@ -24,7 +25,8 @@ export default function Workbench({
   onSelectTaskDirect,
   selectedStatusFilter,
   onNavigateToSubPage,
-  onToggleVersion
+  onToggleVersion,
+  onQuickFilter
 }: WorkbenchProps) {
   const [showLearningModal, setShowLearningModal] = useState<boolean>(false);
   const [activeFuncTab, setActiveFuncTab] = useState<'common' | 'other'>('common');
@@ -151,6 +153,13 @@ export default function Workbench({
 
   const handleStatBlockClick = (status: CaseStatus | 'all') => {
     onFilterStatus(status);
+    onQuickFilter?.('none');
+    onNavigateToTab(1);
+  };
+
+  const handleDelayedClick = () => {
+    onFilterStatus('审理中');
+    onQuickFilter?.('delayed');
     onNavigateToTab(1);
   };
 
@@ -244,10 +253,10 @@ export default function Workbench({
 
         {/* 4. PREMIUM BENTO GRID LAYOUT (待办, 在办, 已结案 - Styled like Reference Image) */}
         <div className="grid grid-cols-2 gap-3  mt-5 select-none">
-          {/* Left Column: 我的待办 (Tall card) */}
-          <div 
+          {/* Left Column: 我的待办 (Tall card) — 已隐藏，后续可恢复（移除 hidden 即可） */}
+          <div
             onClick={() => onNavigateToTab(2)}
-            className="bg-white rounded-2xl border border-slate-100/90 shadow-[0_6px_20px_rgba(30,98,236,0.03)] p-4 flex flex-col justify-between h-[11.25rem] relative overflow-hidden group hover:shadow-[0_10px_28px_rgba(30,98,236,0.08)] transition-all duration-300 cursor-pointer text-left"
+            className="hidden bg-white rounded-2xl border border-slate-100/90 shadow-[0_6px_20px_rgba(30,98,236,0.03)] p-4 flex flex-col justify-between h-[11.25rem] relative overflow-hidden group hover:shadow-[0_10px_28px_rgba(30,98,236,0.08)] transition-all duration-300 cursor-pointer text-left"
           >
             {/* Top bar with Title & Red Pill */}
             <div>
@@ -302,8 +311,8 @@ export default function Workbench({
             </div>
           </div>
 
-          {/* Right Column: Stacked 在办案件 & 已结案 */}
-          <div className="flex flex-col gap-3 min-w-0">
+          {/* Right Column: 在办案件 & 已结案 — 左右双栏布局 */}
+          <div className="grid grid-cols-2 gap-3 min-w-0 col-span-2">
             {/* Card 1: 在办案件 */}
             <div 
               onClick={() => handleStatBlockClick('审理中')}
@@ -321,12 +330,9 @@ export default function Workbench({
                 </span>
               </div>
               
-              {/* Right side check icon illustration - High-fidelity style referencing left side, scaled down */}
-              <div className="w-12 h-12 relative shrink-0 overflow-visible select-none pointer-events-none mr-0.5">
-                {/* Background glow circle */}
+              {/* Right side check icon illustration */}
+              <div className="w-12 h-12 relative shrink-0 overflow-visible select-none pointer-events-none self-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-50/70 to-indigo-100/40 rounded-full blur-xs group-hover:scale-110 transition-transform duration-300"></div>
-                
-                {/* Document/Case Folder Illustration */}
                 <div className="absolute right-3.5 bottom-2.5 bg-white border border-slate-100 shadow-[0_2px_6px_rgba(15,23,42,0.04)] w-5.5 h-7 rounded-md rotate-[-10deg] p-0.5 flex flex-col justify-between group-hover:rotate-[-6deg] transition-all duration-300">
                   <div className="space-y-0.5">
                     <div className="h-0.5 bg-blue-100 rounded-full w-full"></div>
@@ -337,7 +343,6 @@ export default function Workbench({
                     <span className="text-[3px] font-mono text-slate-400 font-bold">CASE</span>
                   </div>
                 </div>
-
                 <div className="absolute right-1 bottom-1 bg-gradient-to-br from-[#4D94FF] to-[#1E62EC] shadow-[0_2px_8px_rgba(30,98,236,0.18)] w-5 h-6.5 rounded-md rotate-[8deg] p-0.5 flex flex-col justify-between group-hover:rotate-[4deg] transition-all duration-300">
                   <div className="space-y-0.5">
                     <div className="h-0.5 bg-white/40 rounded-full w-full"></div>
@@ -345,15 +350,52 @@ export default function Workbench({
                   </div>
                   <i className="fa-solid fa-gavel text-[6px] text-white self-end"></i>
                 </div>
-
-                
               </div>
             </div>
 
-            {/* Card 2: 已结案 */}
+            {/* Card 2: 已延期案件统计 (replaces 已结案) */}
+            <div 
+              onClick={handleDelayedClick}
+              className="bg-white rounded-2xl border border-slate-100/90 shadow-[0_6px_20px_rgba(30,98,236,0.02)] p-3.5 flex items-center justify-between h-[5.35rem] relative overflow-hidden group hover:shadow-[0_8px_20px_rgba(30,98,236,0.05)] transition-all duration-300 cursor-pointer text-left"
+            >
+              <div className="flex-1 min-w-0 pr-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-base font-black text-slate-800 tracking-tight shrink-0">已延期</span>
+                  <span className="text-[10px] font-extrabold text-[#F43F5E] bg-[#FFE4E6] px-2  rounded-md shrink-0 scale-90 origin-left">
+                    2
+                  </span>
+                </div>
+                <span className="text-sm text-slate-400 font-medium block truncate">
+                  已延期案件
+                </span>
+              </div>
+
+              <div className="w-12 h-12 relative shrink-0 overflow-visible select-none pointer-events-none self-center">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-50/70 to-red-100/40 rounded-full blur-xs group-hover:scale-110 transition-transform duration-300"></div>
+                <div className="absolute right-3.5 bottom-2.5 bg-white border border-slate-100 shadow-[0_2px_6px_rgba(15,23,42,0.04)] w-5.5 h-7 rounded-md rotate-[-10deg] p-0.5 flex flex-col justify-between group-hover:rotate-[-6deg] transition-all duration-300">
+                  <div className="space-y-0.5">
+                    <div className="h-0.5 bg-rose-100 rounded-full w-full"></div>
+                    <div className="h-0.5 bg-slate-100 rounded-full w-4/5"></div>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <span className="w-0.5 h-0.5 rounded-full bg-rose-400"></span>
+                    <span className="text-[3px] font-mono text-slate-400 font-bold">LATE</span>
+                  </div>
+                </div>
+                <div className="absolute right-1 bottom-1 bg-gradient-to-br from-[#FB7185] to-[#F43F5E] shadow-[0_2px_8px_rgba(244,63,94,0.18)] w-5 h-6.5 rounded-md rotate-[8deg] p-0.5 flex flex-col justify-between group-hover:rotate-[4deg] transition-all duration-300">
+                  <div className="space-y-0.5">
+                    <div className="h-0.5 bg-white/40 rounded-full w-full"></div>
+                    <div className="h-0.5 bg-white/20 rounded-full w-2/3"></div>
+                  </div>
+                  <i className="fa-solid fa-clock text-[6px] text-white self-end"></i>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2-original: 已结案 — 已隐藏，后续可恢复（移除 hidden 即可） */}
             <div 
               onClick={() => handleStatBlockClick('已结案')}
-              className="bg-white rounded-2xl border border-slate-100/90 shadow-[0_6px_20px_rgba(30,98,236,0.02)] p-3.5 flex items-center justify-between h-[5.35rem] relative overflow-hidden group hover:shadow-[0_8px_20px_rgba(30,98,236,0.05)] transition-all duration-300 cursor-pointer text-left"
+              className="hidden bg-white rounded-2xl border border-slate-100/90 shadow-[0_6px_20px_rgba(30,98,236,0.02)] p-3.5 flex items-center justify-between h-[5.35rem] relative overflow-hidden group hover:shadow-[0_8px_20px_rgba(30,98,236,0.05)] transition-all duration-300 cursor-pointer text-left"
             >
               <div className="flex-1 min-w-0 pr-1">
                 <div className="flex items-center gap-1.5 mb-0.5">
@@ -367,12 +409,8 @@ export default function Workbench({
                 </span>
               </div>
 
-              {/* Right side checked archive illustration - High-fidelity style referencing left side, scaled down */}
               <div className="w-12 h-12 relative shrink-0 overflow-visible select-none pointer-events-none mr-0.5">
-                {/* Background glow circle */}
                 <div className="absolute inset-0 bg-gradient-to-br from-orange-50/70 to-amber-100/40 rounded-full blur-xs group-hover:scale-110 transition-transform duration-300"></div>
-                
-                {/* Archive File Illustration */}
                 <div className="absolute right-3.5 bottom-2.5 bg-white border border-slate-100 shadow-[0_2px_6px_rgba(15,23,42,0.04)] w-5.5 h-7 rounded-md rotate-[-10deg] p-0.5 flex flex-col justify-between group-hover:rotate-[-6deg] transition-all duration-300">
                   <div className="space-y-0.5">
                     <div className="h-0.5 bg-orange-100 rounded-full w-full"></div>
@@ -383,7 +421,6 @@ export default function Workbench({
                     <span className="text-[3px] font-mono text-slate-400 font-bold">DONE</span>
                   </div>
                 </div>
-
                 <div className="absolute right-1 bottom-1 bg-gradient-to-br from-[#FFAB73] to-[#FF8E53] shadow-[0_2px_8px_rgba(255,142,83,0.18)] w-5 h-6.5 rounded-md rotate-[8deg] p-0.5 flex flex-col justify-between group-hover:rotate-[4deg] transition-all duration-300">
                   <div className="space-y-0.5">
                     <div className="h-0.5 bg-white/40 rounded-full w-full"></div>
@@ -554,6 +591,10 @@ export default function Workbench({
                             <span className="text-slate-500 shrink-0 w-14">办案秘书</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                           </div>
+                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                            <span className="text-slate-500 shrink-0 w-14">仲裁庭</span>
+                            <span className="truncate text-slate-700 font-medium">张三、李四、王五</span>
+                          </div>
                           <div className="flex items-start gap-0.5 min-w-0 leading-normal">
                             <span className="text-slate-500 shrink-0 w-14">开庭用途</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
@@ -708,6 +749,13 @@ export default function Workbench({
                 icon: 'fa-id-card text-[#E91E63]',
                 colorBg: 'bg-rose-50/50',
                 action: () => onNavigateToSubPage('appointment')
+              },
+              {
+                id: 'remoteTrial',
+                label: '远程庭审',
+                icon: 'fa-video text-[#00897B]',
+                colorBg: 'bg-teal-50/60',
+                action: () => alert('远程庭审功能即将上线，敬请期待')
               }
             ].map((srv) => (
               <button
@@ -716,7 +764,7 @@ export default function Workbench({
                 className="flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100 py-1.5 rounded-xl active:scale-95 group relative"
               >
                 {/* Micro round background wrapper with soft gradient color */}
-                <div className={`relative w-11 h-11 ${srv.colorBg} rounded-xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
+                <div className={`relative w-11 h-11 ${srv.colorBg} rounded-2xl flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105`}>
                   <i className={`fa-solid ${srv.icon} text-lg`}></i>
                 </div>
 

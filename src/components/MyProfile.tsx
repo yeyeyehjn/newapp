@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   User, Building2, FileText, CreditCard, LogOut, ShieldCheck, 
   ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera, 
-  Phone, Mail, Home, Edit3, Star
+  Phone, Mail, Home, Edit3, Star, Wallet
 } from 'lucide-react';
 import { ArbitratorProfile } from '../types';
 
@@ -35,7 +35,7 @@ export interface BankInfo {
 interface MyProfileProps {
   profile: ArbitratorProfile;
   onLogout: () => void;
-  onNavigateToEdit: (page: 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit') => void;
+  onNavigateToEdit: (page: 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'remuneration') => void;
   personalInfo: PersonalInfo;
   workInfo: WorkInfo;
   bankInfo: BankInfo;
@@ -149,6 +149,26 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
       {/* Main Profile Functional Body */}
       <div className="p-4 space-y-3 z-[1]">
         
+        {/* 酬金单入口 (Remuneration Entry Card) */}
+        <div 
+          onClick={() => onNavigateToEdit('remuneration')}
+          className="bg-gradient-to-br from-emerald-50 to-white rounded-lg border border-emerald-100 p-3.5 flex items-center justify-between hover:shadow-md hover:border-emerald-200 transition-all cursor-pointer text-left group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-emerald-100 border border-emerald-200/50 text-emerald-600">
+              <Wallet size={15} />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-sm font-bold text-slate-800 leading-none">酬金单</h3>
+              <p className="text-sm text-slate-500 font-medium">查看案件酬金发放明细与报酬规则</p>
+            </div>
+          </div>
+          <ChevronRight 
+            size={14} 
+            className="text-emerald-500 transition-transform duration-300 group-hover:translate-x-0.5" 
+          />
+        </div>
+
         {/* SECTION 1: 个人信息 (Personal Info) */}
         <div className="bg-white rounded-lg border border-slate-100  overflow-hidden transition-all duration-300">
           <div 

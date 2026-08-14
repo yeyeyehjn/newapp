@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { Bell, Check, Calendar, ShieldCheck, FileText, ChevronRight } from 'lucide-react';
+import { Bell, Check, Calendar, Clock } from 'lucide-react';
 import { PostponementApproval, TranscriptSignature, Case } from '../types';
 
 interface NotificationItem {
   id: string;
-  type: 'postponement' | 'transcript' | 'documentSignature';
-  refId: string;
+  type: 'hearing' | 'system' | 'deadline';
   title: string;
   content: string;
   time: string;
@@ -34,81 +33,65 @@ export default function NotificationPage({
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'nt_1',
-      type: 'postponement',
-      refId: 'pa_1',
-      title: '延期审批待办 • 华夏科技 vs 蓝海创投',
-      content: '案号(2026)穗仲案字第1024号的延期申请待您审批。申请人代理人因出差无法按时参加庭审，申请将庭审从 2026-06-11 09:30 延期至 2026-06-18 09:30，请尽快查阅并作出审批决定。',
-      time: '2026-06-10 15:00',
+      type: 'hearing',
+      title: '开庭提醒 • 华夏科技 vs 蓝海创投',
+      content: '案号(2026)穗仲案字第1024号将于明天（2026-06-12）09:30 在第二仲裁庭开庭，请提前15分钟到场，携带有效证件及仲裁员证。',
+      time: '2026-06-11 16:30',
       isRead: false,
     },
     {
       id: 'nt_2',
-      type: 'transcript',
-      refId: 'ts_1',
-      title: '笔录签名待办 • 华夏科技 vs 蓝海创投',
-      content: '案号(2026)穗仲案字第1024号的庭审笔录已由书记员整理完毕，待您签名确认。庭审时间：2026-06-11 09:30-12:00，地点：第一仲裁庭。请核查笔录内容后完成电子签名。',
-      time: '2026-06-11 12:05',
+      type: 'deadline',
+      title: '裁决期限提醒 • 宏图中建 vs 润物高新',
+      content: '案号(2026)穗仲案字第0521号的裁决书提交期限还剩 3 天（截止 2026-06-15），请合理安排起草时间，避免超期。',
+      time: '2026-06-11 09:00',
       isRead: false,
     },
     {
       id: 'nt_3',
-      type: 'documentSignature',
-      refId: '2',
-      title: '文书签名待办 • 裁决书签署',
-      content: '案号(2026)穗仲案字第0882号的裁决书待您签署。由您（独任仲裁员）起草的裁决书已由委员会秘书核阅通过，请在 2026-06-15 18:00 前完成电子签发。',
-      time: '2026-06-10 12:00',
+      type: 'system',
+      title: '系统通知 • 小程序版本更新',
+      content: '穗仲云仲裁员小程序已更新至 V2.1 版本，新增「远程庭审」入口及笔录在线批注功能，建议体验使用。',
+      time: '2026-06-10 18:00',
       isRead: false,
     },
     {
       id: 'nt_4',
-      type: 'postponement',
-      refId: 'pa_2',
-      title: '延期审批待办 • 恒运能源 vs 深圳新能源',
-      content: '案号(2026)穗仲案字第0521号的延期申请待您审批。被申请人需要补充提交证据材料，申请将庭审从 2026-06-12 14:00 延期至 2026-06-20 14:00。',
-      time: '2026-06-11 11:00',
-      isRead: false,
+      type: 'hearing',
+      title: '开庭提醒 • 众盛信托 vs 乾坤置业',
+      content: '案号(2026)穗仲案字第0308号将于后天（2026-06-13）15:30 在第十九仲裁庭进行鉴定开庭，请准时出席。',
+      time: '2026-06-11 10:15',
+      isRead: true,
     },
     {
       id: 'nt_5',
-      type: 'transcript',
-      refId: 'ts_2',
-      title: '笔录签名待办 • 恒运能源 vs 深圳新能源',
-      content: '案号(2026)穗仲案字第0521号的庭审笔录待您签名确认。庭审时间：2026-06-12 14:00-17:00。请尽快完成签名。',
-      time: '2026-06-12 17:10',
+      type: 'deadline',
+      title: '阅卷期限提醒 • 东方贸易 vs 西方物流',
+      content: '案号(2026)穗仲案字第0888号的庭前材料阅卷截止日期为 2026-06-14，请尽快完成阅卷确认。',
+      time: '2026-06-10 14:00',
       isRead: true,
     },
     {
       id: 'nt_6',
-      type: 'transcript',
-      refId: 'ts_4',
-      title: '笔录签名待办 • 东方贸易 vs 西方物流',
-      content: '案号(2026)穗仲案字第0888号的庭审笔录待您签名确认。庭审时间：2026-06-13 09:30-11:30。请尽快完成签名。',
-      time: '2026-06-13 11:35',
+      type: 'system',
+      title: '系统通知 • 端午假期安排',
+      content: '广州仲裁委2026年端午假期为6月19日至6月21日，假期期间不安排庭审，相关开庭日程已自动顺延，请留意日程变动。',
+      time: '2026-06-09 11:00',
       isRead: true,
     },
   ]);
 
-  const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'postponement' | 'transcript' | 'documentSignature'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'hearing' | 'deadline' | 'system'>('all');
 
   const handleMarkAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };
 
-  // Click notification: mark as read + navigate to corresponding detail page
+  // Click notification: mark as read
   const handleNotificationClick = (noti: NotificationItem) => {
     setNotifications(prev =>
       prev.map(n => n.id === noti.id ? { ...n, isRead: true } : n)
     );
-    if (noti.type === 'postponement') {
-      const approval = postponementApprovals.find(a => a.id === noti.refId);
-      if (approval) onNavigateToApprovalDetail(approval);
-    } else if (noti.type === 'transcript') {
-      const transcript = transcriptSignatures.find(t => t.id === noti.refId);
-      if (transcript) onNavigateToTranscriptDetail(transcript);
-    } else if (noti.type === 'documentSignature') {
-      const caseItem = cases.find(c => c.id === noti.refId);
-      if (caseItem) onNavigateToCaseDetail(caseItem);
-    }
   };
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -121,23 +104,23 @@ export default function NotificationPage({
 
   const getTypeDetails = (type: string) => {
     switch (type) {
-      case 'postponement':
+      case 'hearing':
         return {
           icon: <Calendar className="h-3.5 w-3.5 text-blue-500" />,
-          label: '延期审批',
+          label: '开庭提醒',
           badgeStyle: 'bg-blue-50 text-blue-600 border-blue-100'
         };
-      case 'transcript':
+      case 'deadline':
         return {
-          icon: <FileText className="h-3.5 w-3.5 text-emerald-500" />,
-          label: '笔录签名',
-          badgeStyle: 'bg-emerald-50 text-emerald-600 border-emerald-100'
-        };
-      case 'documentSignature':
-        return {
-          icon: <ShieldCheck className="h-3.5 w-3.5 text-amber-500" />,
-          label: '文书签名',
+          icon: <Clock className="h-3.5 w-3.5 text-amber-500" />,
+          label: '期限提醒',
           badgeStyle: 'bg-amber-50 text-amber-600 border-amber-100'
+        };
+      case 'system':
+        return {
+          icon: <Bell className="h-3.5 w-3.5 text-indigo-500" />,
+          label: '系统通知',
+          badgeStyle: 'bg-indigo-50 text-indigo-600 border-indigo-100'
         };
       default:
         return {
@@ -151,7 +134,9 @@ export default function NotificationPage({
   const tabs = [
     { id: 'all', label: '全部', count: notifications.length },
     { id: 'unread', label: '未读', count: unreadCount, highlight: true },
-   
+    { id: 'hearing', label: '开庭提醒', count: notifications.filter(n => n.type === 'hearing').length },
+    { id: 'deadline', label: '期限提醒', count: notifications.filter(n => n.type === 'deadline').length },
+    { id: 'system', label: '系统通知', count: notifications.filter(n => n.type === 'system').length },
   ] as const;
 
   return (
@@ -233,7 +218,13 @@ export default function NotificationPage({
                   <span className="absolute left-0 top-3.5 bottom-3.5 w-1 bg-indigo-500 rounded-r-full" />
                 )}
 
-                
+                {/* Type Badge */}
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded border ${details.badgeStyle}`}>
+                    {details.icon}
+                    <span>{details.label}</span>
+                  </span>
+                </div>
 
                 {/* Title */}
                 <h3 className={`text-base select-none block leading-normal ${noti.isRead ? 'font-bold text-slate-700' : 'font-extrabold text-slate-900'}`}>
@@ -249,18 +240,12 @@ export default function NotificationPage({
                 <div className="flex items-center justify-between pt-2.5 border-t border-slate-100/80 mt-0.5">
                   <span className="text-sm text-slate-400 flex items-center gap-1">
                     <Check className={`h-3 w-3 ${noti.isRead ? 'text-emerald-500' : 'text-slate-300'}`} />
-                    <span>{noti.isRead ? '已处理' : '待处理'}</span>
+                    <span>{noti.isRead ? '已读' : '未读'}</span>
                   </span>
 
-                  <div className="flex items-center gap-2">
-                    <span className="shrink-0 text-sm text-slate-400 font-medium">
-                      {noti.time}
-                    </span>
-                    <span className="shrink-0 text-sm text-indigo-500  flex items-center gap-0.5">
-                      查看详情
-                      <ChevronRight className="h-3 w-3" />
-                    </span>
-                  </div>
+                  <span className="shrink-0 text-sm text-slate-400 font-medium">
+                    {noti.time}
+                  </span>
                 </div>
               </div>
             );
@@ -272,7 +257,7 @@ export default function NotificationPage({
             </div>
             <h3 className="text-[12px] font-bold text-slate-700 mb-1">空空如也</h3>
             <p className="text-[12px] text-slate-400 max-w-[200px] leading-normal">
-              此处无相关类别的待办通知，您已全部处理完毕。
+              此处无相关类别的提醒通知，您已全部查阅完毕。
             </p>
           </div>
         )}

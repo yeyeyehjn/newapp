@@ -59,6 +59,7 @@ export default function App() {
   
   // Global filters - 默认查询在办案件
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
+  const [quickFilter, setQuickFilter] = useState<'none' | 'major' | 'nearDelayed' | 'delayed'>('none');
 
   // Profile edit data states
   const [personalInfo, setPersonalInfo] = useState({
@@ -487,6 +488,7 @@ export default function App() {
             selectedStatusFilter={selectedStatusFilter}
             onNavigateToSubPage={handleNavigateToSubPage}
             onToggleVersion={() => setWorkbenchVersion('v2')}
+            onQuickFilter={setQuickFilter}
           />
         )}
 
@@ -513,6 +515,8 @@ export default function App() {
             cases={cases}
             selectedStatusFilter={selectedStatusFilter}
             onFilterStatusChange={setSelectedStatusFilter}
+            quickFilter={quickFilter}
+            onQuickFilterChange={setQuickFilter}
             onSelectCase={(caseItem) => {
               setSelectedCase(caseItem);
               setActiveSubPage('caseDetail');
@@ -553,7 +557,7 @@ export default function App() {
           { label: '首页', icon: 'fa-house', index: 0 },
           { label: '案件', icon: 'fa-folder-open', index: 1 },
           { label: '待办', icon: 'fa-square-check', index: 2 },
-          { label: '我的', icon: 'fa-user', index: 3 }
+          { label: '更多', icon: 'fa-user', index: 3 }
         ].map((tab) => {
           const isActive = activeTab === tab.index && !activeSubPage;
           const pendingCount = tab.index === 2 ? tasks.filter(t => t.status === 'pending').length : 0;

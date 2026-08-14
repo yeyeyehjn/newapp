@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowLeft, FileText, AlertCircle, Building2, MapPin, Clock, Calendar, SlidersHorizontal } from 'lucide-react';
+import { Search, ArrowLeft, FileText, AlertCircle, Building2, MapPin, Clock, Calendar, SlidersHorizontal, Users } from 'lucide-react';
 
 export interface PendingHearingItem {
   id: string;
@@ -324,6 +324,11 @@ export default function PendingHearingList({ onBack, onSelectItem }: PendingHear
                     <FileText size={12} className="text-slate-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
                     <span className="text-slate-700 flex-1 text-left">{h.secretary}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users size={12} className="text-violet-500 flex-shrink-0" />
+                    <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁庭</span>
+                    <span className="text-slate-700 flex-1 text-left">张三、李四、王五</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar size={12} className="text-indigo-400 flex-shrink-0" />

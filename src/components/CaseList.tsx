@@ -5,6 +5,10 @@ import { Case, CaseStatus, ArbitratorRole } from '../types';
 interface CaseListProps {
   cases: Case[];
   onSelectCase: (caseItem: Case) => void;
+  selectedStatusFilter?: CaseStatus | 'all';
+  onFilterStatusChange?: (status: CaseStatus | 'all') => void;
+  quickFilter?: 'none' | 'major' | 'nearDelayed' | 'delayed';
+  onQuickFilterChange?: (filter: 'none' | 'major' | 'nearDelayed' | 'delayed') => void;
 }
 
 // Helper: check if a case has a hearing that is past due with status '待开庭'
@@ -27,9 +31,14 @@ const isMajor = (c: Case): boolean => {
   return c.disputeAmount >= 100000000;
 };
 
-export default function CaseList({ cases, onSelectCase }: CaseListProps) {
+export default function CaseList({ cases, onSelectCase, selectedStatusFilter: externalStatusFilter, onFilterStatusChange, quickFilter: externalQuickFilter, onQuickFilterChange }: CaseListProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<CaseStatus | 'all'>('审理中');
+  const [internalStatusFilter, setInternalStatusFilter] = useState<CaseStatus | 'all'>('审理中');
+  const selectedStatusFilter = externalStatusFilter ?? internalStatusFilter;
+  const setSelectedStatusFilter = (status: CaseStatus | 'all') => {
+    setInternalStatusFilter(status);
+    onFilterStatusChange?.(status);
+  };
   const [showFilterDrawer, setShowFilterDrawer] = useState<boolean>(false);
 
   // New filter states
@@ -38,7 +47,12 @@ export default function CaseList({ cases, onSelectCase }: CaseListProps) {
   const [amountRange, setAmountRange] = useState<[number, number]>([0, 100000]);
   const [hearingDateRange, setHearingDateRange] = useState<[string, string]>(['', '']);
   const [selectedCloseMethod, setSelectedCloseMethod] = useState<'裁决' | '调解' | '撤案' | 'all'>('all');
-  const [quickFilter, setQuickFilter] = useState<'none' | 'major' | 'nearDelayed' | 'delayed'>('none');
+  const [internalQuickFilter, setInternalQuickFilter] = useState<'none' | 'major' | 'nearDelayed' | 'delayed'>('none');
+  const quickFilter = externalQuickFilter ?? internalQuickFilter;
+  const setQuickFilter = (filter: 'none' | 'major' | 'nearDelayed' | 'delayed') => {
+    setInternalQuickFilter(filter);
+    onQuickFilterChange?.(filter);
+  };
 
   // Helper formatting money in CNY
   const formatCNY = (amount: number) => {

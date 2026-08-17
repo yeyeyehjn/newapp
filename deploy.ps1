@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   一键部署：提交源码到 main，GitHub Actions 自动构建并部署到 Pages
 

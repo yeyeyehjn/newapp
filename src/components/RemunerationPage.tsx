@@ -179,43 +179,49 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
 
             <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-600 leading-relaxed no-scrollbar flex-1 font-sans">
               <div className="space-y-3.5">
+                <div className="bg-indigo-50/60 rounded-lg p-3 border border-indigo-100/60">
+                  <p className="text-xs leading-relaxed text-justify text-slate-600">
+                    依据《广州仲裁委员会仲裁员报酬管理规则》，综合仲裁员的履职情况、办案效率、办案质量等因素，仲裁员报酬按照以下规则计算：
+                  </p>
+                </div>
+
                 <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-coins text-indigo-600"></i>
-                  <span>一、报酬计算标准</span>
+                  <i className="fa-solid fa-arrow-up text-emerald-500"></i>
+                  <span>报酬上浮情形</span>
                 </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员报酬按照案件争议金额、案件复杂程度、审理时长等因素综合计算。具体标准如下：
-                </p>
-                <ul className="text-xs leading-relaxed space-y-1.5 pl-4">
-                  <li>• 争议金额在100万元以下：基础报酬3000-5000元</li>
-                  <li>• 争议金额100-500万元：基础报酬5000-8000元</li>
-                  <li>• 争议金额500万元以上：基础报酬8000-15000元</li>
-                  <li>• 涉外案件或特殊复杂案件：可适当上浮20%-50%</li>
+                <ul className="text-xs leading-relaxed space-y-2 pl-1">
+                  <li className="flex gap-1.5">
+                    <span className="text-emerald-600 font-bold shrink-0">（一）</span>
+                    <span>在规定二分之一审限内提前结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="text-emerald-600 font-bold shrink-0">（二）</span>
+                    <span>开庭后调解结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
+                  </li>
                 </ul>
 
                 <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-clock text-indigo-600"></i>
-                  <span>二、发放时间规定</span>
+                  <i className="fa-solid fa-arrow-down text-rose-500"></i>
+                  <span>报酬下降情形</span>
                 </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员报酬在案件结案并签署裁决书后15个工作日内发放。特殊情况需要延期的，须经仲裁委员会批准。
-                </p>
-
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-shield-halved text-indigo-600"></i>
-                  <span>三、税务处理</span>
-                </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员报酬需按照国家税法规定缴纳个人所得税。税前酬金为应发金额，税后酬金为实发金额。仲裁委员会将依法代扣代缴个人所得税。
-                </p>
-
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-file-invoice text-indigo-600"></i>
-                  <span>四、特殊情况处理</span>
-                </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  如遇案件中止、撤回、和解等特殊情况，报酬按照实际工作量比例发放。仲裁员主动回避或因违纪被解除聘任的，不予发放报酬。
-                </p>
+                <ul className="text-xs leading-relaxed space-y-2.5 pl-1">
+                  <li className="flex gap-1.5">
+                    <span className="text-rose-500 font-bold shrink-0">（三）</span>
+                    <span>独任仲裁员无正当理由不制作裁决书的（金融案除外），基础值<span className="text-rose-500 font-bold">下降20%</span></span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="text-rose-500 font-bold shrink-0">（四）</span>
+                    <span>仲裁员因自身原因未能在审限内结案的，延期1个月的，基础值<span className="text-rose-500 font-bold">下降2%</span>，延期2个月的，<span className="text-rose-500 font-bold">下降4%</span>，延期3个月的，<span className="text-rose-500 font-bold">下降6%</span>。以此类推，下降幅度以<span className="text-rose-500 font-bold">20%为限</span>。延期时间累计超过6个月及以上的，仲裁员报酬在基础值下降以外，应当同时<span className="text-rose-500 font-bold">停止该仲裁员案件的指派</span>。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="text-rose-500 font-bold shrink-0">（五）</span>
+                    <span>仲裁员距离开庭日、合议日不足3个工作日无故修改开庭、合议的时间，或无故缺席的，基础值<span className="text-rose-500 font-bold">下降5%</span>；无正当理由超3个工作日不发表合议意见的，基础值<span className="text-rose-500 font-bold">下降5%</span>。无故超2个工作日不签发裁决书的，基础值<span className="text-rose-500 font-bold">下降5%</span>。</span>
+                  </li>
+                  <li className="flex gap-1.5">
+                    <span className="text-rose-500 font-bold shrink-0">（六）</span>
+                    <span>开庭时出现未着正装、迟到、打电话、中途离场等违反仲裁员职业操守行为或违反仲裁员视频庭审行为规范的行为，基础值<span className="text-rose-500 font-bold">下降20%</span></span>
+                  </li>
+                </ul>
               </div>
             </div>
 

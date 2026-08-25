@@ -442,7 +442,7 @@ export default function Workbench({
         <div className="mx-4 my-2.5 bg-gradient-to-r from-blue-50/70 via-blue-50/25 to-slate-50/10 rounded-2xl border border-slate-100 shadow-[0_4px_18px_rgba(15,23,42,0.03)] pr-10 pl-22 shrink-0 flex items-center relative overflow-hidden text-left h-13 group select-none">
           {/* Left trapezoid tab showing "动态" */}
           <div 
-            className="absolute left-0 top-0 bottom-0 w-18 bg-gradient-to-b from-indigo-500 via-indigo-600 to-indigo-700 flex flex-col justify-center items-center text-white select-none z-10"
+            className="absolute left-0 top-0 bottom-0 w-18 bg-gradient-to-b from-indigo-500 to-indigo-600 flex flex-col justify-center items-center text-white select-none z-10"
             style={{ clipPath: 'polygon(0 0, 100% 0, 75% 100%, 0 100%)' }}
           >
             <div className="flex flex-col items-center justify-center pr-2 font-sans">

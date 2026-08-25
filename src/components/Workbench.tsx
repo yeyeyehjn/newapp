@@ -796,7 +796,7 @@ export default function Workbench({
               className="flex items-center gap-1 text-sm font-bold text-indigo-600 hover:text-indigo-700 cursor-pointer"
             >
               <i className="fa-solid fa-arrows-rotate text-[10px] animate-spin-slow"></i>
-              <span>换一换</span>
+              <span className="font-normal">换一换</span>
             </button>
           </div>
 
@@ -809,7 +809,7 @@ export default function Workbench({
           >
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] p-1.5 leading-none bg-blue-50 text-indigo-600 rounded border border-blue-100 origin-left">
+                <span className="text-[10px] p-1.5 leading-none bg-indigo-50 text-indigo-600 rounded border border-blue-100 origin-left">
                   {featuredArticles[selectedArticleIndex].tag}
                 </span>
               </div>
@@ -820,7 +820,7 @@ export default function Workbench({
                 }}
                 className="text-sm text-indigo-600 hover:text-indigo-700 font-black flex items-center gap-0.5 hover:underline transition-colors cursor-pointer"
               >
-                <span>更多内容</span>
+                <span className="font-normal">更多内容</span>
                 <i className="fa-solid fa-angle-right text-[9px] transition-transform group-hover:translate-x-0.5"></i>
               </button>
             </div>

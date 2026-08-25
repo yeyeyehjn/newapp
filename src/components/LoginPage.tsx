@@ -1,74 +1,122 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ScanFace, KeyRound, Smartphone, ShieldCheck, ChevronRight, ChevronLeft,
-  Eye, EyeOff, RefreshCw, CheckCircle2, Lock, User, ArrowRight, Sparkles
+  ScanFace, KeyRound, Smartphone, Mail, ChevronRight, ChevronLeft,
+  Eye, EyeOff, RefreshCw, CheckCircle2, ArrowRight, User, Lock, ShieldCheck
 } from 'lucide-react';
+import ForgotPasswordPage from './ForgotPasswordPage';
+import { Stepper, FormField, CodeButton } from './LoginShared';
 
 type LoginMethod = 'face' | 'password';
+// 密码流第二步的双因素验证通道
+type VerifyChannel = 'sms' | 'email';
 
 interface LoginPageProps {
   onLogin: () => void;
 }
 
+// 人脸采集过程中的活体动作提示序列（模拟）
+const LIVENESS_HINTS = ['请将正脸置于取景框内', '请眨眼', '请轻微左右转头'] as const;
+
 export default function LoginPage({ onLogin }: LoginPageProps) {
-  // 0 = method selection; otherwise the chosen method
+  // null = 登录方式选择页；否则为已选方式
   const [selectedMethod, setSelectedMethod] = useState<LoginMethod | null>(null);
 
-  // Common fields
+  // 人脸流 · 第一步
   const [phone, setPhone] = useState<string>('');
   const [code, setCode] = useState<string>('');
-  const [countdown, setCountdown] = useState<number>(0);
-  const [agreed, setAgreed] = useState<boolean>(true);
 
-  // Password-specific fields
+  // 密码流 · 第一步
   const [account, setAccount] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPwd, setShowPwd] = useState<boolean>(false);
-  const [boundPhone, setBoundPhone] = useState<string>(''); // simulated fetched phone
 
-  // Step indicator (1 or 2)
+  // 密码流 · 第二步（双因素）
+  const [boundPhone, setBoundPhone] = useState<string>('');
+  const [boundEmail, setBoundEmail] = useState<string>('');
+  const [channel, setChannel] = useState<VerifyChannel>('sms');
+
+  // 各通道独立倒计时（秒）：face = 人脸流手机号；sms / email = 密码流双因素
+  const [countdowns, setCountdowns] = useState<{ face: number; sms: number; email: number }>({ face: 0, sms: 0, email: 0 });
+
+  const [agreed, setAgreed] = useState<boolean>(true);
   const [step, setStep] = useState<1 | 2>(1);
 
-  // Face recognition mock state
+  // 页面视图：'login' 登录流程；'forgot' 忘记密码独立页面
+  const [view, setView] = useState<'login' | 'forgot'>('login');
+
+  // 人脸识别模拟状态
   const [faceScanning, setFaceScanning] = useState<boolean>(false);
   const [faceScanned, setFaceScanned] = useState<boolean>(false);
+  const [livenessIdx, setLivenessIdx] = useState<number>(0);
   const scanTimerRef = useRef<number | null>(null);
+  const hintTimerRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (scanTimerRef.current) {
-        window.clearTimeout(scanTimerRef.current);
-      }
-    };
-  }, []);
+  const clearScanTimers = () => {
+    if (scanTimerRef.current) window.clearTimeout(scanTimerRef.current);
+    if (hintTimerRef.current) window.clearInterval(hintTimerRef.current);
+    scanTimerRef.current = null;
+    hintTimerRef.current = null;
+  };
 
+  useEffect(() => clearScanTimers, []);
+
+  // 统一倒计时：每秒递减所有进行中的通道
   useEffect(() => {
-    if (countdown <= 0) return;
-    const t = window.setTimeout(() => setCountdown((c) => c - 1), 1000);
+    if (countdowns.face <= 0 && countdowns.sms <= 0 && countdowns.email <= 0) return;
+    const t = window.setTimeout(() => {
+      setCountdowns((c) => ({
+        face: Math.max(0, c.face - 1),
+        sms: Math.max(0, c.sms - 1),
+        email: Math.max(0, c.email - 1),
+      }));
+    }, 1000);
     return () => window.clearTimeout(t);
-  }, [countdown]);
+  }, [countdowns]);
 
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
   const isValidCode = code.length === 6;
   const isValidAccount = account.trim().length >= 2;
   const isValidPassword = password.length >= 6;
 
-  const canSendCode = isValidPhone && countdown === 0;
+  const isFace = selectedMethod === 'face';
 
-  const handleSendCode = () => {
-    if (!canSendCode) return;
-    setCountdown(60);
+  const startCountdown = (key: 'face' | 'sms' | 'email') => {
+    setCountdowns((c) => ({ ...c, [key]: 60 }));
   };
 
+  // 人脸流 · 第一步手动发送短信验证码
+  const faceCountdown = countdowns.face;
+  const canSendFaceCode = isValidPhone && faceCountdown === 0;
+
+  // 密码流 · 双因素手动发送（目标为系统绑定的手机 / 邮箱）
+  const channelCountdown = channel === 'sms' ? countdowns.sms : countdowns.email;
+  const canSendChannelCode = channelCountdown === 0;
+
+  const handleSendCode = () => {
+    if (isFace) {
+      if (!canSendFaceCode) return;
+      startCountdown('face');
+    } else {
+      if (!canSendChannelCode) return;
+      startCountdown(channel);
+    }
+  };
+
+  // 模拟人脸采集：活体提示每 0.8s 切换一次，2.4s 后核验通过
   const startFaceScan = () => {
     if (!isValidPhone || !isValidCode) return;
-    setFaceScanning(true);
+    clearScanTimers();
     setFaceScanned(false);
-    if (scanTimerRef.current) window.clearTimeout(scanTimerRef.current);
+    setFaceScanning(true);
+    setLivenessIdx(0);
+    hintTimerRef.current = window.setInterval(() => {
+      setLivenessIdx((i) => Math.min(i + 1, LIVENESS_HINTS.length - 1));
+    }, 800);
     scanTimerRef.current = window.setTimeout(() => {
+      clearScanTimers();
       setFaceScanning(false);
       setFaceScanned(true);
-    }, 2200);
+    }, 2400);
   };
 
   const resetForm = () => {
@@ -78,15 +126,20 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setPassword('');
     setShowPwd(false);
     setBoundPhone('');
+    setBoundEmail('');
+    setChannel('sms');
+    setCountdowns({ face: 0, sms: 0, email: 0 });
     setStep(1);
     setFaceScanned(false);
     setFaceScanning(false);
+    setLivenessIdx(0);
+    clearScanTimers();
   };
 
   const handleSelectMethod = (m: LoginMethod) => {
     resetForm();
     setSelectedMethod(m);
-  };
+  }; 
 
   const handleBackToMethods = () => {
     resetForm();
@@ -98,26 +151,34 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setCode('');
     setFaceScanned(false);
     setFaceScanning(false);
+    clearScanTimers();
   };
 
-  // Step 1 -> Step 2 transitions
+  // 第一步 → 第二步
   const goNextFromFaceStep1 = () => {
     if (!isValidPhone || !isValidCode) return;
     setStep(2);
   };
   const goNextFromPwdStep1 = () => {
     if (!isValidAccount || !isValidPassword) return;
-    // simulate fetching the bound phone from the account
+    // 模拟后端下发该账号绑定的手机号与邮箱（脱敏展示）
     const seed = account.trim();
-    // generate a deterministic-looking 11-digit number
     const last4 = (seed.charCodeAt(0) * 31 + seed.charCodeAt(seed.length - 1) * 17).toString().slice(-4).padStart(4, '0');
     setBoundPhone(`139****${last4}`);
+    setBoundEmail(`${seed.charAt(0).toLowerCase() || 'u'}***@gzac.org.cn`);
     setStep(2);
   };
 
-  // Final login
+  // 切换双因素通道：验证码与通道绑定，切换后须重新获取
+  const handleSwitchChannel = (c: VerifyChannel) => {
+    if (c === channel) return;
+    setChannel(c);
+    setCode('');
+  };
+
+  // 最终登录
   const handleFinalLogin = () => {
-    if (selectedMethod === 'face') {
+    if (isFace) {
       if (!isValidPhone || !isValidCode || !faceScanned) return;
     } else {
       if (!isValidCode) return;
@@ -125,24 +186,31 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     onLogin();
   };
 
-  // ---------- Render Method Selection ----------
+  // ---------- 忘记密码：以独立页面渲染，返回 / 完成时回到登录流程 ----------
+  const openForgot = () => setView('forgot');
+  const handleBackFromForgot = () => setView('login');
+  const handleForgotComplete = () => {
+    setView('login');
+    resetForm();
+  };
+
+  // ---------- 登录方式选择 ----------
   if (!selectedMethod) {
     return (
-      <div className="flex-1 bg-gradient-to-br from-[#F4F7FE] via-[#EEF3FF] to-[#E6EEFF] text-slate-800 flex flex-col overflow-y-auto no-scrollbar font-sans">
-        {/* Top Brand Header */}
-        <div className="px-6 pt-10 pb-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <img
-              src={import.meta.env.BASE_URL + "tu/logo1.png"}
-              alt="广州仲裁委"
-              className="w-18 h-18"
-            />
-            
-          </div>
+      <div className="flex-1 bg-slate-50 text-slate-800 flex flex-col overflow-y-auto no-scrollbar font-sans">
+        {/* 品牌区 */}
+      <div className="px-6 pt-18 pb-8">
+        <div className="flex flex-col items-center">
+          <img
+            src={import.meta.env.BASE_URL + "tu/new-logo2.png"}
+            alt="广州仲裁委员会"
+            className="w-40 h-auto object-contain "
+          />
           
         </div>
+      </div>
 
-        {/* Method Cards */}
+        {/* 登录方式卡片 */}
         <div className="px-5 mt-3 pb-6 space-y-3">
           <MethodCard
             icon={<ScanFace size={22} />}
@@ -155,26 +223,29 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           <MethodCard
             icon={<KeyRound size={22} />}
             title="账号密码登录"
-            desc="账号密码 + 绑定手机短信/邮箱验证"
-            steps={['校验账号密码', '短信/邮箱验证码验证']}
+            desc="账号密码 + 绑定手机/邮箱验证"
+            steps={['校验账号密码', '短信/邮箱验证码']}
             accent="emerald"
             onClick={() => handleSelectMethod('password')}
           />
-
-          
         </div>
       </div>
     );
   }
 
-  // ---------- Render Multi-step Form ----------
-  const isFace = selectedMethod === 'face';
+  // ---------- 两步流程 ----------
   const totalSteps = 2;
-  const stepTitle = isFace
-    ? step === 1 ? '手机号验证' : '人脸识别'
-    : step === 1 ? '账号密码验证' : '短信验证';
 
-  // Determine if Next/Login button should be enabled
+  // 忘记密码独立页面
+  if (view === 'forgot') {
+    return (
+      <ForgotPasswordPage
+        onBack={handleBackFromForgot}
+        onComplete={handleForgotComplete}
+      />
+    );
+  }
+
   const canNext = isFace
     ? (step === 1 ? (isValidPhone && isValidCode) : faceScanned)
     : (step === 1 ? (isValidAccount && isValidPassword) : isValidCode);
@@ -189,8 +260,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   return (
-    <div className="flex-1 bg-gradient-to-br from-[#F4F7FE] via-[#EEF3FF] to-[#E6EEFF] text-slate-800 flex flex-col overflow-y-auto no-scrollbar font-sans">
-      {/* Header - 微信小程序子页面返回样式 */}
+    <div className="flex-1 bg-slate-50 text-slate-800 flex flex-col overflow-y-auto no-scrollbar font-sans relative">
+      {/* 顶部导航栏（微信小程序子页样式） */}
       <div className="h-12 bg-[#ddecff] border-b border-slate-100 flex items-center px-4 relative flex-shrink-0">
         <button
           onClick={step === 1 ? handleBackToMethods : handleBackToStep1}
@@ -205,90 +276,61 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         </div>
       </div>
 
-      {/* Stepper */}
-      <div className="px-6 mt-4">
-        <Stepper current={step} total={totalSteps} labels={isFace ? ['手机验证', '人脸识别'] : ['账号密码', '短信/邮箱验证码验证']} />
+      {/* 步进指示 */}
+      <div className="px-5 mt-4">
+        <Stepper
+          current={step}
+          total={totalSteps}
+          labels={isFace ? ['手机验证', '人脸识别'] : ['账号密码', '双因素校验']}
+        />
       </div>
 
-      {/* Form Card */}
-      <div className="px-5 mt-3 pb-6">
-        <div className="bg-white rounded-lg border border-slate-100 p-4 space-y-3.5">
-          {/* Card Header */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-slate-50">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-50 flex items-center justify-center text-indigo-600">
-                <Sparkles size={12} />
-              </div>
-              <span className="text-base font-black text-slate-800">
-                第 {step} 步 · {stepTitle}
-              </span>
-            </div>
-            <span className="text-xs font-mono font-black tracking-widest text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
-              STEP {step}/{totalSteps}
-            </span>
-          </div>
-
-          {/* === FACE: Step 1: Phone + Code === */}
+      {/* 表单卡（白色背景仅承载输入框） */}
+      <div className="px-5 mt-4">
+        <div className="bg-white rounded-lg border border-slate-100 px-5 py-1 text-left">
+          {/* === 人脸流 · 第一步：手机号 + 短信验证码 === */}
           {isFace && step === 1 && (
             <>
               <FormField
-                icon={<Smartphone size={14} className="text-slate-400" />}
+                icon={<Smartphone size={16} />}
                 label="手机号码"
                 placeholder="请输入 11 位手机号"
                 value={phone}
-                onChange={setPhone}
+                onChange={(v) => setPhone(v.replace(/\D/g, '').slice(0, 11))}
                 type="tel"
                 maxLength={11}
-                rightSlot={
-                  <button
-                    onClick={handleSendCode}
-                    disabled={!canSendCode}
-                    className={`text-base  px-2.5 py-1.5 rounded-md border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
-                      canSendCode
-                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100 active:scale-95 cursor-pointer'
-                        : 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
-                    }`}
-                  >
-                    {countdown > 0 ? `${countdown}s 后重发` : '获取验证码'}
-                  </button>
-                }
               />
               <FormField
-                icon={<ShieldCheck size={14} className="text-slate-400" />}
+                icon={<ShieldCheck size={16} />}
                 label="短信验证码"
                 placeholder="请输入 6 位验证码"
                 value={code}
                 onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
                 type="tel"
                 maxLength={6}
+                rightSlot={
+                  <CodeButton
+                    countdown={faceCountdown}
+                    canSend={canSendFaceCode}
+                    onClick={handleSendCode}
+                  />
+                }
+                noLine
               />
             </>
           )}
 
-          {/* === FACE: Step 2: Face Scan === */}
+          {/* === 人脸流 · 第二步：人脸识别取景 === */}
           {isFace && step === 2 && (
             <>
-              <div className="bg-indigo-50/40 border border-indigo-100 rounded-lg p-2.5 flex items-center gap-2">
-                <Smartphone size={12} className="text-indigo-600 shrink-0" />
-                <span className="text-base text-slate-600">已验证手机：</span>
-                <span className="text-base font-black text-slate-800 font-mono">{phone}</span>
-                <CheckCircle2 size={12} className="text-emerald-500 ml-auto" />
+              <div className="flex items-center h-11 text-sm text-slate-500">
+                已验证手机
+                <span className="font-bold text-slate-700 font-mono mx-1">{phone}</span>
+                <CheckCircle2 size={12} className="ml-0.5 text-emerald-500" />
               </div>
 
-              <div className="pt-1">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-base text-slate-600 flex items-center gap-1">
-                    <ScanFace size={12} className="text-indigo-600" />
-                    人脸识别核验
-                  </span>
-                  {faceScanned && (
-                    <span className="text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded inline-flex items-center gap-1">
-                      <CheckCircle2 size={9} />
-                      已采集
-                    </span>
-                  )}
-                </div>
-
+              <div>
+                {/* 取景框：四角定位 + 椭圆面部引导 + 扫描线 + 活体动作提示 */}
                 <div
                   role="button"
                   tabIndex={0}
@@ -299,7 +341,8 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                       startFaceScan();
                     }
                   }}
-                  className={`relative h-40 rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition-all flex flex-col items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
+                  aria-label="开始人脸识别"
+                  className={`relative h-48 rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition-all flex flex-col items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
                     faceScanning
                       ? 'border-indigo-500 bg-indigo-50/40'
                       : faceScanned
@@ -307,11 +350,21 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                         : 'border-indigo-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30'
                   }`}
                 >
+                  {/* 四角定位框 */}
+                  <div className={`absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 transition-colors ${faceScanning ? 'border-indigo-500' : faceScanned ? 'border-emerald-400' : 'border-indigo-300'}`} />
+                  <div className={`absolute top-3 right-3 w-6 h-6 border-t-2 border-r-2 transition-colors ${faceScanning ? 'border-indigo-500' : faceScanned ? 'border-emerald-400' : 'border-indigo-300'}`} />
+                  <div className={`absolute bottom-3 left-3 w-6 h-6 border-b-2 border-l-2 transition-colors ${faceScanning ? 'border-indigo-500' : faceScanned ? 'border-emerald-400' : 'border-indigo-300'}`} />
+                  <div className={`absolute bottom-3 right-3 w-6 h-6 border-b-2 border-r-2 transition-colors ${faceScanning ? 'border-indigo-500' : faceScanned ? 'border-emerald-400' : 'border-indigo-300'}`} />
+
                   {faceScanning && (
                     <>
-                      <div className="absolute inset-3 rounded-full border-2 border-indigo-400/40 animate-ping" />
-                      <div className="absolute inset-6 rounded-full border-2 border-indigo-500/60 animate-pulse" />
+                      {/* 面部椭圆引导 */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-24 h-32 rounded-[50%] border-2 border-indigo-400/70" />
+                      </div>
+                      {/* 扫描线 */}
                       <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-scan-line" />
+                      <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-indigo-600/15 to-transparent" />
                     </>
                   )}
 
@@ -340,8 +393,13 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                         ? '人脸采集成功'
                         : '点击开始人脸识别'}
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
-                    {faceScanned ? '请保持正脸居中，光线充足' : '请将面部置于取景框内'}
+                  {/* 活体动作提示 / 待机提示 */}
+                  <p className="text-sm text-slate-500 mt-0.5 font-medium animate-fade-in">
+                    {faceScanning
+                      ? LIVENESS_HINTS[livenessIdx]
+                      : faceScanned
+                        ? '核验通过，请点击下方按钮登录'
+                        : '请确保光线充足、面部无遮挡'}
                   </p>
 
                   {faceScanned && (
@@ -361,18 +419,18 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             </>
           )}
 
-          {/* === PWD: Step 1: Account + Password === */}
+          {/* === 密码流 · 第一步：账号 + 密码 === */}
           {!isFace && step === 1 && (
             <>
               <FormField
-                icon={<User size={14} className="text-slate-400" />}
+                icon={<User size={16} />}
                 label="仲裁员账号"
                 placeholder="请输入用户名 / 账号"
                 value={account}
                 onChange={setAccount}
               />
               <FormField
-                icon={<Lock size={14} className="text-slate-400" />}
+                icon={<Lock size={16} />}
                 label="登录密码"
                 placeholder="请输入密码（至少 6 位）"
                 value={password}
@@ -388,110 +446,133 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
                     {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 }
+                noLine
               />
-              <div className="flex items-center justify-end">
-                <button className="text-sm text-slate-500 hover:text-indigo-600 cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40">
-                  忘记密码？
-                </button>
-              </div>
             </>
           )}
 
-          {/* === PWD: Step 2: Bound Phone + Code === */}
+          {/* === 密码流 · 第二步：双因素校验（短信 / 邮箱） === */}
           {!isFace && step === 2 && (
             <>
-              <div className="bg-emerald-50/40 border border-emerald-100 rounded-lg p-2.5 flex items-center gap-2">
-                <User size={12} className="text-emerald-600 shrink-0" />
-                <span className="text-2xs font-bold text-slate-600">已登录账号：</span>
-                <span className="text-xs font-black text-slate-800 font-mono truncate">{account}</span>
-                <CheckCircle2 size={12} className="text-emerald-500 ml-auto shrink-0" />
+              <div className="flex items-center h-11 text-sm text-slate-500">
+                账号
+                <span className="font-bold text-slate-700 font-mono mx-1">{account}</span>
+                已验证
+                <CheckCircle2 size={12} className="ml-0.5 text-emerald-500" />
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-1 text-xs font-bold text-slate-500">
-                  <Smartphone size={12} className="text-slate-400" />
-                  <span>账号绑定手机号</span>
+              {/* 通道分段选项卡 + 目的地 */}
+              <div className="space-y-2">
+                <div className="flex bg-slate-100/80 rounded-lg p-1 gap-1" role="tablist" aria-label="双因素验证通道">
+                  <button
+                    role="tab"
+                    aria-selected={channel === 'sms'}
+                    onClick={() => handleSwitchChannel('sms')}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 text-sm font-bold rounded-md transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
+                      channel === 'sms'
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Smartphone size={12} />
+                    短信验证
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={channel === 'email'}
+                    onClick={() => handleSwitchChannel('email')}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 text-sm font-bold rounded-md transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
+                      channel === 'email'
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    <Mail size={12} />
+                    邮箱验证
+                  </button>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-50/60 border border-slate-100 rounded-lg px-2.5 py-2">
-                  <span className="flex-1 text-xs font-black text-slate-800 font-mono">{boundPhone}</span>
-                  <span className="text-2xs font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
-                    <Lock size={9} />
-                    系统已绑定
+                <div className="flex items-center h-6 text-sm text-slate-500">
+                  验证码将发送至
+                  <span className="font-bold text-slate-700 font-mono mx-1">
+                    {channel === 'sms' ? boundPhone : boundEmail}
                   </span>
                 </div>
               </div>
 
               <FormField
-                icon={<ShieldCheck size={14} className="text-slate-400" />}
-                label="短信验证码"
+                icon={<ShieldCheck size={16} />}
+                label={channel === 'sms' ? '短信验证码' : '邮箱验证码'}
                 placeholder="请输入 6 位验证码"
                 value={code}
                 onChange={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
                 type="tel"
                 maxLength={6}
                 rightSlot={
-                  <button
+                  <CodeButton
+                    countdown={channelCountdown}
+                    canSend={canSendChannelCode}
                     onClick={handleSendCode}
-                    disabled={!canSendCode}
-                    className={`text-sm font-bold px-2.5 py-1.5 rounded-md border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 ${
-                      canSendCode
-                        ? 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-100 active:scale-95 cursor-pointer'
-                        : 'bg-slate-50 text-slate-400 border-slate-100 cursor-not-allowed'
-                    }`}
-                  >
-                    {countdown > 0 ? `${countdown}s 后重发` : '获取验证码'}
-                  </button>
+                  />
                 }
+                noLine
               />
             </>
           )}
+        </div>
 
-          {/* Agreement + Primary Action */}
-          <div className="pt-2 space-y-2.5">
-            {step === 2 && (
-              <label className="flex items-start gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => setAgreed(e.target.checked)}
-                  className="mt-0.5 w-3.5 h-3.5 accent-indigo-600 cursor-pointer"
-                />
-                <span className="text-2xs text-slate-500 leading-relaxed font-medium">
-                  我已阅读并同意
-                  <span className="text-indigo-600 font-bold mx-0.5">《仲裁员端服务协议》</span>
-                  与
-                  <span className="text-indigo-600 font-bold mx-0.5">《隐私及CA盾数据政策》</span>
-                </span>
-              </label>
-            )}
+        {/* 协议 + 主操作（外层，白色卡片之外） */}
+        <div className="mt-6 pb-8 space-y-3">
+          {step === 2 && (
+            <label className="flex items-start gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 w-3.5 h-3.5 accent-indigo-600 cursor-pointer"
+              />
+              <span className="text-sm text-slate-500 leading-relaxed font-medium">
+                我已阅读并同意
+                <span className="text-indigo-600 font-bold mx-0.5">《仲裁员端服务协议》</span>
+                与
+                <span className="text-indigo-600 font-bold mx-0.5">《隐私及CA盾数据政策》</span>
+              </span>
+            </label>
+          )}
 
-            <button
-              onClick={handlePrimary}
-              disabled={!canNext || (step === 2 && !agreed)}
-              className={`w-full font-bold py-3 text-base rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-1 ${
-                (!canNext || (step === 2 && !agreed))
-                  ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white border-indigo-600 shadow-md shadow-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/40'
-              }`}
-            >
-              <span>{step === 1 ? (isFace ? '下一步 · 人脸识别' : '下一步 · 短信验证') : '登录'}</span>
-              <ArrowRight size={14} />
-            </button>
+          {/* 忘记密码：位于主按钮上方（仅密码流第一步） */}
+          {!isFace && step === 1 && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={openForgot}
+                className="text-sm text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 rounded"
+              >
+                忘记密码
+              </button>
+            </div>
+          )}
 
-            {step === 1 && !isFace && (
-              <div className="text-center text-sm text-slate-400 font-medium pt-0.5">
-                收不到验证码？请联系本委管理员
-              </div>
-            )}
-          </div>
+          <button
+            onClick={handlePrimary}
+            disabled={!canNext || (step === 2 && !agreed)}
+            className={`w-full font-black py-3.5 text-base rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 focus-visible:ring-offset-1 ${
+              (!canNext || (step === 2 && !agreed))
+                ? 'bg-slate-100 text-slate-400 border-slate-100 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white border-indigo-600 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-600/40'
+            }`}
+          >
+            <span>{step === 1 ? (isFace ? '下一步 · 人脸识别' : '下一步 · 双因素校验') : '登录'}</span>
+            <ArrowRight size={14} />
+          </button>
         </div>
       </div>
+
     </div>
   );
 }
 
 // =================================================================
-// Sub Components
+// 子组件
 // =================================================================
 
 interface MethodCardProps {
@@ -539,7 +620,7 @@ function MethodCard({ icon, title, desc, steps, accent, onClick }: MethodCardPro
           <div className="flex items-center gap-1.5 mt-2.5">
             {steps.map((s, idx) => (
               <React.Fragment key={idx}>
-                <span className={`inline-flex items-center gap-1 text-xs font-bold border rounded px-1.5 py-1 ${a.chip}`}>
+                <span className={`inline-flex items-center gap-1 text-xs  border rounded px-1.5 py-1 ${a.chip}`}>
                   <span className={`w-1 h-1 rounded-full ${a.stepDot}`} />
                   {s}
                 </span>
@@ -552,90 +633,5 @@ function MethodCard({ icon, title, desc, steps, accent, onClick }: MethodCardPro
         </div>
       </div>
     </button>
-  );
-}
-
-interface StepperProps {
-  current: number;
-  total: number;
-  labels: string[];
-}
-
-function Stepper({ current, total, labels }: StepperProps) {
-  return (
-    <div className="flex items-start">
-      {Array.from({ length: total }).map((_, i) => {
-        const idx = i + 1;
-        const isActive = idx === current;
-        const isDone = idx < current;
-        return (
-          <React.Fragment key={idx}>
-            {/* Step node */}
-            <div className="flex flex-col items-center gap-1.5 shrink-0">
-              <div className="relative">
-                {/* Glow ring for active step */}
-                {isActive && (
-                  <div className="absolute inset-0 rounded-full bg-indigo-500/20 animate-ping" />
-                )}
-                <div
-                  className={`relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 ${
-                    isActive
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/40'
-                      : isDone
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-400 border-slate-200'
-                  }`}
-                >
-                  {isDone ? <CheckCircle2 size={14} /> : idx}
-                </div>
-              </div>
-              <span className={`text-sm font-bold transition-colors duration-300 ${isActive ? 'text-indigo-600' : isDone ? 'text-indigo-600' : 'text-slate-400'}`}>
-                {labels[i]}
-              </span>
-            </div>
-            {/* Connector line */}
-            {idx < total && (
-              <div className="flex-1 mx-1.5 mt-4">
-                <div className={`h-1 rounded-full transition-all duration-500 ${isDone ? 'bg-gradient-to-r from-indigo-600 to-indigo-400' : 'bg-slate-100'}`} />
-              </div>
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
-
-interface FormFieldProps {
-  icon: React.ReactNode;
-  label: string;
-  placeholder: string;
-  value: string;
-  onChange: (v: string) => void;
-  type?: 'text' | 'tel' | 'password';
-  maxLength?: number;
-  rightSlot?: React.ReactNode;
-}
-
-function FormField({ icon, label, placeholder, value, onChange, type = 'text', maxLength, rightSlot }: FormFieldProps) {
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1 text-base  text-slate-500">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <div className="flex items-center gap-2 bg-slate-50/60 border border-slate-100 rounded-lg px-2.5 py-2 focus-within:border-indigo-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/15 transition-all">
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          aria-label={label}
-          className="flex-1 bg-transparent outline-none text-base font-bold text-slate-800 placeholder:text-slate-400 placeholder:font-medium min-w-0"
-        />
-        {rightSlot}
-      </div>
-    </div>
   );
 }

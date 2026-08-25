@@ -583,9 +583,9 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
   const chiefOffset = -soleLen;
   const sideOffset = -(soleLen + chiefLen);
 
-  // Custom colors matching the user interface blueprint diagrams
-  const colorBlue = '#1E62EC';
-  const colorOrange = '#F59E0B';
+  // 自定义配色：与品牌 Token 联动（--color-indigo-600 / --color-amber-500 / emerald-400）
+  const colorBlue = 'var(--color-indigo-600)';
+  const colorOrange = 'var(--color-amber-500)';
   const colorGreen = '#74C080';
 
   return (
@@ -601,18 +601,18 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           {/* Header + 清除筛选 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+              <div className="h-4 w-1 bg-indigo-600 rounded-full"></div>
               <h4 className="text-lg font-extrabold text-slate-800">筛选配置</h4>
               {isLoading && (
-                <span className="flex items-center gap-1 text-sm font-bold text-[#1E62EC] animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1E62EC] animate-ping"></span>
+                <span className="flex items-center gap-1 text-sm font-bold text-indigo-600 animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
                   统计中
                 </span>
               )}
             </div>
             <button
               onClick={handleClear}
-              className="text-sm text-slate-400 hover:text-[#1E62EC] bg-slate-50/80 hover:bg-blue-50/60 border border-slate-100 hover:border-blue-100 rounded-lg py-1 px-2.5 transition-colors cursor-pointer uppercase tracking-wide"
+              className="text-sm text-slate-400 hover:text-indigo-600 bg-slate-50/80 hover:bg-blue-50/60 border border-slate-100 hover:border-blue-100 rounded-lg py-1 px-2.5 transition-colors cursor-pointer uppercase tracking-wide"
             >
               清除筛选 ↺
             </button>
@@ -636,7 +636,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                     onClick={() => applyQuickFilter(key)}
                     className={`py-1.5 px-3 text-base   rounded-xl transition-all border outline-none cursor-pointer ${
                       isActive
-                        ? 'bg-[#1E62EC] text-white border-[#1E62EC] shadow-sm shadow-[#1E62EC]/10'
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-600/10'
                         : 'bg-slate-50/80 text-slate-600 border-slate-100 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
@@ -658,7 +658,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   value={startDate}
                   max={endDate}
                   onChange={(e) => handleStartDateChange(e.target.value)}
-                  className="w-full py-2 px-3 text-base  rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-[#1E62EC] focus:bg-white focus:text-[#1E62EC] transition-all cursor-pointer"
+                  className="w-full py-2 px-3 text-base  rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-indigo-600 focus:bg-white focus:text-indigo-600 transition-all cursor-pointer"
                 />
               </div>
               <div className="space-y-1">
@@ -668,7 +668,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                   value={endDate}
                   min={startDate}
                   onChange={(e) => handleEndDateChange(e.target.value)}
-                  className="w-full py-2 px-3 text-base rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-[#1E62EC] focus:bg-white focus:text-[#1E62EC] transition-all cursor-pointer"
+                  className="w-full py-2 px-3 text-base rounded-xl border border-slate-100 bg-slate-50/80 text-slate-700 outline-none focus:border-indigo-600 focus:bg-white focus:text-indigo-600 transition-all cursor-pointer"
                 />
               </div>
             </div>
@@ -680,7 +680,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
         {/* 1. 组庭情况 CARD (Ring/Donut Chart with bottom statistics) */}
         <div id="arbitration_court_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <div className="h-4 w-1 bg-indigo-600 rounded-full"></div>
             <h4 className="text-lg font-extrabold text-slate-800">新收案件情况</h4>
           </div>
 
@@ -793,7 +793,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
         {/* 2.5 在办案件情况 CARD */}
         <div id="pending_cases_card" className="bg-white rounded-2xl p-4.5 border border-slate-100 space-y-3">
           <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <div className="h-4 w-1 bg-indigo-600 rounded-full"></div>
             <h4 className="text-lg font-extrabold text-slate-800">在办案件情况</h4>
           </div>
 
@@ -806,7 +806,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               className="flex flex-col gap-1 py-2.5 px-3 rounded-lg bg-slate-50/60 hover:bg-blue-50/50  transition-all cursor-pointer"
             >
               <span className="text-sm text-slate-500">在办数</span>
-              <span className="text-lg font-black text-[#1E62EC] leading-none font-mono tabular-nums">{pendingCount}件</span>
+              <span className="text-lg font-black text-indigo-600 leading-none font-mono tabular-nums">{pendingCount}件</span>
             </div>
 
             {/* 已延期数 */}
@@ -825,7 +825,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
           {/* 标题 + 同比提示 */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+              <div className="h-4 w-1 bg-indigo-600 rounded-full"></div>
               <h4 className="text-lg font-extrabold text-slate-800">办结案件情况</h4>
             </div>
             <div className="flex items-center gap-1 text-xs  text-slate-400">
@@ -842,7 +842,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
             className="flex items-end justify-between cursor-pointer group"
           >
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-[#1E62EC] flex items-center justify-center text-white flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white flex-shrink-0">
                 <CheckCircle2 size={16} />
               </div>
               <div>
@@ -873,13 +873,13 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
             {/* 裁决率 */}
             <div
               onClick={() => onNavigateToTab(1)}
-              className="flex flex-col gap-1 py-2 px-2.5 rounded-lg bg-slate-50/60 hover:bg-blue-50/50 border border-transparent hover:border-[#1E62EC]/20 transition-all cursor-pointer"
+              className="flex flex-col gap-1 py-2 px-2.5 rounded-lg bg-slate-50/60 hover:bg-blue-50/50 border border-transparent hover:border-indigo-600/20 transition-all cursor-pointer"
             >
               <div className="flex items-center gap-1">
-                <Award size={11} className="text-[#1E62EC]" />
+                <Award size={11} className="text-indigo-600" />
                 <span className="text-sm  text-slate-500">裁决率</span>
               </div>
-              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+              <span className="text-base font-black font-mono tabular-nums text-indigo-600 leading-none">
                 {indicators.settle.value}
               </span>
               <span className={`text-sm font-black font-mono tabular-nums ${indicators.settle.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
@@ -896,7 +896,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                 <FileText size={11} className="text-amber-500" />
                 <span className="text-sm  text-slate-500">调解率</span>
               </div>
-              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+              <span className="text-base font-black font-mono tabular-nums text-indigo-600 leading-none">
                 {indicators.cancel.value}
               </span>
               <span className={`text-sm font-black font-mono tabular-nums ${indicators.cancel.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
@@ -913,7 +913,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
                 <XCircle size={11} className="text-rose-500" />
                 <span className="text-sm  text-slate-500">撤案率</span>
               </div>
-              <span className="text-base font-black font-mono tabular-nums text-[#1E62EC] leading-none">
+              <span className="text-base font-black font-mono tabular-nums text-indigo-600 leading-none">
                 {indicators.delay.value}
               </span>
               <span className={`text-sm font-black font-mono tabular-nums ${indicators.delay.isUp ? 'text-[#74C080]' : 'text-rose-500'}`}>
@@ -926,7 +926,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
         {/* 2. 办理案件的Top5案由 CARD */}
         <div id="top_disputes_card" className="bg-white rounded-2xl p-4.5 border border-slate-100  space-y-4">
           <div className="flex items-center gap-2">
-            <div className="h-4 w-1 bg-[#1E62EC] rounded-full"></div>
+            <div className="h-4 w-1 bg-indigo-600 rounded-full"></div>
             <h4 className="text-lg font-extrabold text-slate-800">办理案件的Top5案由</h4>
           </div>
 
@@ -937,7 +937,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
             {topCases.map((item, idx) => {
               // Custom colors matching prototype layout for up to 5 items
               const barColorClass = idx === 0 
-                ? 'bg-[#1E62EC]' 
+                ? 'bg-indigo-600' 
                 : idx === 1 
                 ? 'bg-amber-500' 
                 : idx === 2 
@@ -948,7 +948,7 @@ export default function CaseStats({ cases, onNavigateToTab, onFilterStatus }: Ca
               return (
                 <div key={item.name} onClick={() => onNavigateToTab(1)} className="space-y-1 cursor-pointer">
                   <div className="flex justify-between items-baseline">
-                    <span className="text-base  text-slate-700 hover:text-[#1E62EC] transition-colors">{item.name}</span>
+                    <span className="text-base  text-slate-700 hover:text-indigo-600 transition-colors">{item.name}</span>
                     <span className="text-sm text-slate-400">
                       {item.count}件案件 占比{item.ratio}%
                     </span>

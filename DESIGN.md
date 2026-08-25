@@ -43,11 +43,11 @@
 
 | Token | 色值 | Tailwind 类 | 用途 |
 |-------|------|-------------|------|
-| `--color-brand-primary` | #4f46e5 | `bg-brand-primary` / `text-brand-primary` | 主品牌色，主按钮、主链接、激活态 |
-| `--color-brand-secondary` | #4780FF | `bg-brand-secondary` | 品牌辅助色，图标、装饰、信息色 |
+| `--color-brand-primary` | #031f8f | `bg-brand-primary` / `text-brand-primary` | 主品牌色（深 royal blue），主按钮、主链接、激活态 |
+| `--color-brand-secondary` | #1d4ed8 | `bg-brand-secondary` | 品牌辅助色（深蓝亮一档），图标、装饰、信息色 |
 | `--color-brand-accent` | #f59e0b | `bg-brand-accent` | 品牌强调色，徽章、标签 |
 
-> 注意：项目已覆盖 `--color-indigo-600: #1e62ec`、`--color-indigo-500: #4780FF`，因此既有代码中的 `text-indigo-600` / `bg-indigo-600` 等价于品牌色，**新代码统一使用 `brand-*` 语义类**。
+> 注意：项目已覆盖 indigo 色阶到品牌色谱系（`--color-indigo-500: #1d4ed8`、`--color-indigo-600: #031f8f`、`--color-indigo-700: #022167`、`--color-indigo-800: #011852`、`--color-indigo-900: #010e3a`），因此既有代码中的 `text-indigo-600` / `bg-indigo-700` / `text-indigo-900` 等都自动指向品牌同色系深色（不再有紫调干扰）。**新代码统一使用 `brand-*` 语义类**。
 
 #### 1.1.2 背景色（Background Colors）
 
@@ -57,6 +57,13 @@
 | `--color-bg-surface` | #ffffff | 卡片 / 组件背景 |
 | `--color-bg-muted` | #f1f5f9 | 次级背景，分隔区域 |
 | `--color-bg-elevated` | #ffffff | 浮层 / 弹窗背景 |
+
+**背景统一规则（全局）**
+
+- 所有页面 / 视图 / 大面积容器背景统一为 `bg-slate-50`（#f8fafc），**禁止**页面级背景使用 `bg-slate-100`、`bg-gray-50/100`、`bg-slate-50/75`（半透明）或硬编码浅灰
+- 渐变背景（如登录页、头部品牌横幅 `bg-gradient-to-*`）不受此规则约束，保持原样
+- 组件内部小面积"次级填充"（取消按钮底色、进度条轨道、徽章、分隔线、信息提示框）仍用 `bg-slate-100`（--color-bg-muted），不属于页面背景
+- 卡片 / 表格 / 弹窗表面保持 `bg-white`（--color-bg-surface）
 
 #### 1.1.3 文字色（Text Colors）
 
@@ -88,7 +95,7 @@
 
 | 状态 | 前景 Token | 背景 Token | 用途 |
 |------|-----------|-----------|------|
-| 审理中 | `--color-status-active` #4780FF | `--color-status-active-bg` #e0e7ff | 进行中的案件 |
+| 审理中 | `--color-status-active` #1d4ed8 | `--color-status-active-bg` #e0e7ff | 进行中的案件 |
 | 待开庭 | `--color-status-pending` #f59e0b | `--color-status-pending-bg` #fef3c7 | 等待开庭 |
 | 待签名 | `--color-status-signing` #f43f5e | `--color-status-signing-bg` #ffe4e6 | 等待签署 |
 | 已结案 | `--color-status-resolved` #10b981 | `--color-status-resolved-bg` #d1fae5 | 已完结 |
@@ -99,9 +106,9 @@
 
 | Token | 色值 | 用途 |
 |-------|------|------|
-| `--color-hover` | #4f46e5 | Hover 状态 |
-| `--color-active` | #4338ca | Active / Pressed 状态 |
-| `--color-focus` | #4780FF | Focus 状态（聚焦环） |
+| `--color-hover` | #031f8f | Hover 状态 |
+| `--color-active` | #022167 | Active / Pressed 状态 |
+| `--color-focus` | #1d4ed8 | Focus 状态（聚焦环） |
 
 ### 1.2 字体系统
 
@@ -196,6 +203,34 @@
 - 顶部状态栏：`h-9`，显示模拟时间 + 信号 / 5G / WiFi / 电池
 - 底部 Home 指示条：`h-4`，白色底 + `w-32 h-1 bg-slate-200 rounded-full`
 - 内容区：`flex-1 bg-slate-50 overflow-hidden`，纵向 flex 布局
+
+#### 1.5.8 弹框（iPhone 风格）
+
+> 全局所有弹框必须使用 [`src/components/ui/IOSDialog.tsx`](src/components/ui/IOSDialog.tsx) 的统一组件，**禁止再自造居中弹框结构**。参照 iOS UIAlertController 视觉规范。
+
+| 组件 | 用途 | 关键规范 |
+|------|------|----------|
+| `IOSAlert` | 确认类弹框（标题 + 居中正文 + 按钮组） | 居中弹窗宽 `w-[270px]`，圆角 `rounded-2xl`；标题 `text-lg font-semibold`，正文 `text-sm text-text-secondary`；按钮 44px 高；2 个按钮左右分栏（取消在左），其余上下排列；按钮组顶部 `border-t border-slate-200` 分割；动画 `animate-ios-alert-in` |
+| `IOSModal` | 内容类弹窗（标题栏 + 滚动内容 + 可选底栏） | 居中弹窗宽 `w-[320px]`，最大高 `max-h-[70vh]`，圆角 `rounded-2xl shadow-2xl`；顶部标题栏 56px 高，标题居中 + 右侧 44×44 X 关闭；底部 56px 操作栏横排；内容区 `flex-1 overflow-y-auto no-scrollbar p-5` |
+| `IOSModalButton` | 内容弹窗底栏按钮 | 高 44px，3 个 variant：`primary`（品牌蓝填充）、`plain`（品牌蓝文字）、`default`（中性灰填充） |
+
+**通用规则**
+
+- 遮罩：`bg-black/40`（透明度 40%，取代旧的 `bg-slate-900/80`），位置由 `overlayClassName` 控制，手机壳内嵌套传 `absolute inset-0 z-[70]`，全局居中传 `fixed inset-0 z-[100]`
+- 圆角统一 `rounded-2xl`；禁止使用 `rounded-3xl` / 深色 `bg-indigo-900` 标题栏
+- 危险操作 `IOSAlert` 用 `style="destructive"`（红字）；取消用 `style="cancel"`（灰字）
+- 动画仅 `transform`（scale 1.08→1）+ `opacity`（0→1），即 `animate-ios-alert-in`；无 `rotate` 旋转
+- 暗色场景（如虚拟法庭深色全屏内）传 `tone="dark"`，弹窗变为 `bg-slate-800`，文字白色
+
+#### 1.5.9 登录页（LoginPage · 双因子两步流程）
+
+- **入口**：`isLoggedIn === false` 时挂载于手机壳内，为应用入口；背景统一纯色 `bg-slate-50`（#f8fafc）
+- **方式选择页**：品牌 logo 居中 + 两张 `MethodCard`（人脸=indigo 强调 / 密码=emerald 强调），各含两步 chips 预览
+- **两步流程**：顶部 `h-12 bg-[#ddecff]` 返回栏（返回方式页 / 返回上一步）+ `Stepper` 步进器（激活 `animate-ping` 光环、完成渐实线 `bg-indigo-500`）+ 白卡表单（卡头「第 N 步 · 标题」+ `STEP n/2` 等宽徽标）
+- **人脸流**：① 手机号（11 位校验）+ 短信验证码（6 位，手动「获取验证码」+ 60s 倒计时）→ ② 取景框：四角 2px 定位标 + 椭圆面部引导 `rounded-[50%]` + `animate-scan-line` 扫描线 + 活体动作提示循环（正脸→眨眼→转头，0.8s/条，2.4s 采集完成），成功态转 emerald 并支持「重新采集」
+- **密码流**：① 账号 + 密码（显隐切换）→ ② 双因素：`role="tablist"` 分段选项卡（短信/邮箱，激活 `bg-white shadow-sm text-indigo-600`）、脱敏目的地行（`139****1234` / `z***@gzac.org.cn` + 「系统已绑定」锁标）、验证码各通道独立 60s 倒计时，切换通道清空已输验证码
+- **协议门槛**：第二步展示协议勾选（默认勾选），未勾选禁用登录；主按钮 `bg-indigo-600` 圆角 `rounded-xl`，禁用态 `bg-slate-100`
+- **安全细节**：验证码 / 密码输入 `inputMode` 数字过滤；手机号、邮箱、账号均为脱敏或本地校验，Mock 阶段不落任何真实凭据
 
 ### 1.6 移动端布局规范
 

@@ -118,7 +118,7 @@ export default function MiniProgramContainer({ children }: MiniProgramContainerP
             </div>
 
             {/* Main scrollable body */}
-            <div className="flex-1 overflow-y-auto bg-slate-100 flex justify-center p-6">
+            <div className="flex-1 overflow-y-auto bg-slate-50 flex justify-center p-6">
               <div className="w-full max-w-4xl bg-white rounded-xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-full">
                 <div className="flex-1 overflow-hidden flex flex-col justify-between">
                   {children}

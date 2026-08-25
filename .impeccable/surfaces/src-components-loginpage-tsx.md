@@ -1,0 +1,15 @@
+---
+version: 1
+slug: "src-components-loginpage-tsx"
+primary_target: "src/components/LoginPage.tsx"
+related_targets: []
+---
+
+# Surface Brief · 登录页（src/components/LoginPage.tsx）
+
+- **范围与访客模式**：应用入口登录流（方式选择 + 两条两步流程），Operate 模式。
+- **受众 / 任务**：仲裁员在手机上完成双因子登录进入工作台；动作 = 人脸流（手机验证码 → 人脸识别）或密码流（账号密码 → 短信/邮箱验证码）；证据 = 脱敏绑定手机/邮箱、协议门槛、活体动作提示。
+- **约束**：微信小程序交互范式、400×840 手机壳、Mock 阶段（验证码任意 6 位通过、绑定号由账号推导）；DESIGN.md indigo/blue Token 体系。
+- **方向与记忆点**：机构级安全可信——方式选择卡片带两步 chips 预告、Stepper 步进、人脸取景框（四角定位 + 椭圆引导 + 扫描线 + 活体提示循环 正脸→眨眼→转头）、双因素分段选项卡（短信/邮箱独立倒计时，切换清空验证码）。验证码均为**手动发送**（用户确认）。
+- **未决决策**：通道缺失降级（未绑邮箱时隐藏该 Tab）已在结构上支持、Mock 双通道恒可用；忘记密码 / 协议链接为占位文案；登录成功无过渡页（用户确认直接进工作台）。
+- **构建路径**：记录默认 comp-first，但本会话生图工具不可用（OPENAI_API_KEY 未配、无 GenerateImage 工具面），按契约转 code-first；方向契约见 index.html body 首注释。

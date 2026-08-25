@@ -5,9 +5,14 @@
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Override indigo-500 to brand secondary color */
-  --color-indigo-600: #1e62ec;
-  --color-indigo-500: #4780FF;
+  /* Override indigo scale to brand color spectrum (#031f8f 蓝系)
+   * 浅色 50-400 保持 Tailwind 默认（淡蓝紫，色相差异极小）
+   * 500 起全部联动到品牌主色调，保持同色系 */
+  --color-indigo-500: #4f62b1;
+  --color-indigo-600: #031f8f;
+  --color-indigo-700: #022167;
+  --color-indigo-800: #011852;
+  --color-indigo-900: #010e3a;
 
   /* Typography Scale - Unified Font Size System */
   --text-2xs: 8px;
@@ -40,8 +45,8 @@
    * ===================================================== */
 
   /* Brand Colors - 品牌色 */
-  --color-brand-primary: #4f46e5;     /* Indigo 600 - 主品牌色 */
-  --color-brand-secondary: #4780FF;   /* Indigo 500 - 品牌辅助色 */
+  --color-brand-primary: #031f8f;     /* 主品牌色 */
+  --color-brand-secondary: #4f62b1;   /* 品牌辅助色 (light-3) */
   --color-brand-accent: #f59e0b;      /* Amber 500 - 品牌强调色 */
 
   /* Background Colors - 背景色 */
@@ -74,12 +79,12 @@
   --color-error-bg: #fee2e2;          /* Red 100 - 错误背景 */
   --color-error-border: #fecaca;      /* Red 200 - 错误边框 */
 
-  --color-info: #4780FF;              /* Brand Secondary - 信息 */
+  --color-info: #1d4ed8;              /* Brand Secondary - 信息 */
   --color-info-bg: #e0e7ff;           /* Indigo 100 - 信息背景 */
   --color-info-border: #c7d2fe;       /* Indigo 200 - 信息边框 */
 
   /* Case Status Colors - 案件状态色 */
-  --color-status-active: #4780FF;     /* Brand Secondary - 审理中 */
+  --color-status-active: #1d4ed8;     /* Brand Secondary - 审理中 */
   --color-status-active-bg: #e0e7ff;  /* Indigo 100 - 审理中背景 */
   --color-status-pending: #f59e0b;    /* Amber 500 - 待开庭 */
   --color-status-pending-bg: #fef3c7; /* Amber 100 - 待开庭背景 */
@@ -89,15 +94,16 @@
   --color-status-resolved-bg: #d1fae5;/* Emerald 100 - 已结案背景 */
 
   /* Interaction Colors - 交互色 */
-  --color-hover: #4f46e5;             /* Indigo 600 - Hover 状态 */
-  --color-active: #4338ca;            /* Indigo 700 - Active 状态 */
-  --color-focus: #4780FF;             /* Brand Secondary - Focus 状态 */
+  --color-hover: #031f8f;             /* 主品牌色 - Hover 状态 */
+  --color-active: #022167;            /* 主品牌色加深 - Active 状态 */
+  --color-focus: #1d4ed8;             /* Brand Secondary - Focus 状态 */
 
   /* Animation Keyframes */
   --animate-slide-in: slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slide-down: slide-down 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-fade-in: fade-in 0.2s ease-out forwards;
   --animate-scale-up: scale-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-ios-alert-in: ios-alert-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-scan-line: scan-line 1.6s ease-in-out infinite;
 
   @keyframes slide-in {
@@ -123,6 +129,29 @@
   }
 }
 
+/* =====================================================
+ * ELEMENT PLUS BRAND SCALE - 品牌色阶与文字色
+ * 主色 #031f8f，按 EP mix 公式生成：
+ * light-N = 主色 × (1 - N/10) + 白 × N/10
+ * dark-2  = 主色 × 80% + 黑 × 20%
+ * ===================================================== */
+:root {
+  /* 主色阶 */
+  --el-color-primary: #031f8f;
+  --el-color-primary-dark-2: #021972;
+  --el-color-primary-light-3: #4f62b1;
+  --el-color-primary-light-5: #818fc7;
+  --el-color-primary-light-7: #b3bcdd;
+  --el-color-primary-light-8: #cdd2e9;
+  --el-color-primary-light-9: #e6e9f4;
+
+  /* 文字色 */
+  --el-text-color-primary: #00296b;
+  --el-text-color-regular: #303133;
+  --el-text-color-secondary: #606266;
+  --el-text-color-placeholder: #a8abb2;
+}
+
 /* Custom Scrollbar hide for Mini Program phone viewport screen */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -146,7 +175,8 @@
   .animate-slide-in,
   .animate-slide-down,
   .animate-fade-in,
-  .animate-scale-up {
+  .animate-scale-up,
+  .animate-ios-alert-in {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;

@@ -31,8 +31,10 @@ import TranscriptSignatureDetail from './components/TranscriptSignatureDetail';
 import PostponementApprovalPage from './components/PostponementApprovalPage';
 import PostponementApprovalDetail from './components/PostponementApprovalDetail';
 import PendingHearingList from './components/PendingHearingList';
+import ArbitrationKnowledge from './components/ArbitrationKnowledge';
+import LoginPage from './components/LoginPage';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -44,7 +46,7 @@ export default function App() {
   // Sub-page state for workbench sub-pages
   const [activeSubPage, setActiveSubPage] = useState<SubPageType>(null);
   
-  // Login State
+  // Login State（默认已登录，进入项目直接展示首页）
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
   
   // Data States
@@ -139,7 +141,7 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
     setActiveSubPage(page);
   };
 
@@ -201,47 +203,13 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <MiniProgramContainer>
-        <div className="flex-1 bg-gradient-to-br from-[#0B0F19] via-[#111827] to-[#1E293B] text-white flex flex-col justify-center items-center p-6 text-center select-none animate-fade-in font-sans relative">
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 flex items-center space-x-1.5">
-            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping text-indigo-500"></span>
-            <span className="text-xs font-black tracking-widest text-slate-500">广州仲裁委 • 智慧专网盾</span>
-          </div>
-
-          <div className="space-y-6 w-full max-w-xs">
-            {/* Animated Ring Icon */}
-            <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border border-indigo-500/20 animate-pulse" />
-              <div className="absolute inset-2 rounded-full border border-indigo-400/40 animate-pulse" />
-              <div className="absolute inset-4 rounded-full bg-[#111827] border border-indigo-500/80 flex items-center justify-center shadow-lg shadow-indigo-500/10">
-                <i className="fa-solid fa-lock text-indigo-400 text-xl animate-pulse"></i>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-base font-black tracking-tight text-[#F3F4F6]">仲裁端双因子登录认证</h1>
-              <p className="text-xs text-slate-500 leading-normal px-2">
-                检测到您未载入本委CA防伪专效证书盾，为保证合议内容秘密度及数据，请点击指纹核验或一键进行数字建连登录。
-              </p>
-            </div>
-
-            <div className="space-y-2.5 pt-3">
-              <button 
-                onClick={() => {
-                  setIsLoggedIn(true);
-                  setActiveTab(0); // auto reset tab to workbench
-                }}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-heavy p-3 text-sm rounded-2xl cursor-pointer transition-all border border-indigo-600 shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2"
-              >
-                <i className="fa-solid fa-fingerprint text-xs"></i>
-                <span>双因子安全一键核签登录</span>
-              </button>
-              
-              <div className="text-2xs text-slate-500 font-mono">
-                硬件指纹及数字校验盾 ID: ARB-2018-0925
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 双因子登录：人脸识别 / 账号密码 + 短信或邮箱验证码 */}
+        <LoginPage
+          onLogin={() => {
+            setIsLoggedIn(true);
+            setActiveTab(0); // 登录成功后回到工作台
+          }}
+        />
       </MiniProgramContainer>
     );
   }
@@ -281,6 +249,21 @@ export default function App() {
         {activeSubPage === 'notifications' && (
           <NotificationPage
             onBack={handleBackFromSubPage}
+            postponementApprovals={postponementApprovals}
+            transcriptSignatures={transcriptSignatures}
+            cases={cases}
+            onNavigateToApprovalDetail={(approval) => {
+              setSelectedApproval(approval);
+              setActiveSubPage('postponementApprovalDetail');
+            }}
+            onNavigateToTranscriptDetail={(transcript) => {
+              setSelectedTranscript(transcript);
+              setActiveSubPage('transcriptSignatureDetail');
+            }}
+            onNavigateToCaseDetail={(caseItem) => {
+              setSelectedCase(caseItem);
+              setActiveSubPage('caseDetail');
+            }}
           />
         )}
 
@@ -472,6 +455,13 @@ export default function App() {
           />
         )}
 
+        {activeSubPage === 'arbitrationKnowledge' && (
+          <ArbitrationKnowledge
+            onBack={handleBackFromSubPage}
+            userName={mockArbitrator.name}
+          />
+        )}
+
         {/* Main tab content (only show when no sub-page is active) */}
         {!activeSubPage && activeTab === 0 && workbenchVersion === 'v1' && (
           <Workbench
@@ -566,7 +556,7 @@ export default function App() {
             <button
                key={tab.index}
                onClick={() => { setActiveTab(tab.index); setSelectedCase(null); setActiveSubPage(null); }}
-               className="flex flex-col items-center justify-center flex-1 h-full font-bold cursor-pointer relative transition-all"
+               className="flex flex-col items-center justify-center flex-1 h-full cursor-pointer relative transition-all"
                aria-label={tab.label}
                aria-current={isActive ? 'page' : undefined}
              >
@@ -581,7 +571,7 @@ export default function App() {
                   </span>
                 )}
               </div>
-              <span className={`text-xs mt-0.5 transition-colors duration-200 ${isActive ? 'text-indigo-600 font-extrabold' : 'text-slate-500 font-semibold'}`}>
+              <span className={`text-xs mt-0.5 transition-colors duration-200 ${isActive ? 'text-indigo-600 ' : 'text-slate-500 '}`}>
                 {tab.label}
               </span>
             </button>

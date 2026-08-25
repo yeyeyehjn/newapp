@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  User, Bell, ChevronRight, CheckCircle2, AlertCircle, Award, BookOpen, 
-  Shield, Clock, Send, MessageSquare, Briefcase, Search, Sparkles, 
-  QrCode, Printer, HelpCircle, FileText, Download 
-} from 'lucide-react';
 import { ArbitratorProfile, Task, Case, CaseStatus } from '../types';
+import { IOSModal, IOSModalButton } from './ui/IOSDialog';
 
 interface WorkbenchProps {
   profile: ArbitratorProfile;
@@ -246,7 +242,7 @@ export default function Workbench({
             />
             {/* Solid vibrant brand-blue main layer */}
             <div 
-              className="absolute inset-y-0 left-0 w-[90%] bg-gradient-to-r from-[#1E62EC] via-[#246AF3] to-[#2B72FF] shadow-[2px_0_12px_rgba(30,98,236,0.2)] flex items-center justify-center select-none z-10"
+              className="absolute inset-y-0 left-0 w-[90%] bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400 shadow-[2px_0_12px_rgba(3,31,143,0.2)] flex items-center justify-center select-none z-10"
               style={{ clipPath: 'polygon(0% 0%, 80% 0%, 100% 100%, 0% 100%)' }}
             >
               <span className="text-[15px] font-bold text-white tracking-widest pr-2">动态</span>
@@ -375,7 +371,7 @@ export default function Workbench({
                           </div>
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
                             <span className="text-slate-400 shrink-0 w-[60px]">开庭时间</span>
-                            <span className="truncate text-[#1E62EC] font-semibold">{hearing.hearingTime}</span>
+                            <span className="truncate text-indigo-600 font-semibold">{hearing.hearingTime}</span>
                           </div>
                           <div className="flex items-start  gap-0.5 min-w-0 pb-1">
                             <span className="text-slate-400 shrink-0 w-[60px]">开庭地点</span>
@@ -598,307 +594,218 @@ export default function Workbench({
 
       
 
-      {/* 最新动态详情弹框 */}
+      {/* 最新动态详情弹框 · iPhone 风格内容弹窗 */}
       {showNewsDetailModal && selectedNews && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-sm font-bold flex items-center gap-2 font-sans">
-                <i className="fa-solid fa-bullhorn text-amber-400"></i>
-                <span>动态详情</span>
-              </span>
-              <button 
-                onClick={() => {
-                  setShowNewsDetailModal(false);
-                  setSelectedNews(null);
-                }}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                ✕
-              </button>
+        <IOSModal
+          title="动态详情"
+          onClose={() => {
+            setShowNewsDetailModal(false);
+            setSelectedNews(null);
+          }}
+          overlayClassName="fixed inset-0 z-[70]"
+          footer={
+            <IOSModalButton
+              onClick={() => {
+                setShowNewsDetailModal(false);
+                setSelectedNews(null);
+              }}
+            >
+              关闭
+            </IOSModalButton>
+          }
+        >
+          <div className="space-y-4 text-sm text-slate-600 leading-relaxed text-left">
+            <h4 className="font-extrabold text-slate-900 text-base leading-snug">
+              {selectedNews.title}
+            </h4>
+            <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+              <span>发布日期: {selectedNews.date}</span>
+              <span>•</span>
+              <span>信源: 广州仲裁委员会</span>
             </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-600 leading-relaxed no-scrollbar flex-1">
-              <h4 className="font-extrabold text-slate-900 text-base leading-snug">
-                {selectedNews.title}
-              </h4>
-              <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
-                <span>发布日期: {selectedNews.date}</span>
-                <span>•</span>
-                <span>信源: 广州仲裁委员会</span>
-              </div>
-              <div className="w-full h-px bg-slate-100"></div>
-              <p className="text-sm text-slate-500 font-sans leading-relaxed text-justify whitespace-pre-wrap">
-                {selectedNews.content}
-              </p>
-            </div>
-
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => {
-                  setShowNewsDetailModal(false);
-                  setSelectedNews(null);
-                }}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                关闭
-              </button>
-            </div>
+            <div className="w-full h-px bg-slate-100"></div>
+            <p className="text-sm text-slate-500 font-sans leading-relaxed text-justify whitespace-pre-wrap">
+              {selectedNews.content}
+            </p>
           </div>
-        </div>
+        </IOSModal>
       )}
 
-      {/* 1. 裁决书及案例 */}
+      {/* 1. 裁决书及案例 · iPhone 风格内容弹窗 */}
       {showTemplateModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-xs font-bold flex items-center gap-1.5 font-sans">
-                <i className="fa-solid fa-file-lines text-emerald-400"></i>
-                <span>广州仲裁委裁决书模版与示范案例库</span>
-              </span>
-              <button 
-                onClick={() => setShowTemplateModal(false)}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-500 leading-relaxed no-scrollbar flex-1">
-              <p className="text-slate-500 text-xs">您可以随时在此调阅裁决书官方标准样本及过往示范性经典仲裁判决案例。</p>
-              
-              <div className="space-y-2.5">
-                {[
-                  { id: 1, name: '《民商事仲裁案件裁决书标准模版》', size: '124 KB', hash: 'GZAC-TEMP-01' },
-                  { id: 2, name: '《大额建设工程合同纠纷示范案例》', size: '158 KB', hash: 'GZAC-CASE-01' },
-                  { id: 3, name: '《合议庭开庭评议纪要规范格式》', size: '85 KB', hash: 'GZAC-TEMP-02' },
-                  { id: 4, name: '《国际多式联运货代纠纷示范案例》', size: '142 KB', hash: 'GZAC-CASE-02' }
-                ].map((doc) => {
-                  const isDownloaded = downloadedTempIdxs.includes(doc.id);
-                  return (
-                    <div key={doc.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between hover:border-indigo-200 transition-all">
-                      <div className="space-y-0.5 flex-1 min-w-0 pr-2">
-                        <h6 className="font-extrabold text-slate-800 text-sm truncate">{doc.name}</h6>
-                        <p className="text-xs text-slate-500 font-mono">大小: {doc.size} • 校验哈希: {doc.hash}</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          if (!isDownloaded) {
-                            setDownloadedTempIdxs(prev => [...prev, doc.id]);
-                          }
-                        }}
-                        className={`p-1.5 px-3 rounded-lg text-xs font-black cursor-pointer transition-all ${
-                          isDownloaded 
-                             ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                             : 'bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100'
-                        }`}
-                      >
-                        {isDownloaded ? '已下载 ⎘' : '下载'}
-                      </button>
+        <IOSModal
+          title="广州仲裁委裁决书模版与示范案例库"
+          onClose={() => setShowTemplateModal(false)}
+          overlayClassName="fixed inset-0 z-[70]"
+          footer={<IOSModalButton onClick={() => setShowTemplateModal(false)}>关闭窗口</IOSModalButton>}
+        >
+          <div className="space-y-4 text-sm text-slate-500 leading-relaxed text-left">
+            <p className="text-slate-500 text-xs">您可以随时在此调阅裁决书官方标准样本及过往示范性经典仲裁判决案例。</p>
+
+            <div className="space-y-2.5">
+              {[
+                { id: 1, name: '《民商事仲裁案件裁决书标准模版》', size: '124 KB', hash: 'GZAC-TEMP-01' },
+                { id: 2, name: '《大额建设工程合同纠纷示范案例》', size: '158 KB', hash: 'GZAC-CASE-01' },
+                { id: 3, name: '《合议庭开庭评议纪要规范格式》', size: '85 KB', hash: 'GZAC-TEMP-02' },
+                { id: 4, name: '《国际多式联运货代纠纷示范案例》', size: '142 KB', hash: 'GZAC-CASE-02' }
+              ].map((doc) => {
+                const isDownloaded = downloadedTempIdxs.includes(doc.id);
+                return (
+                  <div key={doc.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between hover:border-indigo-200 transition-all">
+                    <div className="space-y-0.5 flex-1 min-w-0 pr-2">
+                      <h6 className="font-extrabold text-slate-800 text-sm truncate">{doc.name}</h6>
+                      <p className="text-xs text-slate-500 font-mono">大小: {doc.size} • 校验哈希: {doc.hash}</p>
                     </div>
-                  );
-                })}
+                    <button
+                      onClick={() => {
+                        if (!isDownloaded) {
+                          setDownloadedTempIdxs(prev => [...prev, doc.id]);
+                        }
+                      }}
+                      className={`p-1.5 px-3 rounded-lg text-xs font-black cursor-pointer transition-all ${
+                        isDownloaded
+                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                           : 'bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100'
+                      }`}
+                    >
+                      {isDownloaded ? '已下载 ⎘' : '下载'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </IOSModal>
+      )}
+
+      {/* 2. 仲裁指引 · iPhone 风格内容弹窗 */}
+      {showGuideModal && (
+        <IOSModal
+          title="广州仲裁委员会高效办案指引一览"
+          onClose={() => setShowGuideModal(false)}
+          overlayClassName="fixed inset-0 z-[70]"
+          footer={<IOSModalButton onClick={() => setShowGuideModal(false)}>确认掌握</IOSModalButton>}
+        >
+          <div className="space-y-4 text-sm text-slate-500 leading-relaxed text-left">
+            <p className="text-slate-500 text-xs">请各位仲裁员严格恪守《广仲办案守则和工作流细则》，确保案件高效结案。</p>
+
+            <div className="relative border-l border-indigo-100 pl-4 ml-2 space-y-4">
+              {[
+                { step: '01', title: '案件受理与组庭分派', desc: '办案秘书核验申请材料及管辖约定并成立合议庭' },
+                { step: '02', title: '送达答辩与反诉审查', desc: '被申请人在15工作日内提交答辩，并审核是否存在反诉' },
+                { step: '03', title: '组庭评议及预备会议', desc: '首席/独任仲裁员召集沟通关键事实重点与争议争端焦点' },
+                { step: '04', title: '庭审辩论与最终合议', desc: '举行庭期并确保当事人享有充足辩论权，庭后合议评议落实' },
+                { step: '05', title: '裁决草拟并签定 CACA', desc: '首席草拟裁决报告并交由全体庭员进行数字证书盾级合议签署' }
+              ].map((item, idx) => (
+                <div key={idx} className="relative">
+                  <div className="absolute -left-[25px] top-0 h-4.5 w-4.5 rounded-full bg-indigo-50 border border-indigo-400 text-indigo-700 font-extrabold text-xs flex items-center justify-center font-mono">
+                    {item.step}
+                  </div>
+                  <div className="space-y-0.5">
+                    <h4 className="font-extrabold text-slate-800 text-sm">{item.title}</h4>
+                    <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </IOSModal>
+      )}
+
+      {/* 3. 广仲官网 · iPhone 风格内容弹窗 */}
+      {showOfficialWebModal && (
+        <IOSModal
+          title={'"智慧广仲"云联数字工作台入口'}
+          onClose={() => setShowOfficialWebModal(false)}
+          overlayClassName="absolute inset-0 z-[70]"
+          footer={<IOSModalButton onClick={() => setShowOfficialWebModal(false)}>我知道了</IOSModalButton>}
+        >
+          <div className="space-y-4 text-sm text-slate-500 leading-relaxed text-left">
+            <div className="bg-gradient-to-r from-blue-900 to-indigo-950 p-4 rounded-2xl text-white text-center space-y-1 shadow-sm">
+              <h4 className="text-sm font-black tracking-widest font-sans">广州仲裁委员会智慧云平台</h4>
+              <p className="text-2xs opacity-80 font-mono">ONLINE SMART PLATFORM FOR GZAC • EST. 1995</p>
+              <div className="w-12 h-0.5 bg-yellow-500 mx-auto my-1"></div>
+              <div className="text-xs bg-white/15 px-2.5 py-1 rounded-lg inline-block text-amber-300 font-extrabold mt-1">
+                服务大厅内网互联中台
               </div>
             </div>
 
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => setShowTemplateModal(false)}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                关闭窗口
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            <div className="space-y-3">
+              <h5 className="font-extrabold text-slate-700 text-xs flex items-center gap-1.5 pl-1">
+                <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
+                <span>常用数字网络服务节点</span>
+              </h5>
 
-      {/* 2. 仲裁指引 */}
-      {showGuideModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-xs font-bold flex items-center gap-1.5 font-sans">
-                <i className="fa-solid fa-compass text-rose-400"></i>
-                <span>广州仲裁委员会高效办案指引一览</span>
-              </span>
-              <button 
-                onClick={() => setShowGuideModal(false)}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-500 leading-relaxed no-scrollbar flex-1">
-              <p className="text-slate-500 text-xs">请各位仲裁员严格恪守《广仲办案守则和工作流细则》，确保案件高效结案。</p>
-              
-              <div className="relative border-l border-indigo-100 pl-4 ml-2 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
                 {[
-                  { step: '01', title: '案件受理与组庭分派', desc: '办案秘书核验申请材料及管辖约定并成立合议庭' },
-                  { step: '02', title: '送达答辩与反诉审查', desc: '被申请人在15工作日内提交答辩，并审核是否存在反诉' },
-                  { step: '03', title: '组庭评议及预备会议', desc: '首席/独任仲裁员召集沟通关键事实重点与争议争端焦点' },
-                  { step: '04', title: '庭审辩论与最终合议', desc: '举行庭期并确保当事人享有充足辩论权，庭后合议评议落实' },
-                  { step: '05', title: '裁决草拟并签定 CACA', desc: '首席草拟裁决报告并交由全体庭员进行数字证书盾级合议签署' }
-                ].map((item, idx) => (
-                  <div key={idx} className="relative">
-                    <div className="absolute -left-[25px] top-0 h-4.5 w-4.5 rounded-full bg-indigo-50 border border-indigo-400 text-indigo-700 font-extrabold text-xs flex items-center justify-center font-mono">
-                      {item.step}
-                    </div>
+                  { title: '一键网上立案', desc: 'OCR自动解析识别申诉材料', icon: 'fa-cloud-arrow-up', link: 'https://www.gzac.org/' },
+                  { title: '智慧裁决辅助', desc: '审判要素抽取及自动生成', icon: 'fa-microchip', link: 'https://www.gzac.org/' },
+                  { title: '云庭开庭入口', desc: '多路异地声纹视频质证', icon: 'fa-video', link: 'https://www.gzac.org/' },
+                  { title: '全国存证查询', desc: '基于信盾CA密钥及公链', icon: 'fa-database', link: 'https://www.gzac.org/' }
+                ].map((srv, idx) => (
+                  <a
+                    key={idx}
+                    href={srv.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3 bg-white border border-slate-100 hover:border-indigo-300 rounded-xl flex flex-col justify-between items-start transition-all cursor-pointer group shadow-xs"
+                  >
+                    <i className={`fa-solid ${srv.icon} text-indigo-600 text-xs group-hover:scale-110 transition-transform mb-2`}></i>
                     <div className="space-y-0.5">
-                      <h4 className="font-extrabold text-slate-800 text-sm">{item.title}</h4>
-                      <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
+                      <span className="text-xs font-extrabold text-slate-800 block group-hover:text-indigo-600 leading-none">{srv.title}</span>
+                      <span className="text-2xs text-slate-500 block font-medium leading-tight">{srv.desc}</span>
                     </div>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>
 
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => setShowGuideModal(false)}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                确认掌握
-              </button>
+            <div className="bg-blue-50 border border-blue-100 p-2.5 rounded-xl text-xs text-blue-700 flex items-start gap-1.5">
+              <i className="fa-solid fa-circle-info text-blue-500 mt-0.5 flex-shrink-0"></i>
+              <p className="leading-normal font-semibold">
+                温馨提示：由于平台处于保密测试域环境下运作，以上功能采用专线信道与广州仲裁委核心数据库加密握手。点击将跳转至官方政务系统。
+              </p>
             </div>
           </div>
-        </div>
+        </IOSModal>
       )}
 
-      {/* 3. 广仲官网 */}
-      {showOfficialWebModal && (
-        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-xs font-bold flex items-center gap-1.5 font-sans">
-                <i className="fa-solid fa-globe text-sky-400"></i>
-                <span>"智慧广仲"云联数字工作台入口</span>
-              </span>
-              <button 
-                onClick={() => setShowOfficialWebModal(false)}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-4 overflow-y-auto space-y-4 text-sm text-slate-500 leading-relaxed no-scrollbar bg-slate-50 flex-1">
-              <div className="bg-gradient-to-r from-blue-900 to-indigo-950 p-4 rounded-2xl text-white text-center space-y-1 shadow-sm">
-                <h4 className="text-sm font-black tracking-widest font-sans">广州仲裁委员会智慧云平台</h4>
-                <p className="text-2xs opacity-80 font-mono">ONLINE SMART PLATFORM FOR GZAC • EST. 1995</p>
-                <div className="w-12 h-0.5 bg-yellow-500 mx-auto my-1"></div>
-                <div className="text-xs bg-white/15 px-2.5 py-1 rounded-lg inline-block text-amber-300 font-extrabold mt-1">
-                  服务大厅内网互联中台
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <h5 className="font-extrabold text-slate-700 text-xs flex items-center gap-1.5 pl-1">
-                  <span className="w-1 h-3 bg-indigo-600 rounded-full"></span>
-                  <span>常用数字网络服务节点</span>
-                </h5>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { title: '一键网上立案', desc: 'OCR自动解析识别申诉材料', icon: 'fa-cloud-arrow-up', link: 'https://www.gzac.org/' },
-                    { title: '智慧裁决辅助', desc: '审判要素抽取及自动生成', icon: 'fa-microchip', link: 'https://www.gzac.org/' },
-                    { title: '云庭开庭入口', desc: '多路异地声纹视频质证', icon: 'fa-video', link: 'https://www.gzac.org/' },
-                    { title: '全国存证查询', desc: '基于信盾CA密钥及公链', icon: 'fa-database', link: 'https://www.gzac.org/' }
-                  ].map((srv, idx) => (
-                    <a
-                      key={idx}
-                      href={srv.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-3 bg-white border border-slate-100 hover:border-indigo-300 rounded-xl flex flex-col justify-between items-start transition-all cursor-pointer group shadow-xs"
-                    >
-                      <i className={`fa-solid ${srv.icon} text-indigo-600 text-xs group-hover:scale-110 transition-transform mb-2`}></i>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-extrabold text-slate-800 block group-hover:text-indigo-600 leading-none">{srv.title}</span>
-                        <span className="text-2xs text-slate-500 block font-medium leading-tight">{srv.desc}</span>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-100 p-2.5 rounded-xl text-xs text-blue-700 flex items-start gap-1.5">
-                <i className="fa-solid fa-circle-info text-blue-500 mt-0.5 flex-shrink-0"></i>
-                <p className="leading-normal font-semibold">
-                  温馨提示：由于平台处于保密测试域环境下运作，以上功能采用专线信道与广州仲裁委核心数据库加密握手。点击将跳转至官方政务系统。
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => setShowOfficialWebModal(false)}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                我知道了
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. 仲裁员须知 */}
+      {/* 3. 仲裁员须知 · iPhone 风格内容弹窗 */}
       {showOpsModal && (
-        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-xs font-bold flex items-center gap-1.5 font-sans">
-                <i className="fa-solid fa-sliders text-violet-400"></i>
-                <span>广州仲裁委员会仲裁员须知</span>
-              </span>
-              <button 
-                onClick={() => setShowOpsModal(false)}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-550 leading-relaxed no-scrollbar flex-1 font-sans">
-              <div className="space-y-3.5">
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-user-tie text-indigo-600"></i>
-                  <span>一、职业操守与勤勉审理</span>
-                </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员应当独立、公正、廉洁审判。在案件分配及审理各个阶段，需维护仲裁程序的保密性，高效推动言词辩论、质证等程序。
-                </p>
+        <IOSModal
+          title="广州仲裁委员会仲裁员须知"
+          onClose={() => setShowOpsModal(false)}
+          overlayClassName="fixed inset-0 z-[70]"
+          footer={<IOSModalButton onClick={() => setShowOpsModal(false)}>已全部知悉并掌握</IOSModalButton>}
+        >
+          <div className="space-y-4 text-sm text-slate-550 leading-relaxed font-sans text-left">
+            <div className="space-y-3.5">
+              <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                <i className="fa-solid fa-user-tie text-indigo-600"></i>
+                <span>一、职业操守与勤勉审理</span>
+              </h5>
+              <p className="text-xs leading-relaxed text-justify">
+                仲裁员应当独立、公正、廉洁审判。在案件分配及审理各个阶段，需维护仲裁程序的保密性，高效推动言词辩论、质证等程序。
+              </p>
 
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-shield-halved text-indigo-600"></i>
-                  <span>二、回避义务与合议规范</span>
-                </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员如遇可能影响案件独立、公正审裁的情况，须第一时间内履行披露甚至主动回避义务。合议庭讨论必须于保密线上非公开渠道闭门进行。
-                </p>
+              <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                <i className="fa-solid fa-shield-halved text-indigo-600"></i>
+                <span>二、回避义务与合议规范</span>
+              </h5>
+              <p className="text-xs leading-relaxed text-justify">
+                仲裁员如遇可能影响案件独立、公正审裁的情况，须第一时间内履行披露甚至主动回避义务。合议庭讨论必须于保密线上非公开渠道闭门进行。
+              </p>
 
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-square-poll-vertical text-indigo-600"></i>
-                  <span>三、智能审评辅助使用建议</span>
-                </h5>
-                <p className="text-xs leading-relaxed text-justify">
-                  仲裁员可通过穗仲数字化审判工作台进行智能格式校验、证据要素一键归类提取与电子签名，以达到缩短案审流程，最优化推进快速结案。
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => setShowOpsModal(false)}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                已全部知悉并掌握
-              </button>
+              <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+                <i className="fa-solid fa-square-poll-vertical text-indigo-600"></i>
+                <span>三、智能审评辅助使用建议</span>
+              </h5>
+              <p className="text-xs leading-relaxed text-justify">
+                仲裁员可通过穗仲数字化审判工作台进行智能格式校验、证据要素一键归类提取与电子签名，以达到缩短案审流程，最优化推进快速结案。
+              </p>
             </div>
           </div>
-        </div>
+        </IOSModal>
       )}
 
       {/* 5. VIRTUAL DIGITAL COURTROOM SYSTEM */}
@@ -1149,17 +1056,20 @@ export default function Workbench({
 
           </div>
 
-          {/* SIGNATURE PAD OVERLAY POPUP MODAL */}
+          {/* SIGNATURE PAD OVERLAY POPUP MODAL · iPhone 风格深色弹窗 */}
           {isSigningMode && (
-            <div className="fixed inset-0 bg-[#0B0F19]/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-fade-in">
-              <div className="bg-[#111827] border border-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl relative space-y-4">
-                
+            <IOSModal
+              tone="dark"
+              title="CA数字防伪笔录签署"
+              onClose={() => setIsSigningMode(false)}
+              overlayClassName="fixed inset-0 z-[100]"
+            >
+              <div className="space-y-4 text-left">
                 {/* Header info */}
                 <div className="space-y-0.5">
                   <span className="text-2xs bg-amber-500/10 text-[#F59E0B] border border-amber-500/30 px-2.5 py-1 rounded font-black font-mono">
                     CA CERTIFICATE SHIELD
                   </span>
-                  <h3 className="text-sm font-black text-white pt-1">CA数字防伪笔录签署</h3>
                   <p className="text-xs text-slate-500 leading-normal">
                     您正在对刚才结束的 <strong>《(2026)穗仲案字第0521号》</strong> 合议及开庭笔录进行最终防伪签注确认。
                   </p>
@@ -1177,8 +1087,8 @@ export default function Workbench({
                         已经联存至广州仲裁委员会信托数据池，防伪签注编号及事务哈希：<span className="font-mono text-indigo-300 block font-black">0xBF92AA82DD1C09</span>
                       </p>
                     </div>
-                    
-                    <button 
+
+                    <button
                       onClick={() => {
                         setActiveVirtualCourtId(null);
                         setIsSigningMode(false);
@@ -1195,7 +1105,7 @@ export default function Workbench({
                     <div className="bg-[#0B0F19] rounded-2xl border border-slate-800 h-28 flex flex-col items-center justify-center relative overflow-hidden group shadow-inner">
                       {/* background mockup signature display */}
                       <span className="text-xs text-slate-600 italic select-none">请在手写区签字或点击下方指纹秒签</span>
-                      
+
                       {/* Signature graphic simulation lines */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <svg className="w-40 h-20 text-indigo-400 opacity-60 font-sans pointer-events-none" viewBox="0 0 100 50">
@@ -1210,13 +1120,13 @@ export default function Workbench({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => setIsSigningMode(false)}
                         className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-500 font-bold py-2 text-xs rounded-xl transition-colors cursor-pointer"
                       >
                         返回法庭
                       </button>
-                      <button 
+                      <button
                         onClick={() => {
                           setIsSigningFinish(true);
                         }}
@@ -1228,9 +1138,8 @@ export default function Workbench({
                     </div>
                   </div>
                 )}
-
               </div>
-            </div>
+            </IOSModal>
           )}
 
         </div>

@@ -5,6 +5,7 @@ import {
   Phone, Mail, Home, Edit3, Star, Wallet
 } from 'lucide-react';
 import { ArbitratorProfile } from '../types';
+import { IOSAlert } from './ui/IOSDialog';
 
 export interface PersonalInfo {
   name: string;
@@ -80,7 +81,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
   };
 
   return (
-    <div className="flex-1 bg-slate-50/75 flex flex-col overflow-y-auto no-scrollbar pb-10">
+    <div className="flex-1 bg-slate-50 flex flex-col overflow-y-auto no-scrollbar pb-10">
       {/* Top Professional Header - Inspired by homepage's elegant blue gradient */}
       <div className="bg-gradient-to-b from-[#DCEBFF] via-[#EEF5FF] to-slate-50/10 px-4 pt-6 pb-6 flex-shrink-0 relative overflow-hidden text-left">
         
@@ -101,7 +102,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-15 h-15 rounded-xl bg-gradient-to-br from-[#1E62EC] to-blue-600 flex items-center justify-center border-2 border-white shadow-xs">
+              <div className="w-15 h-15 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center border-2 border-white shadow-xs">
                 <span className="text-xl font-black text-white">{profile.name.charAt(0)}</span>
               </div>
             )}
@@ -125,8 +126,8 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
               <h1 className="text-[17px] font-black text-slate-800 tracking-tight leading-none">
                 {profile.name}
               </h1>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-black bg-white/95 text-[#1E62EC] border border-blue-100/50 shadow-2xs">
-                <Award size={10} className="text-[#1E62EC]" />
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-black bg-white/95 text-indigo-600 border border-blue-100/50 shadow-2xs">
+                <Award size={10} className="text-indigo-600" />
                 {profile.ranking}
               </span>
             </div>
@@ -137,7 +138,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
             {/* Minor specialties badges */}
             <div className="flex flex-wrap gap-1">
               {profile.specialties.map((spec, idx) => (
-                <span key={idx} className="bg-white/80 border border-slate-100 text-[10.5px] font-bold text-[#1E62EC] px-2 py-0.5 rounded-md shadow-2xs">
+                <span key={idx} className="bg-white/80 border border-slate-100 text-[10.5px] font-bold text-indigo-600 px-2 py-0.5 rounded-md shadow-2xs">
                   {spec}
                 </span>
               ))}
@@ -501,39 +502,16 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
       </div>
 
-      {/* Logout Confirmation Dialog Modal */}
+      {/* Logout Confirmation Dialog Modal · iPhone 风格 Alert */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-5">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-5 border border-slate-100 shadow-xl space-y-4 animate-scale-up text-left">
-            <div className="space-y-1">
-              <span className="text-sm bg-red-50 text-red-600 border border-red-100/60 px-2 py-0.5 rounded font-bold font-mono">
-                SECURITY EXIT
-              </span>
-              <h3 className="text-sm font-bold text-slate-800">确认安全退出账号吗？</h3>
-              <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                退出后，系统将清除本地CA联存证明核验口令，再次进入需要重新进行双因子指纹及数字CA盾签注校验。
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-2.5">
-              <button 
-                onClick={() => setShowExitConfirm(false)}
-                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 font-medium py-2.5 text-sm rounded-md transition-all cursor-pointer border border-slate-200"
-              >
-                取消
-              </button>
-              <button 
-                onClick={() => {
-                  setShowExitConfirm(false);
-                  onLogout();
-                }}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 text-sm rounded-xl transition-all cursor-pointer border border-red-500 shadow-md shadow-red-200"
-              >
-                安全退出
-              </button>
-            </div>
-          </div>
-        </div>
+        <IOSAlert
+          title="提示"
+          message="确定退出该账号吗？"
+          actions={[
+            { label: '取消', style: 'cancel', onPress: () => setShowExitConfirm(false) },
+            { label: '退出', style: 'destructive', onPress: () => { setShowExitConfirm(false); onLogout(); } },
+          ]}
+        />
       )}
     </div>
   );

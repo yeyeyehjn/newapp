@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PostponementApproval } from '../types';
-import { Check, X } from 'lucide-react';
+import { IOSAlert } from './ui/IOSDialog';
 
 interface PostponementApprovalDetailProps {
   approval: PostponementApproval;
@@ -237,53 +237,25 @@ export default function PostponementApprovalDetail({
         )}
       </div>
 
-      {/* 确认弹框 */}
+      {/* 确认弹框 · iPhone 风格 Alert */}
       {confirmAction && (
-        <div className="absolute inset-0 z-[150] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl w-[280px] overflow-hidden shadow-2xl animate-scale-up">
-            {/* 图标 + 标题 */}
-            <div className="pt-6 pb-4 px-4 text-center">
-              <div className={`w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center ${
-                confirmAction === 'approve' ? 'bg-emerald-100' : 'bg-rose-100'
-              }`}>
-                {confirmAction === 'approve' ? (
-                  <Check size={24} className="text-emerald-600" />
-                ) : (
-                  <X size={24} className="text-rose-600" />
-                )}
-              </div>
-              <div className="text-base font-bold text-slate-800 mb-1">
-                {confirmAction === 'approve' ? '确认同意延期？' : '确认驳回申请？'}
-              </div>
-              <div className="text-sm text-slate-500">
-                {confirmAction === 'approve'
-                  ? '同意后将通知办案秘书安排延期'
-                  : '驳回后将通知办案秘书重新处理'}
-              </div>
-            </div>
-
-            {/* 确认按钮 */}
-            <div className="border-t border-slate-100 flex">
-              <button
-                onClick={() => setConfirmAction(null)}
-                className="flex-1 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-              >
-                取消
-              </button>
-              <div className="w-px bg-slate-100" />
-              <button
-                onClick={handleConfirmAction}
-                className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                  confirmAction === 'approve'
-                    ? 'text-emerald-600 hover:bg-emerald-50'
-                    : 'text-rose-600 hover:bg-rose-50'
-                }`}
-              >
-                确认
-              </button>
-            </div>
-          </div>
-        </div>
+        <IOSAlert
+          title={confirmAction === 'approve' ? '确认同意延期？' : '确认驳回申请？'}
+          message={
+            confirmAction === 'approve'
+              ? '同意后将通知办案秘书安排延期'
+              : '驳回后将通知办案秘书重新处理'
+          }
+          actions={[
+            { label: '取消', style: 'cancel', onPress: () => setConfirmAction(null) },
+            {
+              label: '确认',
+              style: confirmAction === 'approve' ? 'default' : 'destructive',
+              onPress: handleConfirmAction,
+            },
+          ]}
+          overlayClassName="absolute inset-0 z-[150]"
+        />
       )}
     </div>
   );

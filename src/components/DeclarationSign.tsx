@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { ArrowLeft, User, Phone, Building2, MapPin, FileText, X, Shield, PenTool, RotateCcw, Check } from 'lucide-react';
+import { ArrowLeft, User, Phone, Building2, MapPin, FileText, Shield, PenTool, RotateCcw, Check } from 'lucide-react';
+import { IOSModal, IOSModalButton } from './ui/IOSDialog';
 
 interface DeclarationSignProps {
   caseNo: string;
@@ -530,42 +531,28 @@ export default function DeclarationSign({
         </div>
       )}
 
-      {/* Recusal Reasons Modal */}
+      {/* Recusal Reasons Modal · iPhone 风格内容弹窗 */}
       {showRecusalModal && (
-        <div className="absolute inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl animate-scale-up">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-base">附件：回避事由</h3>
-              <button 
-                onClick={() => setShowRecusalModal(false)} 
-                className="p-1 rounded-full hover:bg-slate-100 text-slate-500 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto text-sm text-slate-600 space-y-3 leading-relaxed">
-              <p className="font-medium text-slate-900">根据《中华人民共和国仲裁法》以及本会仲裁规则，需要回避的事由包括以下情形：</p>
-              <p>1. 本人及配偶、直系亲属与本案当事人、法定代表人、负责人、代理人及其配偶既非直系亲属也非三代以内的旁系亲属；</p>
-              <p>2. 本人及配偶、直系亲属与本案没有利害关系；</p>
-              <p>3. 本人未私自会见过当事人、法定代表人、负责人、代理人，或者接受过当事人、法定代表人、负责人、代理人请客送礼；</p>
-              <p>4. 本人与本案当事人、法定代表人、负责人、代理人现在没有在同一单位工作；</p>
-              <p>5. 本人对本案所涉争议没有向当事人推荐、介绍过代理人；</p>
-              <p>6. 本人对本案所涉争议没有提供过咨询，也没有担任过与本案所涉争议有关案件的证人、鉴定人、勘验人、翻译人员、辩护人、代理人；</p>
-              <p>7. 本会正在审理的其他案件中，本人不存在与本案当事人、代理人同为仲裁员的情形；</p>
-              <p>8. 本人未与本案当事人、代理人有咨询与被咨询、管理与被管理关系，或者担任本案当事人、代理人的代理人、顾问，但至组庭之日有关关系已经结束超过二年的除外；</p>
-              <p>9. 在广州仲裁委员会同时审理的案件或已审结的案件中，本人不存在与本案互为案件的当事人、代理人和仲裁员的情形，但至组庭之日案件已经审结超过二年的除外；</p>
-              <p>10. 以上情形外可能影响本人对本案作出公正裁决的情形。</p>
-            </div>
-            <div className="p-4 border-t border-slate-100">
-              <button 
-                onClick={() => setShowRecusalModal(false)} 
-                className="w-full py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-black transition-colors text-sm"
-              >
-                我已阅读
-              </button>
-            </div>
+        <IOSModal
+          title="附件：回避事由"
+          onClose={() => setShowRecusalModal(false)}
+          overlayClassName="absolute inset-0 z-[60]"
+          footer={<IOSModalButton onClick={() => setShowRecusalModal(false)}>我已阅读</IOSModalButton>}
+        >
+          <div className="text-sm text-slate-600 space-y-3 leading-relaxed">
+            <p className="font-medium text-slate-900">根据《中华人民共和国仲裁法》以及本会仲裁规则，需要回避的事由包括以下情形：</p>
+            <p>1. 本人及配偶、直系亲属与本案当事人、法定代表人、负责人、代理人及其配偶既非直系亲属也非三代以内的旁系亲属；</p>
+            <p>2. 本人及配偶、直系亲属与本案没有利害关系；</p>
+            <p>3. 本人未私自会见过当事人、法定代表人、负责人、代理人，或者接受过当事人、法定代表人、负责人、代理人请客送礼；</p>
+            <p>4. 本人与本案当事人、法定代表人、负责人、代理人现在没有在同一单位工作；</p>
+            <p>5. 本人对本案所涉争议没有向当事人推荐、介绍过代理人；</p>
+            <p>6. 本人对本案所涉争议没有提供过咨询，也没有担任过与本案所涉争议有关案件的证人、鉴定人、勘验人、翻译人员、辩护人、代理人；</p>
+            <p>7. 本会正在审理的其他案件中，本人不存在与本案当事人、代理人同为仲裁员的情形；</p>
+            <p>8. 本人未与本案当事人、代理人有咨询与被咨询、管理与被管理关系，或者担任本案当事人、代理人的代理人、顾问，但至组庭之日有关关系已经结束超过二年的除外；</p>
+            <p>9. 在广州仲裁委员会同时审理的案件或已审结的案件中，本人不存在与本案互为案件的当事人、代理人和仲裁员的情形，但至组庭之日案件已经审结超过二年的除外；</p>
+            <p>10. 以上情形外可能影响本人对本案作出公正裁决的情形。</p>
           </div>
-        </div>
+        </IOSModal>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { TranscriptSignature } from '../types';
 import { PenTool, RotateCcw, Check } from 'lucide-react';
+import { IOSModal, IOSModalButton } from './ui/IOSDialog';
 
 interface TranscriptSignatureDetailProps {
   transcript: TranscriptSignature;
@@ -308,56 +309,35 @@ export default function TranscriptSignatureDetail({
         </div>
       )}
 
-      {/* Preview Modal - absolute 相对于手机框架 */}
+      {/* Preview Modal · iPhone 风格内容弹窗 - absolute 相对于手机框架 */}
       {showPreviewModal && (
-        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-[150] flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
-            {/* Modal Header */}
-            <div className="bg-[#ddecff] px-4 py-3 flex items-center justify-between border-b border-slate-100">
-              <span className="text-sm font-bold text-slate-800">笔录预览</span>
-              <button
-                onClick={() => setShowPreviewModal(false)}
-                className="text-slate-500 hover:text-slate-700 transition-colors"
-              >
-                <i className="fa-solid fa-times"></i>
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                <div className="text-center text-slate-400 py-12">
-                  <i className="fa-solid fa-file-lines text-4xl mb-3"></i>
-                  <p className="text-sm">庭审笔录文件</p>
-                  <p className="text-xs mt-1">{transcript.caseNo}</p>
-                </div>
-              </div>
-
-              {/* Mock Document Content */}
-              <div className="mt-4 text-sm text-slate-600 leading-relaxed space-y-3">
-                <p className="font-bold text-center text-slate-800">广州仲裁委员会庭审笔录</p>
-                <p>案号：{transcript.caseNo}</p>
-                <p>申请人：{transcript.claimant}</p>
-                <p>被申请人：{transcript.respondent}</p>
-                <p>开庭时间：{transcript.hearingTime}</p>
-                <p>办案秘书：{transcript.secretary}</p>
-                <p className="text-xs text-slate-400 mt-4">
-                  （此为笔录预览，实际内容以正式文件为准）
-                </p>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-4 py-3 border-t border-slate-100">
-              <button
-                onClick={() => setShowPreviewModal(false)}
-                className="w-full bg-slate-100 hover:bg-slate-200 rounded-lg py-2.5 text-sm font-medium text-slate-700 transition-colors"
-              >
-                关闭预览
-              </button>
+        <IOSModal
+          title="笔录预览"
+          onClose={() => setShowPreviewModal(false)}
+          overlayClassName="absolute inset-0 z-[150]"
+          footer={<IOSModalButton variant="default" onClick={() => setShowPreviewModal(false)}>关闭预览</IOSModalButton>}
+        >
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+            <div className="text-center text-slate-400 py-12">
+              <i className="fa-solid fa-file-lines text-4xl mb-3"></i>
+              <p className="text-sm">庭审笔录文件</p>
+              <p className="text-xs mt-1">{transcript.caseNo}</p>
             </div>
           </div>
-        </div>
+
+          {/* Mock Document Content */}
+          <div className="mt-4 text-sm text-slate-600 leading-relaxed space-y-3">
+            <p className="font-bold text-center text-slate-800">广州仲裁委员会庭审笔录</p>
+            <p>案号：{transcript.caseNo}</p>
+            <p>申请人：{transcript.claimant}</p>
+            <p>被申请人：{transcript.respondent}</p>
+            <p>开庭时间：{transcript.hearingTime}</p>
+            <p>办案秘书：{transcript.secretary}</p>
+            <p className="text-xs text-slate-400 mt-4">
+              （此为笔录预览，实际内容以正式文件为准）
+            </p>
+          </div>
+        </IOSModal>
       )}
     </div>
   );

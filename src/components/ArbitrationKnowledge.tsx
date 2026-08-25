@@ -24,7 +24,7 @@ interface ArbitrationKnowledgeProps {
 
 // ===================== 分类配置 =====================
 const CATEGORIES: { id: CategoryId; label: string; icon: string; color: string; bg: string; gradient: string; desc: string }[] = [
-  { id: 'notice', label: '仲裁员须知', icon: 'fa-user-shield', color: 'text-[#1E62EC]', bg: 'bg-blue-50', gradient: 'from-blue-600 to-indigo-700', desc: '资格管理、廉政守则、行为规范等仲裁员执业必读资料' },
+  { id: 'notice', label: '仲裁员须知', icon: 'fa-user-shield', color: 'text-indigo-600', bg: 'bg-blue-50', gradient: 'from-blue-600 to-indigo-700', desc: '资格管理、廉政守则、行为规范等仲裁员执业必读资料' },
   { id: 'guide', label: '审理指引', icon: 'fa-gavel', color: 'text-amber-600', bg: 'bg-amber-50', gradient: 'from-amber-500 to-orange-600', desc: '虚假仲裁防范、在线庭审规范、专业纠纷审理要点' },
   { id: 'case', label: '裁决书及案例', icon: 'fa-scale-balanced', color: 'text-emerald-600', bg: 'bg-emerald-50', gradient: 'from-emerald-500 to-teal-600', desc: '典型裁决书全文、案例评析及裁判要旨参考' },
 ];
@@ -241,7 +241,7 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
           <span className="text-sm">返回</span>
         </button>
         <div className="absolute left-1/2 -translate-x-1/2 text-base font-bold text-slate-800 whitespace-nowrap flex items-center gap-1.5">
-          <i className="fa-solid fa-book-open text-[#1E62EC] text-sm"></i>
+          <i className="fa-solid fa-book-open text-indigo-600 text-sm"></i>
           {view === 'list' ? activeCat.label : '仲裁知识'}
         </div>
       </div>
@@ -250,9 +250,9 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
       {view === 'modules' && (
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-8">
           {/* 简介提示 */}
-          <div className="bg-gradient-to-r from-[#1E62EC]/5 to-indigo-50/60 rounded-xl px-4 py-3 border border-[#1E62EC]/10">
+          <div className="bg-gradient-to-r from-indigo-600/5 to-indigo-50/60 rounded-xl px-4 py-3 border border-indigo-600/10">
             <p className="text-xs text-slate-500 leading-relaxed">
-              <i className="fa-solid fa-circle-info text-[#1E62EC] mr-1"></i>
+              <i className="fa-solid fa-circle-info text-indigo-600 mr-1"></i>
               选择下方模块分类，浏览对应知识库文档。点击文章标题可预览 PDF 全文。
             </p>
           </div>
@@ -308,7 +308,7 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`搜索${activeCat.label}标题、来源、摘要…`}
-                className="w-full pl-9 pr-9 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-[#1E62EC] focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+                className="w-full pl-9 pr-9 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all placeholder:text-slate-400"
               />
               {searchQuery && (
                 <button
@@ -329,11 +329,11 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
                 <div
                   key={article.id}
                   onClick={() => setSelectedArticle(article)}
-                  className="bg-white rounded-lg border border-slate-100 p-3.5 hover:border-[#1E62EC]/30 hover:shadow-md hover:shadow-blue-500/5 transition-all cursor-pointer group"
+                  className="bg-white rounded-lg border border-slate-100 p-3.5 hover:border-indigo-600/30 hover:shadow-md hover:shadow-blue-500/5 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h4 className="text-base font-bold text-slate-800 group-hover:text-[#1E62EC] transition-colors leading-snug flex-1 flex items-start gap-1.5">
-                      <FileText size={14} className="text-[#1E62EC] mt-0.5 flex-shrink-0" />
+                    <h4 className="text-base font-bold text-slate-800 group-hover:text-indigo-600 transition-colors leading-snug flex-1 flex items-start gap-1.5">
+                      <FileText size={14} className="text-indigo-600 mt-0.5 flex-shrink-0" />
                       <span>{article.title}</span>
                     </h4>
                     <i className="fa-solid fa-file-pdf text-red-400 text-lg flex-shrink-0"></i>
@@ -363,7 +363,7 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
                 <span className="text-xs text-slate-400">尝试更换关键词</span>
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="mt-1 px-3 py-1.5 bg-[#1E62EC] text-white text-xs rounded-lg cursor-pointer hover:bg-[#174FCE] transition-colors font-semibold"
+                  className="mt-1 px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg cursor-pointer hover:bg-indigo-700 transition-colors font-semibold"
                 >
                   清空搜索
                 </button>
@@ -463,12 +463,12 @@ function PdfViewer({ article, userName, onClose }: PdfViewerProps) {
       ) : loading ? (
         /* 加载中状态 - 高效加载机制展示 */
         <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-white">
-          <Loader2 size={40} className="text-[#1E62EC] animate-spin mb-4" />
+          <Loader2 size={40} className="text-indigo-600 animate-spin mb-4" />
           <h4 className="text-sm font-bold mb-1">正在加载文档…</h4>
           <p className="text-xs text-slate-400 mb-4">采用分块流式加载，避免大文件卡顿</p>
           <div className="w-56 h-1.5 bg-slate-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#1E62EC] to-sky-400 rounded-full transition-all duration-150"
+              className="h-full bg-gradient-to-r from-indigo-600 to-sky-400 rounded-full transition-all duration-150"
               style={{ width: `${loadProgress}%` }}
             ></div>
           </div>
@@ -561,7 +561,7 @@ function PdfViewer({ article, userName, onClose }: PdfViewerProps) {
             {/* 下载 */}
             <button
               onClick={() => alert(`已发起《${article.title}》的加密下载请求，下载链接将发送至您的注册邮箱。`)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#1E62EC] text-white text-xs hover:bg-[#174FCE] cursor-pointer transition-colors font-semibold"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white text-xs hover:bg-indigo-700 cursor-pointer transition-colors font-semibold"
               title="加密下载"
             >
               <Download size={13} />

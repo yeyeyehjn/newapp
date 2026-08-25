@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, FileText, DollarSign, User, CheckCircle2, Clock, X } from 'lucide-react';
+import { IOSModal, IOSModalButton } from './ui/IOSDialog';
 
 interface RemunerationItem {
   id: string;
@@ -160,81 +161,60 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
         )}
       </div>
 
-      {/* Remuneration Rules Modal */}
+      {/* Remuneration Rules Modal · iPhone 风格内容弹窗 */}
       {showRulesModal && (
-        <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-xs z-[70] flex items-center justify-center p-4 animate-fade-in text-left">
-          <div className="bg-white rounded-3xl w-full max-w-sm max-h-[460px] flex flex-col overflow-hidden shadow-2xl border border-slate-100">
-            <div className="bg-indigo-900 text-white p-4 flex justify-between items-center">
-              <span className="text-sm font-bold flex items-center gap-2 font-sans">
-                <FileText size={16} className="text-amber-400" />
-                <span>仲裁员报酬管理规则</span>
-              </span>
-              <button
-                onClick={() => setShowRulesModal(false)}
-                className="text-indigo-200 hover:text-white cursor-pointer hover:bg-indigo-800 p-1.5 rounded-lg text-sm"
-              >
-                <X size={16} />
-              </button>
+        <IOSModal
+          title="仲裁员报酬管理规则"
+          onClose={() => setShowRulesModal(false)}
+          overlayClassName="absolute inset-0 z-[70]"
+          footer={<IOSModalButton onClick={() => setShowRulesModal(false)}>已知悉</IOSModalButton>}
+        >
+          <div className="space-y-3.5 text-sm leading-relaxed font-sans">
+            <div className="bg-indigo-50/60 rounded-lg p-3 border border-indigo-100/60">
+              <p className="text-sm leading-relaxed text-justify text-text-secondary">
+                依据《广州仲裁委员会仲裁员报酬管理规则》，综合仲裁员的履职情况、办案效率、办案质量等因素，仲裁员报酬按照以下规则计算：
+              </p>
             </div>
 
-            <div className="p-5 overflow-y-auto space-y-4 text-sm text-slate-600 leading-relaxed no-scrollbar flex-1 font-sans">
-              <div className="space-y-3.5">
-                <div className="bg-indigo-50/60 rounded-lg p-3 border border-indigo-100/60">
-                  <p className="text-xs leading-relaxed text-justify text-slate-600">
-                    依据《广州仲裁委员会仲裁员报酬管理规则》，综合仲裁员的履职情况、办案效率、办案质量等因素，仲裁员报酬按照以下规则计算：
-                  </p>
-                </div>
+            <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+              <i className="fa-solid fa-arrow-up text-emerald-500"></i>
+              <span>报酬上浮情形</span>
+            </h5>
+            <ul className="text-sm leading-relaxed space-y-2 pl-1">
+              <li className="flex gap-1.5">
+                <span className="text-emerald-600 font-bold shrink-0">（一）</span>
+                <span>在规定二分之一审限内提前结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="text-emerald-600 font-bold shrink-0">（二）</span>
+                <span>开庭后调解结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
+              </li>
+            </ul>
 
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-arrow-up text-emerald-500"></i>
-                  <span>报酬上浮情形</span>
-                </h5>
-                <ul className="text-xs leading-relaxed space-y-2 pl-1">
-                  <li className="flex gap-1.5">
-                    <span className="text-emerald-600 font-bold shrink-0">（一）</span>
-                    <span>在规定二分之一审限内提前结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="text-emerald-600 font-bold shrink-0">（二）</span>
-                    <span>开庭后调解结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
-                  </li>
-                </ul>
-
-                <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
-                  <i className="fa-solid fa-arrow-down text-rose-500"></i>
-                  <span>报酬下降情形</span>
-                </h5>
-                <ul className="text-xs leading-relaxed space-y-2.5 pl-1">
-                  <li className="flex gap-1.5">
-                    <span className="text-rose-500 font-bold shrink-0">（三）</span>
-                    <span>独任仲裁员无正当理由不制作裁决书的（金融案除外），基础值<span className="text-rose-500 font-bold">下降20%</span></span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="text-rose-500 font-bold shrink-0">（四）</span>
-                    <span>仲裁员因自身原因未能在审限内结案的，延期1个月的，基础值<span className="text-rose-500 font-bold">下降2%</span>，延期2个月的，<span className="text-rose-500 font-bold">下降4%</span>，延期3个月的，<span className="text-rose-500 font-bold">下降6%</span>。以此类推，下降幅度以<span className="text-rose-500 font-bold">20%为限</span>。延期时间累计超过6个月及以上的，仲裁员报酬在基础值下降以外，应当同时<span className="text-rose-500 font-bold">停止该仲裁员案件的指派</span>。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="text-rose-500 font-bold shrink-0">（五）</span>
-                    <span>仲裁员距离开庭日、合议日不足3个工作日无故修改开庭、合议的时间，或无故缺席的，基础值<span className="text-rose-500 font-bold">下降5%</span>；无正当理由超3个工作日不发表合议意见的，基础值<span className="text-rose-500 font-bold">下降5%</span>。无故超2个工作日不签发裁决书的，基础值<span className="text-rose-500 font-bold">下降5%</span>。</span>
-                  </li>
-                  <li className="flex gap-1.5">
-                    <span className="text-rose-500 font-bold shrink-0">（六）</span>
-                    <span>开庭时出现未着正装、迟到、打电话、中途离场等违反仲裁员职业操守行为或违反仲裁员视频庭审行为规范的行为，基础值<span className="text-rose-500 font-bold">下降20%</span></span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-3 h-14 flex items-center justify-end border-t border-slate-100 flex-shrink-0">
-              <button
-                onClick={() => setShowRulesModal(false)}
-                className="bg-indigo-600 text-white font-extrabold p-2 px-5 text-xs rounded-xl hover:bg-indigo-700 cursor-pointer shadow-sm shadow-indigo-600/30"
-              >
-                已知悉
-              </button>
-            </div>
+            <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+              <i className="fa-solid fa-arrow-down text-rose-500"></i>
+              <span>报酬下降情形</span>
+            </h5>
+            <ul className="text-sm leading-relaxed space-y-2.5 pl-1">
+              <li className="flex gap-1.5">
+                <span className="text-rose-500 font-bold shrink-0">（三）</span>
+                <span>独任仲裁员无正当理由不制作裁决书的（金融案除外），基础值<span className="text-rose-500 font-bold">下降20%</span></span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="text-rose-500 font-bold shrink-0">（四）</span>
+                <span>仲裁员因自身原因未能在审限内结案的，延期1个月的，基础值<span className="text-rose-500 font-bold">下降2%</span>，延期2个月的，<span className="text-rose-500 font-bold">下降4%</span>，延期3个月的，<span className="text-rose-500 font-bold">下降6%</span>。以此类推，下降幅度以<span className="text-rose-500 font-bold">20%为限</span>。延期时间累计超过6个月及以上的，仲裁员报酬在基础值下降以外，应当同时<span className="text-rose-500 font-bold">停止该仲裁员案件的指派</span>。</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="text-rose-500 font-bold shrink-0">（五）</span>
+                <span>仲裁员距离开庭日、合议日不足3个工作日无故修改开庭、合议的时间，或无故缺席的，基础值<span className="text-rose-500 font-bold">下降5%</span>；无正当理由超3个工作日不发表合议意见的，基础值<span className="text-rose-500 font-bold">下降5%</span>。无故超2个工作日不签发裁决书的，基础值<span className="text-rose-500 font-bold">下降5%</span>。</span>
+              </li>
+              <li className="flex gap-1.5">
+                <span className="text-rose-500 font-bold shrink-0">（六）</span>
+                <span>开庭时出现未着正装、迟到、打电话、中途离场等违反仲裁员职业操守行为或违反仲裁员视频庭审行为规范的行为，基础值<span className="text-rose-500 font-bold">下降20%</span></span>
+              </li>
+            </ul>
           </div>
-        </div>
+        </IOSModal>
       )}
     </div>
   );

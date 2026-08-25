@@ -5,6 +5,7 @@ import {
   ChevronRight, Fingerprint, ShieldCheck, Sparkles, X, ChevronLeft
 } from 'lucide-react';
 import { Task, Case } from '../types';
+import { IOSModal } from './ui/IOSDialog';
 
 interface TaskCenterProps {
   tasks: Task[];
@@ -588,7 +589,7 @@ export default function TaskCenter({
                       </button>
                       <button
                         onClick={() => handleExtensionDecision(ext.id, 'approved')}
-                        className="flex-1 bg-[#1E40AF] hover:bg-[#1E40AF]/95 text-white font-heavy py-2 text-xs rounded-xl transition-colors cursor-pointer text-center shadow-sm"
+                        className="flex-1 bg-indigo-700 hover:bg-indigo-700/95 text-white font-heavy py-2 text-xs rounded-xl transition-colors cursor-pointer text-center shadow-sm"
                       >
                         审批通过并按期扣除
                       </button>
@@ -651,16 +652,19 @@ export default function TaskCenter({
 
         </div>
 
-        {/* TRANSCRIPT SIGNING FLOATING OVERLAY MODAL */}
+        {/* TRANSCRIPT SIGNING FLOATING OVERLAY MODAL · iPhone 风格内容弹窗 */}
         {signingTranscriptId && (
-          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-            <div className="bg-white border rounded-3xl max-w-sm w-full p-5 shadow-2xl relative space-y-4 animate-scale-up text-slate-800 text-left">
-              
+          <IOSModal
+            title="庭审笔录签章确认"
+            onClose={() => setSigningTranscriptId(null)}
+            overlayClassName="fixed inset-0 z-[110]"
+          >
+            <div className="space-y-4 text-slate-800 text-left">
+
               <div className="space-y-0.5">
-                <span className="text-2xs bg-[#1E40AF]/10 text-[#1E40AF] border border-[#1E40AF]/30 px-2 py-1 rounded font-black font-mono">
+                <span className="text-2xs bg-indigo-700/10 text-indigo-700 border border-indigo-700/30 px-2 py-1 rounded font-black font-mono">
                   CA TRANSCRIPT SIGN SHIELD
                 </span>
-                <h3 className="text-sm font-black text-slate-900 pt-1">庭审数字笔录一键印章</h3>
                 <p className="text-xs text-slate-500 leading-normal">
                   您正在对刚才结束庭审笔录（加密多端CA存证）进行最终签章确认：
                 </p>
@@ -696,7 +700,7 @@ export default function TaskCenter({
                         />
                         <button
                           onClick={handleVerifyPIN}
-                          className="bg-[#1E40AF] hover:bg-[#1E40AF]/90 text-white font-heavy p-1 px-4 text-xs rounded-xl cursor-pointer"
+                          className="bg-indigo-700 hover:bg-indigo-700/90 text-white font-heavy p-1 px-4 text-xs rounded-xl cursor-pointer"
                         >
                           验证
                         </button>
@@ -768,7 +772,7 @@ export default function TaskCenter({
               )}
 
             </div>
-          </div>
+          </IOSModal>
         )}
 
       </div>
@@ -868,7 +872,7 @@ export default function TaskCenter({
                           />
                           <button
                             onClick={handleVerifyPIN}
-                            className="bg-[#1E40AF] text-white font-extrabold p-1 px-4 text-xs rounded-xl hover:bg-[#1E40AF]/95 cursor-pointer shadow-sm"
+                            className="bg-indigo-700 text-white font-extrabold p-1 px-4 text-xs rounded-xl hover:bg-indigo-700/95 cursor-pointer shadow-sm"
                           >
                             验证授权
                           </button>
@@ -888,7 +892,7 @@ export default function TaskCenter({
                             </button>
                             <button
                               onClick={() => setSignatureMode('draw')}
-                              className={`p-1 px-2 text-xs font-extrabold rounded ${signatureMode === 'draw' ? 'bg-indigo-50 text-indigo-600 border border-[#1E40AF]/20' : 'bg-slate-100 text-slate-500'}`}
+                              className={`p-1 px-2 text-xs font-extrabold rounded ${signatureMode === 'draw' ? 'bg-indigo-50 text-indigo-600 border border-indigo-700/20' : 'bg-slate-100 text-slate-500'}`}
                             >
                               手绘盖印格式
                             </button>
@@ -959,9 +963,9 @@ export default function TaskCenter({
                     >
                       <div className="flex items-center space-x-2">
                         <div className={`h-4.5 w-4.5 rounded-full border flex items-center justify-center ${
-                          selectedScheduleChoice === idx ? 'border-[#1E40AF] text-[#1E40AF]' : 'border-slate-300'
+                          selectedScheduleChoice === idx ? 'border-indigo-700 text-indigo-700' : 'border-slate-300'
                         }`}>
-                          {selectedScheduleChoice === idx && <div className="h-2 w-2 bg-[#1E40AF] rounded-full"></div>}
+                          {selectedScheduleChoice === idx && <div className="h-2 w-2 bg-indigo-700 rounded-full"></div>}
                         </div>
                         <span className="font-semibold text-slate-800 leading-tight">{choice}</span>
                       </div>
@@ -981,7 +985,7 @@ export default function TaskCenter({
                   className={`w-full font-heavy p-3 text-xs rounded-xl transition-all ${
                     selectedScheduleChoice === null
                     ? 'bg-slate-200 text-slate-500'
-                    : 'bg-[#1E40AF] text-white hover:bg-[#1E40AF]/95 shadow-md shadow-[#1E40AF]/20'
+                    : 'bg-indigo-700 text-white hover:bg-indigo-700/95 shadow-md shadow-indigo-700/20'
                   }`}
                 >
                   确认选用该时段并呈报书记员
@@ -1053,7 +1057,7 @@ export default function TaskCenter({
 
   // Primary Overview screen containing the 5 beautiful stats blocks matching arbitrator-todo.html exactly
   return (
-    <div className="flex-1 bg-slate-100 flex flex-col overflow-hidden relative">
+    <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden relative">
       
       
 

@@ -191,6 +191,9 @@ export default function PostponementApprovalPage({
                     ) : null}
                     <span className="truncate">{a.caseNo}</span>
                   </span>
+                  <span className={`text-sm p-0.5 px-1.5 rounded border flex-shrink-0 ${getStatusStyle(a.status)}`}>
+                    {getStatusLabel(a.status)}
+                  </span>
                 </div>
 
                 <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">

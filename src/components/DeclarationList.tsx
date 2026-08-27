@@ -215,9 +215,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
                       >
                         {selectedIds.has(d.id) && <Check size={12} strokeWidth={3.5} />}
                       </button>
-                    ) : (
-                      <span className="w-5 flex-shrink-0"></span>
-                    )}
+                    ) : null}
                     <span className="truncate">{d.caseNo}</span>
                   </span>
                   <span className={`text-sm p-0.5 px-1.5 rounded border flex-shrink-0 ${statusColorClass}`}>

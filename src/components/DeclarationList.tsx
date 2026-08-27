@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ArrowLeft, FileText, AlertCircle, User, Building2, Clock, CheckCircle2 } from 'lucide-react';
+import { Search, FileText, AlertCircle, Building2, Check, Clock, CheckCircle2 } from 'lucide-react';
+import { IOSAlert } from './ui/IOSDialog';
 
 interface DeclarationItem {
   id: string;
@@ -20,9 +21,11 @@ interface DeclarationListProps {
 export default function DeclarationList({ onBack, onSelectItem }: DeclarationListProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'pending' | 'signed'>('pending');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
 
   // Mock data for declarations
-  const declarations: DeclarationItem[] = [
+  const [declarations, setDeclarations] = useState<DeclarationItem[]>([
     {
       id: 'dec-1',
       caseNo: '(2026)穗仲案字第0325号',
@@ -80,7 +83,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
       status: 'signed',
       signedDate: '2026-05-10'
     }
-  ];
+  ]);
 
   const statusTabs: { label: string; value: 'pending' | 'signed' }[] = [
     { label: '待签署', value: 'pending' },
@@ -109,6 +112,32 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
     });
   }, [declarations, statusFilter, searchQuery]);
 
+  // 勾选/取消勾选某条待审批记录
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // 切换状态 Tab 时清空已选
+  const handleSelectTab = (value: 'pending' | 'signed') => {
+    setStatusFilter(value);
+    setSelectedIds(new Set());
+  };
+
+  // 一键审批：将所选待签承诺书置为已签署
+  const handleBatchApprove = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    setDeclarations(prev => prev.map(d =>
+      selectedIds.has(d.id) ? { ...d, status: 'signed', signedDate: today } : d
+    ));
+    setSelectedIds(new Set());
+    setShowApproveConfirm(false);
+  };
+
   return (
     <div className="absolute inset-0 bg-slate-50 z-50 flex flex-col animate-slide-in text-left">
       {/* Header - 微信小程序子页面返回样式 */}
@@ -125,16 +154,33 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
 
       {/* Search Stick Area */}
       <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
-        {/* Search Input */}
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索案号、当事人、办案秘书..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
-          />
+        <div className="flex gap-2 items-center">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索案号、当事人、办案秘书..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
+            />
+          </div>
+          {/* 一键审批 */}
+          <button
+            onClick={() => setShowApproveConfirm(true)}
+            disabled={selectedIds.size === 0}
+            className={`rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 cursor-pointer transition-all select-none ${
+              selectedIds.size > 0
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-900/30'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            一键审批
+            {selectedIds.size > 0 && (
+              <span className="bg-white/25 rounded-full px-1.5 text-2xs">{selectedIds.size}</span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -153,12 +199,28 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
                 className="bg-white rounded-lg border border-slate-100 p-4 hover:border-slate-200 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
               >
                 {/* Card Title Bar */}
-                <div className="flex items-center justify-between">
-                  <span className="text-base text-slate-900 group-hover:text-indigo-500 transition-colors flex items-center gap-1.5">
-                    <FileText size={14} className="text-indigo-400" />
-                    {d.caseNo}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-base text-slate-900 group-hover:text-indigo-500 transition-colors flex items-center gap-2 min-w-0">
+                    {d.status === 'pending' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleSelect(d.id); }}
+                        aria-label="选择声明承诺书"
+                        aria-pressed={selectedIds.has(d.id)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer select-none ${
+                          selectedIds.has(d.id)
+                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                            : 'border-slate-300 hover:border-indigo-500'
+                        }`}
+                      >
+                        {selectedIds.has(d.id) && <Check size={12} strokeWidth={3.5} />}
+                      </button>
+                    ) : (
+                      <span className="w-5 flex-shrink-0"></span>
+                    )}
+                    <span className="truncate">{d.caseNo}</span>
                   </span>
-                  <span className={`text-sm p-0.5 px-1.5 rounded border ${statusColorClass}`}>
+                  <span className={`text-sm p-0.5 px-1.5 rounded border flex-shrink-0 ${statusColorClass}`}>
                     {d.status === 'signed' ? '已签署' : '待签署'}
                   </span>
                 </div>
@@ -221,7 +283,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
             return (
               <button
                 key={tab.value}
-                onClick={() => setStatusFilter(tab.value)}
+                onClick={() => handleSelectTab(tab.value)}
                 className={`flex-1 py-4 text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center justify-center gap-2 relative ${
                   isActive
                     ? 'text-indigo-600'
@@ -238,6 +300,19 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
           })}
         </div>
       </div>
+
+      {/* 一键审批确认弹窗 */}
+      {showApproveConfirm && (
+        <IOSAlert
+          title="一键审批"
+          message={`确认审批通过所选 ${selectedIds.size} 份待签署声明承诺书？`}
+          overlayClassName="absolute inset-0 z-[70]"
+          actions={[
+            { label: '取消', style: 'cancel', onPress: () => setShowApproveConfirm(false) },
+            { label: '确认审批', style: 'default', onPress: handleBatchApprove },
+          ]}
+        />
+      )}
     </div>
   );
 }

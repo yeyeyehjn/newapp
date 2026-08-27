@@ -200,6 +200,30 @@ export default function App() {
     setSelectedApproval(null);
   };
 
+  // 延期审批列表内的快捷审批更新（不跳转离开列表）
+  const updateApprovalListStatus = (approvalId: string, status: 'approved' | 'rejected', comment: string) => {
+    setPostponementApprovals(prev =>
+      prev.map(a => a.id === approvalId ? {
+        ...a,
+        status,
+        approvedTime: new Date().toISOString(),
+        flowRecords: [...a.flowRecords, {
+          operator: '仲裁员 张明',
+          time: new Date().toISOString(),
+          status,
+          comment
+        }]
+      } : a)
+    );
+  };
+  const handleQuickApprovePostponement = (approvalId: string) =>
+    updateApprovalListStatus(approvalId, 'approved', '同意延期申请');
+  const handleQuickRejectPostponement = (approvalId: string) =>
+    updateApprovalListStatus(approvalId, 'rejected', '退回上一级');
+  const handleBatchApprovePostponement = (ids: string[]) => {
+    ids.forEach(id => updateApprovalListStatus(id, 'approved', '同意延期申请'));
+  };
+
   if (!isLoggedIn) {
     return (
       <MiniProgramContainer>
@@ -303,6 +327,9 @@ export default function App() {
               setActiveSubPage('postponementApprovalDetail');
             }}
             onBack={handleBackFromSubPage}
+            onQuickApprove={handleQuickApprovePostponement}
+            onQuickReject={handleQuickRejectPostponement}
+            onBatchApprove={handleBatchApprovePostponement}
           />
         )}
 
@@ -541,8 +568,9 @@ export default function App() {
         )}
       </div>
 
-      {/* WeChat Mini Program Styled Bottom Navigation Bar */}
-      <div className="h-14 bg-white border-t border-slate-100 flex items-center justify-around select-none z-40 flex-shrink-0">
+      {/* WeChat Mini Program Styled Bottom Navigation Bar（子页面激活时隐藏） */}
+      {!activeSubPage && (
+        <div className="h-14 bg-white border-t border-slate-100 flex items-center justify-around select-none z-40 flex-shrink-0">
         {[
           { label: '首页', icon: 'fa-house', index: 0 },
           { label: '案件', icon: 'fa-folder-open', index: 1 },
@@ -578,6 +606,7 @@ export default function App() {
           );
         })}
       </div>
+      )}
     </MiniProgramContainer>
   );
 }

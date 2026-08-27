@@ -1,20 +1,30 @@
 import React, { useState, useMemo } from 'react';
-import { Search, AlertCircle, Building2, FileText, Clock, Calendar, CheckCircle2 } from 'lucide-react';
+import { Search, AlertCircle, Building2, FileText, Clock, Check, CheckCircle2 } from 'lucide-react';
+import { IOSAlert } from './ui/IOSDialog';
 import { PostponementApproval } from '../types';
 
 interface PostponementApprovalPageProps {
   approvals: PostponementApproval[];
   onSelectApproval: (approval: PostponementApproval) => void;
   onBack: () => void;
+  onQuickApprove: (approvalId: string) => void;
+  onQuickReject: (approvalId: string) => void;
+  onBatchApprove: (ids: string[]) => void;
 }
 
 export default function PostponementApprovalPage({
   approvals,
   onSelectApproval,
-  onBack
+  onBack,
+  onQuickApprove,
+  onQuickReject,
+  onBatchApprove
 }: PostponementApprovalPageProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'pending' | 'done'>('pending');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{ approval: PostponementApproval; type: 'approve' | 'reject' } | null>(null);
 
   // Status Tabs Definition
   const statusTabs: { label: string; value: 'pending' | 'done' }[] = [
@@ -45,6 +55,37 @@ export default function PostponementApprovalPage({
       return true;
     });
   }, [approvals, statusFilter, searchQuery]);
+
+  // 勾选/取消勾选某条待审批记录
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // 切换状态 Tab 时清空已选
+  const handleSelectTab = (value: 'pending' | 'done') => {
+    setStatusFilter(value);
+    setSelectedIds(new Set());
+  };
+
+  // 一键审批：批量通过所选延期审批
+  const handleBatchApprove = () => {
+    onBatchApprove(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setShowApproveConfirm(false);
+  };
+
+  // 快捷操作确认（同意 / 退回上一级）
+  const handleConfirmAction = () => {
+    if (!confirmAction) return;
+    if (confirmAction.type === 'approve') onQuickApprove(confirmAction.approval.id);
+    else onQuickReject(confirmAction.approval.id);
+    setConfirmAction(null);
+  };
 
   // Get status badge style
   const getStatusStyle = (status: 'pending' | 'approved' | 'rejected') => {
@@ -92,15 +133,32 @@ export default function PostponementApprovalPage({
 
       {/* Search Stick Area */}
       <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 shadow-sm shadow-slate-900/5 z-10 w-full">
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="搜索案号、当事人、办案秘书..."
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
-          />
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="搜索案号、当事人、办案秘书..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder:text-slate-500"
+            />
+          </div>
+          {/* 一键审批 */}
+          <button
+            onClick={() => setShowApproveConfirm(true)}
+            disabled={selectedIds.size === 0}
+            className={`rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 cursor-pointer transition-all select-none ${
+              selectedIds.size > 0
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-900/30'
+                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            一键审批
+            {selectedIds.size > 0 && (
+              <span className="bg-white/25 rounded-full px-1.5 text-2xs">{selectedIds.size}</span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -114,13 +172,24 @@ export default function PostponementApprovalPage({
                 onClick={() => onSelectApproval(a)}
                 className="bg-white rounded-lg border border-slate-100 p-4 hover:border-slate-200 transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-base text-slate-900 group-hover:text-indigo-500 transition-colors flex items-center gap-1.5">
-                    <FileText size={14} className="text-indigo-400" />
-                    {a.caseNo}
-                  </span>
-                  <span className={`text-sm p-0.5 px-1.5 rounded border ${getStatusStyle(a.status)}`}>
-                    {getStatusLabel(a.status)}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-base text-slate-900 group-hover:text-indigo-500 transition-colors flex items-center gap-2 min-w-0">
+                    {a.status === 'pending' ? (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleSelect(a.id); }}
+                        aria-label="选择延期审批"
+                        aria-pressed={selectedIds.has(a.id)}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer select-none ${
+                          selectedIds.has(a.id)
+                            ? 'bg-indigo-600 border-indigo-600 text-white'
+                            : 'border-slate-300 hover:border-indigo-500'
+                        }`}
+                      >
+                        {selectedIds.has(a.id) && <Check size={12} strokeWidth={3.5} />}
+                      </button>
+                    ) : null}
+                    <span className="truncate">{a.caseNo}</span>
                   </span>
                 </div>
 
@@ -145,21 +214,31 @@ export default function PostponementApprovalPage({
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁员</span>
                     <span className="text-slate-700 flex-1 text-left">{a.arbitrator}</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Clock size={12} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">原开庭</span>
-                    <span className="text-slate-700 flex-1 text-left">{a.originalHearingTime}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Calendar size={12} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">申请延期</span>
-                    <span className="text-indigo-600 font-bold flex-1 text-left">{a.requestedTime}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <FileText size={12} className="text-rose-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-slate-500 w-14 flex-shrink-0 text-left mt-0.5">延期原因</span>
-                    <span className="text-slate-700 flex-1 text-left">{a.reason}</span>
-                  </div>
+
+                  {/* 快捷操作：左右两栏，按钮居中 */}
+                  {a.status === 'pending' && (
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-100 mt-1">
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setConfirmAction({ approval: a, type: 'reject' }); }}
+                          className="text-base text-rose-500 hover:text-rose-500 transition-colors cursor-pointer select-none py-2 px-1"
+                        >
+                          退回上一级
+                        </button>
+                      </div>
+                      <div className="flex justify-center">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); setConfirmAction({ approval: a, type: 'approve' }); }}
+                          className="text-base font-medium text-indigo-600 hover:text-indigo-700 transition-colors cursor-pointer select-none py-2 px-1 flex items-center gap-1"
+                        >
+                          <Check size={14} strokeWidth={3} />
+                          同意
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -188,7 +267,7 @@ export default function PostponementApprovalPage({
             return (
               <button
                 key={tab.value}
-                onClick={() => setStatusFilter(tab.value)}
+                onClick={() => handleSelectTab(tab.value)}
                 className={`flex-1 py-4 text-sm font-medium whitespace-nowrap cursor-pointer transition-all flex items-center justify-center gap-2 relative ${
                   isActive
                     ? 'text-indigo-600'
@@ -205,6 +284,40 @@ export default function PostponementApprovalPage({
           })}
         </div>
       </div>
+
+      {/* 一键审批确认弹窗 */}
+      {showApproveConfirm && (
+        <IOSAlert
+          title="一键审批"
+          message={`确认审批通过所选 ${selectedIds.size} 条延期审批？`}
+          overlayClassName="absolute inset-0 z-[70]"
+          actions={[
+            { label: '取消', style: 'cancel', onPress: () => setShowApproveConfirm(false) },
+            { label: '确认审批', style: 'default', onPress: handleBatchApprove },
+          ]}
+        />
+      )}
+
+      {/* 快捷操作确认弹窗（同意 / 退回上一级） */}
+      {confirmAction && (
+        <IOSAlert
+          title={confirmAction.type === 'approve' ? '同意延期' : '退回上一级'}
+          message={
+            confirmAction.type === 'approve'
+              ? `确认同意 ${confirmAction.approval.caseNo} 的延期申请？`
+              : `确认将 ${confirmAction.approval.caseNo} 的延期申请退回上一级？`
+          }
+          overlayClassName="absolute inset-0 z-[70]"
+          actions={[
+            { label: '取消', style: 'cancel', onPress: () => setConfirmAction(null) },
+            {
+              label: confirmAction.type === 'approve' ? '同意' : '确认退回',
+              style: confirmAction.type === 'approve' ? 'default' : 'destructive',
+              onPress: handleConfirmAction,
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

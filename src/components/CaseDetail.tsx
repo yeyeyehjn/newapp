@@ -716,15 +716,15 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             onClick={() => setShowTodoPanel(v => !v)}
             aria-expanded={showTodoPanel}
             aria-label="查看待办信息"
-            className={`relative flex flex-col items-center gap-0.5 text-white border border-white/20 rounded-lg px-2 py-1.5 flex-shrink-0 self-start cursor-pointer transition-colors ${showTodoPanel ? 'bg-white/20' : 'hover:bg-white/15'}`}
+            className={`relative flex items-center gap-1.5 text-white border border-white/20 rounded-lg px-2.5 py-1.5 flex-shrink-0 self-start cursor-pointer transition-colors ${showTodoPanel ? 'bg-white/20' : 'hover:bg-white/15'}`}
           >
             <span className="relative leading-none">
-              <Bell size={18} />
-              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] px-1 text-center leading-[16px]">
+              <Bell size={16} />
+              <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] px-1 text-center leading-[16px]">
                 {caseTodoCount}
               </span>
             </span>
-            <span className="text-2xs leading-tight mt-0.5">待办</span>
+            <span className="text-xs leading-none">待办</span>
           </button>
         </div>
       </div>

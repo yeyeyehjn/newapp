@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, FileText, Download, User, Building2, FileCheck, Sparkles, Shield, Mail, Phone, PenTool, ChevronRight, ChevronDown, Paperclip, Receipt, MessageSquare } from 'lucide-react';
+import { Calendar, FileText, Download, User, Building2, FileCheck, Sparkles, Shield, Mail, Phone, PenTool, ChevronRight, ChevronDown, Paperclip, Receipt, MessageSquare, Bell } from 'lucide-react';
 import { Case } from '../types';
 import { IOSAlert } from './ui/IOSDialog';
 
@@ -354,6 +354,15 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
   const [viewingPdf, setViewingPdf] = useState<{ name: string; size: string; pages: number; signed?: boolean } | null>(null);
   const [isSigning, setIsSigning] = useState(false);
   const [showSignConfirm, setShowSignConfirm] = useState(false);
+  const [showTodoPanel, setShowTodoPanel] = useState(false);
+
+  // 待办数据（Banner 右上角角标 + 待办面板）
+  const caseTodos = [
+    { id: 'award', title: '裁决书待核阅', desc: '仲裁庭已作出裁决，待核阅', target: 'award', count: 1 },
+    { id: 'postpone', title: '延期开庭审批', desc: '有延期开庭申请待处理', target: 'postponementApproval', count: 1 },
+    { id: 'transcript', title: '庭审笔录待签名', desc: '有 2 份笔录等待签名', target: 'transcriptSignature', count: 2 },
+  ] as const;
+  const caseTodoCount = caseTodos.reduce((sum, t) => sum + (t.count ?? 1), 0);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [uploadRemindTarget, setUploadRemindTarget] = useState('');
   const [uploadRemark, setUploadRemark] = useState('');
@@ -682,7 +691,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
       {/* Case Banner - 专业克制风格 */}
       <div className="bg-indigo-600 text-white px-4 py-3.5 flex-shrink-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             {/* 第一行：案号 */}
             <h4 className="text-lg font-bold text-white text-left">
               {caseItem.caseNo}
@@ -701,6 +710,21 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               </span>
             </div>
           </div>
+          {/* 右上角待办入口 */}
+          <button
+            onClick={() => setShowTodoPanel(v => !v)}
+            aria-expanded={showTodoPanel}
+            aria-label="查看待办信息"
+            className={`relative flex flex-col items-center gap-0.5 text-white border border-white/20 rounded-lg px-2 py-1.5 flex-shrink-0 self-start cursor-pointer transition-colors ${showTodoPanel ? 'bg-white/20' : 'hover:bg-white/15'}`}
+          >
+            <span className="relative leading-none">
+              <Bell size={18} />
+              <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] px-1 text-center leading-[16px]">
+                {caseTodoCount}
+              </span>
+            </span>
+            <span className="text-2xs leading-tight mt-0.5">待办</span>
+          </button>
         </div>
       </div>
 
@@ -1730,6 +1754,50 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             },
           ]}
         />
+      )}
+
+      {/* 待办面板（Banner 右上角入口，绝对定位于头部下方） */}
+      {showTodoPanel && (
+        <div className="absolute left-2 right-2 top-[128px] bg-white rounded-xl border border-slate-200 shadow-xl z-[60] overflow-hidden animate-fade-in">
+          <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
+            <span className="text-base font-bold text-slate-800">待办事项</span>
+            <span className="text-sm text-slate-500">{caseTodoCount} 项待处理</span>
+          </div>
+          <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto" role="menu">
+            {caseTodos.map((todo) => {
+              // P1 降级：非「裁决书核阅」且跳转子页回调缺失时禁用，避免点击无响应
+              const disabled = todo.target !== 'award' && !onNavigateToSubPage;
+              return (
+                <button
+                  key={todo.id}
+                  disabled={disabled}
+                  onClick={() => {
+                    setShowTodoPanel(false);
+                    if (todo.target === 'award') {
+                      setActiveTab('award');
+                    } else {
+                      onNavigateToSubPage?.(todo.target);
+                    }
+                  }}
+                  className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
+                    disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50'
+                  }`}
+                >
+                  <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${disabled ? 'bg-slate-300' : 'bg-red-500'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-base font-medium text-slate-800 flex items-center gap-2">
+                      <span className="truncate">{todo.title}</span>
+                      {todo.count > 1 && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-status-signing-bg text-status-signing">{todo.count}</span>
+                      )}
+                    </div>
+                    <div className="text-sm text-slate-400 mt-0.5">{todo.desc}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
     </div>
   );

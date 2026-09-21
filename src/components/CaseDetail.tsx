@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, FileText, Download, User, Building2, FileCheck, Sparkles, Shield, Mail, Phone, PenTool, ChevronRight, ChevronDown, Paperclip, Receipt, MessageSquare, Bell } from 'lucide-react';
 import { Case } from '../types';
 import { IOSAlert } from './ui/IOSDialog';
+import BottomSheet from './BottomSheet';
 
 export type CaseDetailTab = 'basic' | 'casefile' | 'evidence' | 'award' | 'archive';
 
@@ -1756,49 +1757,49 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
         />
       )}
 
-      {/* 待办面板（Banner 右上角入口，绝对定位于头部下方） */}
-      {showTodoPanel && (
-        <div className="absolute left-2 right-2 top-[128px] bg-white rounded-xl border border-slate-200 shadow-xl z-[60] overflow-hidden animate-fade-in">
-          <div className="px-4 py-2.5 flex items-center justify-between border-b border-slate-100 bg-slate-50/60">
-            <span className="text-base font-bold text-slate-800">待办事项</span>
-            <span className="text-sm text-slate-500">{caseTodoCount} 项待处理</span>
-          </div>
-          <div className="divide-y divide-slate-100 max-h-[50vh] overflow-y-auto" role="menu">
-            {caseTodos.map((todo) => {
-              // P1 降级：非「裁决书核阅」且跳转子页回调缺失时禁用，避免点击无响应
-              const disabled = todo.target !== 'award' && !onNavigateToSubPage;
-              return (
-                <button
-                  key={todo.id}
-                  disabled={disabled}
-                  onClick={() => {
-                    setShowTodoPanel(false);
-                    if (todo.target === 'award') {
-                      setActiveTab('award');
-                    } else {
-                      onNavigateToSubPage?.(todo.target);
-                    }
-                  }}
-                  className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
-                    disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50'
-                  }`}
-                >
-                  <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${disabled ? 'bg-slate-300' : 'bg-red-500'}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-base font-medium text-slate-800 flex items-center gap-2">
-                      <span className="truncate">{todo.title}</span>
-                      {todo.count > 1 && (
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-status-signing-bg text-status-signing">{todo.count}</span>
-                      )}
-                    </div>
-                    <div className="text-sm text-slate-400 mt-0.5">{todo.desc}</div>
+      {/* 待办面板（底部弹出样式 BottomSheet） */}
+      <BottomSheet open={showTodoPanel} onClose={() => setShowTodoPanel(false)} title="待办事项">
+        <div className="space-y-1 divide-y divide-slate-100" role="menu">
+          {caseTodos.map((todo) => {
+            // P1 降级：非「裁决书核阅」且跳转子页回调缺失时禁用，避免点击无响应
+            const disabled = todo.target !== 'award' && !onNavigateToSubPage;
+            return (
+              <button
+                key={todo.id}
+                disabled={disabled}
+                onClick={() => {
+                  setShowTodoPanel(false);
+                  if (todo.target === 'award') {
+                    setActiveTab('award');
+                  } else {
+                    onNavigateToSubPage?.(todo.target);
+                  }
+                }}
+                className={`w-full flex items-center gap-3 py-3 text-left transition-colors ${
+                  disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-50'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${disabled ? 'bg-slate-300' : 'bg-red-500'}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-base font-medium text-slate-800 flex items-center gap-2">
+                    <span className="truncate">{todo.title}</span>
+                    {todo.count > 1 && (
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-status-signing-bg text-status-signing">{todo.count}</span>
+                    )}
                   </div>
-                </button>
-              );
-            })}
-          </div>
+                  <div className="text-sm text-slate-400 mt-0.5">{todo.desc}</div>
+                </div>
+                {!disabled && <ChevronRight size={14} className="text-slate-300 flex-shrink-0" />}
+              </button>
+            );
+          })}
         </div>
-      )}
+        {caseTodoCount > 0 && (
+          <div className="pt-2 text-sm text-right text-slate-500">
+            {caseTodoCount} 项待处理
+          </div>
+        )}
+      </BottomSheet>
     </div>
   );
 }

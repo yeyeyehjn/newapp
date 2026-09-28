@@ -14,6 +14,7 @@ interface WorkbenchProps {
   onNavigateToSubPage: (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'declarationList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'docSignatureList' | 'draftAwardList' | 'arbitrationKnowledge') => void;
   onToggleVersion?: () => void;
   onQuickFilter?: (filter: 'none' | 'major' | 'nearDelayed' | 'delayed') => void;
+  onViewAllHearings: (dateRange: [string, string]) => void;
 }
 
 export default function Workbench({ 
@@ -27,7 +28,8 @@ export default function Workbench({
   selectedStatusFilter,
   onNavigateToSubPage,
   onToggleVersion,
-  onQuickFilter
+  onQuickFilter,
+  onViewAllHearings
 }: WorkbenchProps) {
   const [showLearningModal, setShowLearningModal] = useState<boolean>(false);
   const [activeFuncTab, setActiveFuncTab] = useState<'common' | 'other'>('common');
@@ -46,7 +48,6 @@ export default function Workbench({
 
   const [activeTodoModal, setActiveTodoModal] = useState<'declaration' | 'transcript' | 'postponement' | 'docSign' | 'draft' | null>(null);
   const [showRemunerationModal, setShowRemunerationModal] = useState<boolean>(false);
-  const [showAllRecentHearings, setShowAllRecentHearings] = useState<boolean>(false);
   const [signedDeclaration, setSignedDeclaration] = useState<boolean>(false);
   const [signedTranscript, setSignedTranscript] = useState<boolean>(false);
   const [approvedPostponement, setApprovedPostponement] = useState<boolean>(false);
@@ -120,7 +121,11 @@ export default function Workbench({
 
   const pendingTasks = tasks.filter(t => t.status === 'pending');
 
-  // Filter recent hearings (nearest 3 days: 2026-06-11, 2026-06-12, 2026-06-13)
+  // 首页“近10天待开庭”基准日（场景中的“今天”）与时间窗口
+  const HEARING_SCENARIO_TODAY = '2026-06-11';
+  const HEARING_WINDOW_END = '2026-06-20';
+
+  // Filter recent hearings (nearest 10 days: from scenario today)
   const recentHearings = cases.flatMap(c => 
     (c.hearings || []).map(h => ({ 
       ...h, 
@@ -132,8 +137,17 @@ export default function Workbench({
       secretary: c.secretary || '李文浩',
       purpose: h.notes || '开庭'
     }))
-  ).filter(h => (h.hearingTime.includes('2026-06-11') || h.hearingTime.includes('2026-06-12') || h.hearingTime.includes('2026-06-13')) && h.status === '待开庭')
+  ).filter(h => {
+    const hDate = h.hearingTime.split(' ')[0];
+    return h.status === '待开庭' && hDate >= HEARING_SCENARIO_TODAY && hDate <= HEARING_WINDOW_END;
+  })
    .sort((a, b) => a.hearingTime.localeCompare(b.hearingTime));
+
+  // 距基准日的天数差，用于“今天/明天/后天”徽标
+  const hearingDayDiff = (dateStr: string) => {
+    const d = dateStr.split(' ')[0];
+    return Math.round((new Date(d + 'T00:00:00').getTime() - new Date(HEARING_SCENARIO_TODAY + 'T00:00:00').getTime()) / 86400000);
+  };
 
   const [selectedArticleIndex, setSelectedArticleIndex] = useState<number>(0);
 
@@ -231,7 +245,7 @@ export default function Workbench({
               立信铸就广仲
             </span>
             {/* Subtitle */}
-            <span className="text-lg font-black text-slate-500 tracking-wider">
+            <span className="text-lg font-black text-slate-800 tracking-wider">
               创新赢得未来
             </span>
            
@@ -500,7 +514,7 @@ export default function Workbench({
           <div className="flex justify-between items-center mb-3.5 px-0.5">
             <span className="text-lg font-extrabold text-slate-800 tracking-tight flex items-center gap-1.5">
               <span className="w-1 h-3.5 bg-indigo-500 rounded-full inline-block"></span>
-              <span>近3天待开庭日程</span>
+              <span>近10天待开庭日程</span>
             </span>
             <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100/50 px-2 py-1 leading-none rounded ">
               {recentHearings.length} 场待开庭
@@ -514,30 +528,25 @@ export default function Workbench({
               <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-indigo-100 via-indigo-50 to-transparent"></div>
 
               <div className="space-y-3">
-              {(showAllRecentHearings ? recentHearings : recentHearings.slice(0, 3)).map((hearing, idx) => {
+              {recentHearings.slice(0, 3).map((hearing) => {
                   const matchedCase = cases.find(c => c.id === hearing.caseId);
                   const claimant = matchedCase?.claimant || '华夏科技';
                   const respondent = matchedCase?.respondent || '蓝海创投';
-                  
+
+                  const dayDiff = hearingDayDiff(hearing.hearingTime);
                   let badgeText = "即将开庭";
                   let badgeStyle = "bg-amber-50 text-amber-600 border-amber-100";
                   let dotCircleStyle = "bg-amber-500 ring-4 ring-amber-100/50";
-                  
-                  if (hearing.hearingTime.includes('2026-06-11')) {
-                    if (idx === 0) {
-                      badgeText = "今天开庭";
-                      badgeStyle = "bg-rose-50/60 text-rose-500 border-rose-150/45";
-                      dotCircleStyle = "bg-rose-300 ring-4 ring-rose-100/30";
-                    } else {
-                      badgeText = "本日后续";
-                      badgeStyle = "bg-amber-50 text-amber-600 border-amber-100";
-                      dotCircleStyle = "bg-amber-500 ring-4 ring-amber-100/50";
-                    }
-                  } else if (hearing.hearingTime.includes('2026-06-12')) {
+
+                  if (dayDiff === 0) {
+                    badgeText = "今天开庭";
+                    badgeStyle = "bg-rose-50/60 text-rose-500 border-rose-150/45";
+                    dotCircleStyle = "bg-rose-300 ring-4 ring-rose-100/30";
+                  } else if (dayDiff === 1) {
                     badgeText = "明天开庭";
                     badgeStyle = "bg-indigo-50 text-indigo-600 border-indigo-100";
                     dotCircleStyle = "bg-indigo-500 ring-4 ring-indigo-50";
-                  } else {
+                  } else if (dayDiff === 2) {
                     badgeText = "后天开庭";
                     badgeStyle = "bg-slate-50 text-slate-600 border-slate-200";
                     dotCircleStyle = "bg-slate-400 ring-4 ring-slate-100";
@@ -571,33 +580,33 @@ export default function Workbench({
                         </div>
 
                         {/* Timeline Details */}
-                        <div className="text-sm text-slate-500 gap-y-1">
-                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                        <div className="text-base text-slate-500 gap-y-1">
+                          <div className="flex items-start gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">申请人</span>
                             <span className="truncate text-slate-700 font-medium">{claimant}</span>
                           </div>
-                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <div className="flex items-start gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">被申请人</span>
                             <span className="truncate text-slate-700 font-medium">{respondent}</span>
                           </div>
-                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <div className="flex items-start gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">开庭时间</span>
                             <span className="truncate text-indigo-600 font-semibold">{hearing.hearingTime}</span>
                           </div>
-                          <div className="flex items-start  gap-0.5 min-w-0 pb-1">
+                          <div className="flex items-start  gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">开庭地点</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.location}</span>
                           </div>
-                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <div className="flex items-start gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">办案秘书</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.secretary}</span>
                           </div>
-                          <div className="flex items-start gap-0.5 min-w-0 pb-1">
+                          <div className="flex items-start gap-2 min-w-0 pb-1">
                             <span className="text-slate-500 shrink-0 w-14">仲裁庭</span>
                             <span className="truncate text-slate-700 font-medium">张三、李四、王五</span>
                           </div>
-                          <div className="flex items-start gap-0.5 min-w-0 leading-normal">
-                            <span className="text-slate-500 shrink-0 w-14">开庭用途</span>
+                          <div className="flex items-start gap-2 min-w-0 leading-normal">
+                            <span className="text-slate-500 shrink-0 w-14">庭室用途</span>
                             <span className="truncate text-slate-700 font-medium">{hearing.purpose}</span>
                           </div>
                         </div>
@@ -606,26 +615,16 @@ export default function Workbench({
                   );
                 })}
 
-              {/* View More Button */}
-              {recentHearings.length > 3 && (
+              {/* View More Button - 跳转待开庭列表并带日期筛选 */}
+              {recentHearings.length > 0 && (
                 <div className="pt-1 pl-6">
-                  {!showAllRecentHearings ? (
-                    <button
-                      onClick={() => setShowAllRecentHearings(true)}
-                      className="w-full bg-indigo-50/60 hover:bg-indigo-50 text-indigo-600 font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-indigo-100 flex items-center justify-center gap-2 shadow-xs"
-                    >
-                      <span>展开更多 ({recentHearings.length - 3}场)</span>
-                      <i className="fa-solid fa-chevron-down text-[10px]"></i>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setShowAllRecentHearings(false)}
-                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs transition-all cursor-pointer border border-slate-200 flex items-center justify-center gap-2 shadow-xs"
-                    >
-                      <span>收起开庭</span>
-                      <i className="fa-solid fa-chevron-up text-[10px]"></i>
-                    </button>
-                  )}
+                  <button
+                    onClick={() => onViewAllHearings([HEARING_SCENARIO_TODAY, HEARING_WINDOW_END])}
+                    className="w-full bg-indigo-50/60 hover:bg-indigo-50 text-indigo-600 font-bold py-2 px-4 rounded-xl text-sm transition-all cursor-pointer border border-indigo-100 flex items-center justify-center gap-2 shadow-xs"
+                  >
+                    <span>查看更多</span>
+                    <i className="fa-solid fa-chevron-right text-[10px]"></i>
+                  </button>
                 </div>
               )}
               </div>
@@ -711,7 +710,7 @@ export default function Workbench({
                   )}
                 </div>
 
-                <span className="text-sm pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-indigo-600 transition-colors truncate w-full text-center">
+                <span className="text-base pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-indigo-600 transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>
@@ -769,7 +768,7 @@ export default function Workbench({
                   <i className={`fa-solid ${srv.icon} text-lg`}></i>
                 </div>
 
-                <span className="text-sm pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-indigo-600 transition-colors truncate w-full text-center">
+                <span className="text-base pt-0.5 text-slate-700 leading-none tracking-tight group-hover:text-indigo-600 transition-colors truncate w-full text-center">
                   {srv.label}
                 </span>
               </button>

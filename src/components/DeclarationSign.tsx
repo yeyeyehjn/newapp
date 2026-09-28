@@ -179,7 +179,7 @@ export default function DeclarationSign({
         
         {/* Arbitrator Info */}
         <section className="bg-white p-4 rounded-lg  space-y-3">
-          <h2 className="text-base font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
             <User size={14} className="text-indigo-500" />
             <span>仲裁员信息</span>
           </h2>
@@ -206,7 +206,7 @@ export default function DeclarationSign({
 
         {/* Applicants */}
         <section className="bg-white p-4 rounded-lg  space-y-3">
-          <h2 className="text-base font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
             <Building2 size={14} className="text-emerald-500" />
             <span>申请人</span>
           </h2>
@@ -218,11 +218,11 @@ export default function DeclarationSign({
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm text-slate-400">机构代码</label>
-                <div className="text-sm font-medium text-slate-900 py-1">91330100MA2XXXXX</div>
+                <div className="text-base font-medium text-slate-900 py-1">91330100MA2XXXXX</div>
               </div>
               <div>
                 <label className="block text-sm text-slate-400">代理人</label>  
-                <div className="text-sm font-medium text-slate-900 py-1">李律师</div>
+                <div className="text-base font-medium text-slate-900 py-1">李律师</div>
               </div>
             </div>
             <div>
@@ -236,14 +236,14 @@ export default function DeclarationSign({
 
         {/* Respondents */}
         <section className="bg-white p-4 rounded-lg  space-y-3">
-          <h2 className="text-base font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-2">
             <Building2 size={14} className="text-red-400" />
             <span>被申请人</span>
           </h2>
           <div className="border border-slate-100 rounded-lg p-3 bg-slate-50/50 space-y-2">
             <div>
               <label className="block text-sm text-slate-400">企业名称</label>
-              <div className="text-sm font-medium text-slate-900 py-1">{respondent}</div>
+              <div className="text-base font-medium text-slate-900 py-1">{respondent}</div>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -266,7 +266,7 @@ export default function DeclarationSign({
 
         {/* Arbitrator Declaration */}
         <section className="bg-white p-4 rounded-lg  space-y-4">
-          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
             <FileText size={14} className="text-indigo-500" />
             <span>仲裁员声明</span>
           </h2>
@@ -295,7 +295,7 @@ export default function DeclarationSign({
                     onChange={() => handleMainDeclarationChange('1')}
                     className="mt-1 text-indigo-600"
                   />
-                  <span className="text-sm text-slate-800">
+                  <span className="text-base text-slate-800">
                     1. 本人郑重声明不存在《中华人民共和国仲裁法》及本会《仲裁规则》规定需要回避的事由，接受担任本案仲裁员。
                   </span>
                 </label>
@@ -311,7 +311,7 @@ export default function DeclarationSign({
                       onChange={() => handleMainDeclarationChange('2')}
                       className="mt-1 text-indigo-600"
                     />
-                    <span className="text-sm text-slate-800 flex-1">
+                    <span className="text-base text-slate-800 flex-1">
                       2. 本人存在附件第
                       <input 
                         type="text" 
@@ -343,7 +343,7 @@ export default function DeclarationSign({
                       onChange={() => handleMainDeclarationChange('3')}
                       className="mt-1 text-indigo-600"
                     />
-                    <span className="text-sm text-slate-800">
+                    <span className="text-base text-slate-800">
                       3. 本人认为存在可能引起当事人对本人独立性、公正性产生合理怀疑的情形需要披露：
                     </span>
                   </label>
@@ -366,7 +366,7 @@ export default function DeclarationSign({
                         onChange={() => handleSubDeclarationChange('3.1')}
                         className="mt-1 text-indigo-600"
                       />
-                      <span className="text-sm text-slate-600">3.1 本人认为以上披露情形不影响本案公正裁决，接受担任本案仲裁员。</span>
+                      <span className="text-base text-slate-600">3.1 本人认为以上披露情形不影响本案公正裁决，接受担任本案仲裁员。</span>
                     </label>
                     <label className="flex items-start gap-2 cursor-pointer">
                       <input 
@@ -377,7 +377,7 @@ export default function DeclarationSign({
                         onChange={() => handleSubDeclarationChange('3.2')}
                         className="mt-1 text-indigo-600"
                       />
-                      <span className="text-sm text-slate-600">3.2 本人认为以上披露情形影响本案公正裁决，不接受担任本案仲裁员。</span>
+                      <span className="text-base text-slate-600">3.2 本人认为以上披露情形影响本案公正裁决，不接受担任本案仲裁员。</span>
                     </label>
                   </div>
                 </div>
@@ -393,7 +393,7 @@ export default function DeclarationSign({
                       onChange={() => handleMainDeclarationChange('4')}
                       className="mt-1 text-indigo-600"
                     />
-                    <span className="text-sm text-slate-800">
+                    <span className="text-base text-slate-800">
                       4. 本人存在
                       <input 
                         type="text" 

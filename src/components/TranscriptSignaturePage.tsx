@@ -97,31 +97,31 @@ export default function TranscriptSignaturePage({
                   </span>
                 </div>
 
-                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">
+                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-base text-slate-500">
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{t.claimant}</span>
+                    <span className="text-base text-slate-800 truncate flex-1 text-left">{t.claimant}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-red-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">被申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{t.respondent}</span>
+                    <span className="text-base text-slate-800 truncate flex-1 text-left">{t.respondent}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText size={12} className="text-slate-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
-                    <span className="text-slate-700 flex-1 text-left">{t.secretary}</span>
+                    <span className="text-base text-slate-700 flex-1 text-left">{t.secretary}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText size={12} className="text-indigo-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁员</span>
-                    <span className="text-slate-700 flex-1 text-left">{t.arbitrator}</span>
+                    <span className="text-base text-slate-700 flex-1 text-left">{t.arbitrator}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={12} className="text-amber-500 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">开庭时间</span>
-                    <span className="text-slate-700 flex-1 text-left">{t.hearingTime}</span>
+                    <span className="text-base text-slate-700 flex-1 text-left">{t.hearingTime}</span>
                   </div>
                 </div>
               </div>

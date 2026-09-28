@@ -136,7 +136,7 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
               </div>
 
               {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-2 gap-3 text-base">
                 <div className="flex items-center gap-2">
                   <User size={12} className="text-slate-400" />
                   <div>
@@ -169,18 +169,18 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
           overlayClassName="absolute inset-0 z-[70]"
           footer={<IOSModalButton onClick={() => setShowRulesModal(false)}>已知悉</IOSModalButton>}
         >
-          <div className="space-y-3.5 text-sm leading-relaxed font-sans">
+          <div className="space-y-3.5 text-base leading-relaxed font-sans">
             <div className="bg-indigo-50/60 rounded-lg p-3 border border-indigo-100/60">
-              <p className="text-sm leading-relaxed text-justify text-text-secondary">
+              <p className="text-base leading-relaxed text-justify text-text-secondary">
                 依据《广州仲裁委员会仲裁员报酬管理规则》，综合仲裁员的履职情况、办案效率、办案质量等因素，仲裁员报酬按照以下规则计算：
               </p>
             </div>
 
-            <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+            <h5 className="font-extrabold text-slate-700 text-lg border-b border-slate-100 pb-1 flex items-center gap-1.5">
               <i className="fa-solid fa-arrow-up text-emerald-500"></i>
               <span>报酬上浮情形</span>
             </h5>
-            <ul className="text-sm leading-relaxed space-y-2 pl-1">
+            <ul className="text-base leading-relaxed space-y-2 pl-1">
               <li className="flex gap-1.5">
                 <span className="text-emerald-600 font-bold shrink-0">（一）</span>
                 <span>在规定二分之一审限内提前结案的，基础值<span className="text-emerald-600 font-bold">上浮10%</span></span>
@@ -191,11 +191,11 @@ export default function RemunerationPage({ onBack }: RemunerationPageProps) {
               </li>
             </ul>
 
-            <h5 className="font-extrabold text-slate-700 text-sm border-b border-slate-100 pb-1 flex items-center gap-1.5">
+            <h5 className="font-extrabold text-slate-700 text-lg border-b border-slate-100 pb-1 flex items-center gap-1.5">
               <i className="fa-solid fa-arrow-down text-rose-500"></i>
               <span>报酬下降情形</span>
             </h5>
-            <ul className="text-sm leading-relaxed space-y-2.5 pl-1">
+            <ul className="text-base leading-relaxed space-y-2.5 pl-1">
               <li className="flex gap-1.5">
                 <span className="text-rose-500 font-bold shrink-0">（三）</span>
                 <span>独任仲裁员无正当理由不制作裁决书的（金融案除外），基础值<span className="text-rose-500 font-bold">下降20%</span></span>

@@ -133,7 +133,7 @@ export default function CaseDiscussionPage({
                     <span className="bg-slate-100 text-slate-500 px-1 py-0.2 rounded text-2xs scale-90">{msg.role}</span>
                     <span className="font-mono text-2xs">{msg.time}</span>
                   </div>
-                  <div className={`p-3 rounded-2xl text-sm leading-relaxed relative ${
+                  <div className={`p-3 rounded-2xl text-base leading-relaxed relative ${
                     msg.isMe
                       ? 'bg-indigo-600 text-white rounded-tr-none'
                       : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none shadow-xs'

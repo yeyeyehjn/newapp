@@ -57,7 +57,7 @@ export default function MyAppointmentPage({
                 </div>
               </div>
 
-              <h3 className="text-center text-sm font-extrabold text-amber-900 tracking-widest font-sans px-1">
+              <h3 className="text-center text-lg font-extrabold text-amber-900 tracking-widest font-sans px-1">
                 广州仲裁委员会 · 仲裁员聘书
               </h3>
               
@@ -69,7 +69,7 @@ export default function MyAppointmentPage({
               </div>
 
               {/* Body text content */}
-              <div className="space-y-2.5 text-slate-700 text-xs leading-relaxed text-left py-1 text-justify indent-4">
+              <div className="space-y-2.5 text-slate-700 text-base leading-relaxed text-left py-1 text-justify indent-4">
                 <p>
                   兹聘请 <strong>张明</strong> 先生为广州仲裁委员会之 
                   <strong className="text-amber-800">「特级独任及合议庭首席仲裁员」</strong>。
@@ -119,7 +119,7 @@ export default function MyAppointmentPage({
             <button
               onClick={handleCredentialExport}
               disabled={isExportingCert}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-slate-300 text-white font-extrabold p-3 text-xs rounded-xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-slate-300 text-white font-extrabold p-3 text-base rounded-xl shadow-md cursor-pointer transition-all flex items-center justify-center gap-2"
             >
               <Download size={13} className={isExportingCert ? 'animate-spin' : ''} />
               <span>{isExportingCert ? '正进行多路安全存证级防伪导出...' : '导出防伪加密PDF聘书副件'}</span>

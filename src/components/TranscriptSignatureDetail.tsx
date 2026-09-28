@@ -172,7 +172,7 @@ export default function TranscriptSignatureDetail({
         {/* Signature Panel */}
         <div className="bg-white rounded-xl border border-slate-100 p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="flex items-center gap-1.5 text-base font-bold text-slate-800">
+            <span className="flex items-center gap-1.5 text-lg font-bold text-slate-800">
               <PenTool size={14} className="text-indigo-500" />
               手写签名
             </span>

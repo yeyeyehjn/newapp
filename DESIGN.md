@@ -43,7 +43,7 @@
 
 | Token | 色值 | Tailwind 类 | 用途 |
 |-------|------|-------------|------|
-| `--color-brand-primary` | #031f8f | `bg-brand-primary` / `text-brand-primary` | 主品牌色（深 royal blue），主按钮、主链接、激活态 |
+| `--color-brand-primary` | #0a1f8f | `bg-brand-primary` / `text-brand-primary` | 主品牌色（深 royal blue），主按钮、主链接、激活态 |
 | `--color-brand-secondary` | #1d4ed8 | `bg-brand-secondary` | 品牌辅助色（深蓝亮一档），图标、装饰、信息色 |
 | `--color-brand-accent` | #f59e0b | `bg-brand-accent` | 品牌强调色，徽章、标签 |
 
@@ -102,7 +102,16 @@
 
 > 状态徽章统一采用「浅底 + 深字 + 圆角」样式（如 `bg-status-active-bg text-status-active`），禁止使用纯深底色块。
 
-#### 1.1.7 交互色（Interaction Colors）
+#### 1.1.7 当事人语义色（Party Semantic Colors）
+
+| 角色 | 前景 Token | 背景 Token | 用途 |
+|------|-----------|-----------|------|
+| 申请人 | `emerald-600` | `emerald-50` | 申请方主体区分 |
+| 被申请人 | `red-600` | `red-50` | 被申请方主体区分 |
+
+> 案件详情页中「当事人/请求/答辩」相关区块只保留此套语义映射；indigo 品牌色仅用于附件链接与可交互元素，请求/反请求不再另设独立 accent 色，避免多套色义同屏叠加。
+
+#### 1.1.8 交互色（Interaction Colors）
 
 | Token | 色值 | 用途 |
 |-------|------|------|

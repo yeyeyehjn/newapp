@@ -144,7 +144,7 @@ export const mockCases: Case[] = [
   {
     id: "3",
     caseNo: "(2026)穗仲案字第0521号",
-    title: "关于宏图建筑与润物高科智能产业园二期主体建设工程纠纷案",
+    title: "建设工程纠纷",
     claimant: "宏图中建工程局有限公司",
     claimantAgent: "德恒律师事务所 - 张锋律师",
     respondent: "润物高新科技产业园有限公司",

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, FileText, Download, User, Building2, FileCheck, Sparkles, Shield, Mail, Phone, PenTool, ChevronRight, ChevronDown, Paperclip, Receipt, MessageSquare, Bell } from 'lucide-react';
+import { Calendar, FileText, Download, User, Building2, Sparkles, Shield, Mail, Phone, PenTool, ChevronRight, ChevronDown, Paperclip, Receipt, Bell, Megaphone, ListChecks, Scale } from 'lucide-react';
 import { Case } from '../types';
 import { IOSAlert } from './ui/IOSDialog';
 import BottomSheet from './BottomSheet';
@@ -72,6 +72,7 @@ interface EvidenceCatalogItem {
 interface EvidenceCategory {
   key: 'applicant' | 'respondent' | 'tribunal';
   title: string;         // 分类名：申请人证据 / 被申请人证据 / 仲裁庭依职权调取证据
+  short: string;         // 分段切换短标签（窄屏不换行）
   noticeFile: string;    // 质证通知文件名
   noticeTime: string;
   noticeUploader: string;
@@ -107,7 +108,7 @@ function PartyGroup({
         <span className={`${accentBg} text-white text-base px-2 py-0.5 rounded`}>{title}</span>
         <span className="text-sm text-slate-500">共{parties.length}位</span>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 ">
         {parties.map((party, idx) => {
           const key = `${title}-${idx}`;
           const expanded = expandedParty === key;
@@ -173,18 +174,10 @@ function PdfFileIcon({ pages }: { pages: number }) {
   );
 }
 
-// PDF 附件标签 — 关联文件的轻量入口
-function AttachmentChip({ name }: { name: string }) {
-  return (
-    <button className="mt-2 flex items-center gap-1 text-sm text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80 transition-colors flex-shrink-0">
-      <Paperclip size={12} />
-      <span>{name}</span>
-    </button>
-  );
-}
 
-// 当事人渐进呈现卡片：主当事人默认展开核心身份，代理人默认收起
-// 语义色单一映射：申请人=emerald / 被申请人=red；indigo 仅供附件/交互元素
+
+// 当事人渐进呈现卡片：主当事人与代理人详细信息均默认隐藏，按需展开
+// 语义色单一映射：申请人=emerald / 被申请人=red（落在主体图标上）；indigo 仅供附件/交互元素
 function PartyAccordion({ label, accent, main, agent, expanded, onToggle, openExtra }: {
   label: string;
   accent: 'emerald' | 'red';
@@ -194,15 +187,22 @@ function PartyAccordion({ label, accent, main, agent, expanded, onToggle, openEx
   onToggle: (k: 'main' | 'agent') => void;
   openExtra: (key: 'applicant' | 'respondent') => void;
 }) {
-  const accentText = accent === 'emerald' ? 'text-emerald-500' : 'text-red-500';
-  const accentBg = accent === 'emerald' ? 'bg-emerald-500' : 'bg-red-500';
+  const accentText = accent === 'emerald' ? 'text-emerald-600' : 'text-red-600';
 
-  const renderRow = (party: PartyInfo, isAgent: boolean, open: boolean, toggle: () => void) => (
-    <div key={party.name} className="bg-slate-50 rounded-lg overflow-hidden">
+  // 字段排版：短字段两列并排（便于纵向比对），长字段独占整宽（避免折行断字）
+  const field = (label: string, value: string, mono = false) => (
+    <div>
+      <div className="text-sm text-slate-500 mb-1">{label}</div>
+      <div className={`text-base font-medium text-slate-700 ${mono ? 'font-mono' : 'break-all'}`}>{value}</div>
+    </div>
+  );
+
+  const renderRow = (party: PartyInfo, isAgent: boolean, open: boolean, toggle: () => void, isLast = false) => (
+    <div key={party.name}>
       <button
         onClick={toggle}
         aria-expanded={open}
-        className="w-full flex items-center justify-between p-2.5 cursor-pointer hover:bg-slate-100/60 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 cursor-pointer hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           {party.attribute === '企业' ? (
@@ -210,23 +210,26 @@ function PartyAccordion({ label, accent, main, agent, expanded, onToggle, openEx
           ) : (
             <User size={14} className={`${accentText} flex-shrink-0`} />
           )}
-          <span className="font-bold text-slate-800 text-base truncate">{party.name}</span>
-          <span className="text-sm bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded flex-shrink-0">{party.attribute}</span>
-          {isAgent && <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded flex-shrink-0">代理人</span>}
+          <span className=" text-slate-600 text-base truncate">{party.name}</span>
+          <span className="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full flex-shrink-0">{party.attribute}</span>
+          {isAgent && <span className="text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full flex-shrink-0">代理人</span>}
         </div>
         <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
+      {!isLast && <div className="mx-3.5 border-b border-slate-100"></div>}
       {open && (
-        <div className="px-2.5 pb-2.5 space-y-2 animate-fade-in">
-          <div className="grid grid-cols-1 gap-1.5 pt-1 border-t border-slate-200/70">
-            <div className="text-base"><span className="text-slate-500">{party.idType}：</span><span className="text-slate-700 font-medium">{party.idNo}</span></div>
-            <div className="text-base"><span className="text-slate-500">手机：</span><span className="text-slate-700 font-medium">{party.phone}</span></div>
-            <div className="text-base"><span className="text-slate-500">邮箱：</span><span className="text-slate-700 font-medium">{party.email}</span></div>
-            <div className="text-base"><span className="text-slate-500">法定地址：</span><span className="text-slate-700 font-medium">{party.address}</span></div>
+        <div className="px-3.5 pb-3 animate-fade-in">
+          <div className="pt-3">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+              {field(party.idType, party.idNo, true)}
+              {field('手机', party.phone, true)}
+              <div className="col-span-2">{field('邮箱', party.email)}</div>
+              <div className="col-span-2">{field('法定地址', party.address)}</div>
+            </div>
           </div>
           {/* 证件附件 */}
-          <div className="border-t border-slate-200/70 pt-2">
-            <div className="flex items-center gap-1 text-slate-500 text-sm mb-1.5">
+          <div className="border-t border-slate-100 mt-3 pt-3">
+            <div className="flex items-center gap-1 text-sm text-slate-500 mb-2">
               <Paperclip size={12} />
               <span>证件附件</span>
             </div>
@@ -253,98 +256,185 @@ function PartyAccordion({ label, accent, main, agent, expanded, onToggle, openEx
   );
 
   return (
-    <div className="bg-white rounded-lg border border-slate-100 p-3">
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
-        <span className={`${accentBg} text-white text-base px-2 py-0.5 rounded`}>{label}</span>
+    <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+      <div className="flex items-center gap-1 px-3.5 py-3 text-slate-900 font-bold text-base">
+        <User size={14} className={`${accentText} flex-shrink-0`} />
+        <span>{label}</span>
       </div>
-      <div className="space-y-2">
-        {main && renderRow(main, false, expanded.main, () => onToggle('main'))}
-        {agent && renderRow(agent, true, expanded.agent, () => onToggle('agent'))}
+      <div className="mx-3.5 border-b border-slate-100"></div>
+      <div>
+        {main && renderRow(main, false, expanded.main, () => onToggle('main'), !agent)}
+        {agent && renderRow(agent, true, expanded.agent, () => onToggle('agent'), true)}
       </div>
     </div>
   );
 }
 
-// 请求 / 反请求 模块卡片组 — 复用「请求和答辩」「反请求和答辩」结构（可折叠，重模块默认折叠）
-// 语义色单一映射：请求段沿用 被申请人=red，反请求段沿用 申请人=emerald；indigo 仅供 附件/列表序号/交互
-function ClaimsModuleGroup({ title, accent, countLabel, open, onToggle, module }: {
+// ============ 案情及当事人材料：参考样张「编号徽章拆解卡片」组件集 ============
+// 语义色映射：申请人=emerald / 被申请人=red（落在编号徽章与强调块）；品牌蓝仅用于附件与交互元素
+type CaseTone = 'brand' | 'emerald' | 'red';
+const toneBadge: Record<CaseTone, string> = {
+  brand: 'bg-brand-primary text-white',
+  emerald: 'bg-emerald-600 text-white',
+  red: 'bg-red-600 text-white',
+};
+
+// 附件胶囊（参照项目约定胶囊样式）：小图标 + 文件名
+function AttachmentRow({ name, onView }: { key?: React.Key; name: string; onView: () => void }) {
+  return (
+    <button
+      onClick={onView}
+      className="flex items-center gap-1 text-sm text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80 transition-colors"
+    >
+      <Paperclip size={12} />
+      <span>{name}</span>
+    </button>
+  );
+}
+
+// 附件文件行（列表内统一展示）：文件图标 + 文件名（可选副信息）+ 右侧 ChevronRight
+function AttachmentFileRow({ name, meta, onView }: { key?: React.Key; name: string; meta?: string; onView: () => void }) {
+  return (
+    <button
+      onClick={onView}
+      className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-slate-50 transition-colors cursor-pointer"
+      aria-label={` ${name}`}
+    >
+      <FileText size={15} className="text-red-400 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-base font-medium text-slate-800 truncate">{name}</div>
+      </div>
+      <ChevronRight size={14} className="text-slate-300 flex-shrink-0" />
+    </button>
+  );
+}
+
+// 编号徽章卡：表头（序号徽章 + 标题 + 可选右侧说明）→ 浅底内容区 → 附件行
+function NumberedSectionCard({ index, title, right, content, attachment, tone = 'brand', onView }: {
+  index: number;
   title: string;
-  accent: 'emerald' | 'red';
-  countLabel: string;
+  right?: React.ReactNode;
+  content?: string;
+  attachment?: string;
+  tone?: CaseTone;
+  onView?: (name: string) => void;
+}) {
+  return (
+    <div className="bg-white rounded-lg border border-slate-100 p-3.5 space-y-2">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`${toneBadge[tone]} text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0`}>{index}</span>
+          <h2 className="text-base font-bold text-slate-900 truncate">{title}</h2>
+        </div>
+      </div>
+      {content && (
+        <div className="py-1  text-base text-slate-600 leading-normal">
+          {content}
+        </div>
+      )}
+      {attachment && onView && <AttachmentRow name={attachment} onView={() => onView(attachment)} />}
+    </div>
+  );
+}
+
+// 请求事项卡：表头（序号徽章 + 标题 + 请求标的）→ 编号列表
+function RequestItemsCard({ index, title, amount, count, items, tone = 'brand' }: {
+  index: number;
+  title: string;
+  amount?: string;
+  count?: string;
+  items: string[];
+  tone?: CaseTone;
+}) {
+  return (
+    <div className="bg-white rounded-lg border border-slate-100 p-3.5 space-y-2">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`${toneBadge[tone]} text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0`}>{index}</span>
+          <h2 className="text-base font-bold text-slate-900 truncate">{title}</h2>
+          {count && <span className="text-sm text-slate-400 font-normal flex-shrink-0">{count}</span>}
+        </div>
+        {amount && <span className="text-sm font-bold font-mono text-indigo-600 flex-shrink-0">{amount}</span>}
+      </div>
+      <ol className="space-y-2 py-1">
+        {items.map((item, idx) => (
+          <li key={idx} className="border-b border-dashed border-slate-200 pb-2 flex items-start gap-2 text-base text-slate-700">
+            <span className="text-base font-bold text-indigo-600 font-mono flex-shrink-0">{idx + 1}.</span>
+            <span className="leading-normal">{item}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+// 答辩意见卡：紧贴对应材料视图，强调色块 + 附件行
+function RepliesCard({ index, title, count, tone, replies, onView }: {
+  index: number;
+  title: string;
+  count?: string;
+  tone: CaseTone;
+  replies: ClaimReply[];
+  onView: (name: string) => void;
+}) {
+  const blockCls = tone === 'red'
+    ? 'border-red-200/60'
+    : 'border-emerald-200/60';
+  return (
+    <div className="bg-white rounded-lg border border-slate-100 p-3.5 space-y-2">
+      <div className="flex items-center border-b border-slate-100 pb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`${toneBadge[tone]} text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0`}>{index}</span>
+          <h2 className="text-base font-bold text-slate-900 truncate">{title}</h2>
+          {count && <span className="text-sm text-slate-400 font-normal flex-shrink-0">{count}</span>}
+        </div>
+      </div>
+      <div className="space-y-2 py-1">
+        {replies.map((r, idx) => (
+          <div key={idx} className={`${blockCls} border-b border-dashed pb-2 space-y-1`}>
+            <p className="text-sm text-slate-500">{r.party}</p>
+            <p className="text-base text-slate-700 leading-normal">{r.content}</p>
+            {r.attachment && <AttachmentRow name={r.attachment} onView={() => onView(r.attachment!)} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// 其他附件卡（兜底，默认折叠，两个材料视图复用）
+function OtherAttachmentsCard({ names, open, onToggle, onView }: {
+  names: string[];
   open: boolean;
   onToggle: () => void;
-  module: ClaimsModule;
+  onView: (name: string) => void;
 }) {
-  const tagClass = accent === 'red' ? 'bg-red-500' : 'bg-emerald-500';
-
   return (
     <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
       <button
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full flex items-center justify-between px-3 py-2.5 cursor-pointer"
+        className="w-full flex items-center justify-between px-3.5 py-3 cursor-pointer"
       >
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`${tagClass} text-white text-base px-2 py-0.5 rounded flex-shrink-0`}>{title}</span>
-          <span className="text-sm text-slate-500 truncate">{countLabel}</span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Paperclip size={14} className="text-slate-500 flex-shrink-0" />
+          <span className="text-slate-900 font-bold text-base flex-shrink-0">其他附件</span>
+          <span className="text-sm text-slate-400 font-normal">{names.length} 份</span>
         </div>
-        <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={15} className={`text-slate-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="border-t border-slate-100 p-3 space-y-3 animate-fade-in">
-          {/* 前置结构化段落（条款/主体/事实等）+ 附件 */}
-          {module.sections.map((section, idx) => (
-            <div key={idx} className="bg-slate-50 rounded-lg border border-slate-100/70 p-3">
-              <div className="flex items-center gap-1 text-slate-700 font-bold text-base mb-2">
-                <FileText size={14} className="text-indigo-500" />
-                <span>{section.title}</span>
+        <>
+          <div className="mx-3.5 border-b border-slate-100"></div>
+          <div className="animate-fade-in">
+            {names.map((name, idx) => (
+              <div key={name}>
+                <AttachmentFileRow name={name} onView={() => onView(name)} />
+                {idx < names.length - 1 && <div className="mx-3.5 border-b border-slate-100"></div>}
               </div>
-              <p className="text-base text-slate-600 leading-relaxed">{section.content}</p>
-              {section.attachment && <AttachmentChip name={section.attachment} />}
-            </div>
-          ))}
-
-          {/* 请求列表 */}
-          <div className="bg-slate-50 rounded-lg border border-slate-100/70 p-3">
-            <div className="flex items-center gap-1 text-slate-700 font-bold text-base mb-2">
-              <FileCheck size={14} className="text-indigo-500" />
-              <span>请求列表</span>
-            </div>
-            <div className="divide-y divide-dashed divide-slate-200">
-              {module.requestItems.map((item, idx) => (
-                <div key={idx} className="text-base text-slate-700 flex items-start gap-2 py-2 first:pt-0">
-                  <span className="bg-indigo-500 text-white text-xs font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0">
-                    {idx + 1}
-                  </span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
-
-          {/* 答辩意见 */}
-          {module.replies.length > 0 && (
-            <div className="bg-slate-50 rounded-lg border border-slate-100/70 p-3">
-              <div className="flex items-center gap-1 text-slate-700 font-bold text-base mb-2">
-                <MessageSquare size={14} className="text-indigo-500" />
-                <span>答辩意见</span>
-                <span className="text-sm text-slate-400 font-normal">{module.replies.length}条</span>
-              </div>
-              <div className="divide-y divide-dashed divide-slate-200">
-                {module.replies.map((reply, idx) => (
-                  <div key={idx} className="py-2 first:pt-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <span className={`${tagClass} text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0`}>答辩{idx + 1}</span>
-                      <span className="text-sm font-medium text-slate-600 leading-relaxed">{reply.party}</span>
-                    </div>
-                    <p className="text-base text-slate-600 leading-relaxed">{reply.content}</p>
-                    {reply.attachment && <AttachmentChip name={reply.attachment} />}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
@@ -369,17 +459,21 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
   const [uploadRemark, setUploadRemark] = useState('');
   const [uploadAwardFiles, setUploadAwardFiles] = useState<string[]>([]);
   const [uploadOtherFiles, setUploadOtherFiles] = useState<string[]>([]);
-  // 当事人渐进呈现：主当事人默认展开核心身份，代理人默认收起（key: 'applicant'/'respondent'）
-  const [expandedMain, setExpandedMain] = useState<Record<string, boolean>>({ applicant: true, respondent: true });
+  // 当事人渐进呈现：主当事人与代理人的详细信息均默认隐藏，按需展开（key: 'applicant'/'respondent'）
+  const [expandedMain, setExpandedMain] = useState<Record<string, boolean>>({});
   const [expandedAgent, setExpandedAgent] = useState<Record<string, boolean>>({});
-  // 案情模块折叠状态：请求/反请求/其他附件默认折叠
-  const [casefileOpen, setCasefileOpen] = useState<Record<string, boolean>>({ requests: false, counter: false, other: false });
+  // 案情及当事人材料：申请人 / 被申请人 材料视图切换
+  const [casefileParty, setCasefileParty] = useState<'applicant' | 'respondent'>('applicant');
+  // 案情模块折叠状态：其他附件默认折叠
+  const [casefileOpen, setCasefileOpen] = useState<Record<string, boolean>>({ other: false });
   // 证据和质证：当前选中的证据分类（申请人 / 被申请人 / 仲裁庭依职权）
   const [activeEvidenceKey, setActiveEvidenceKey] = useState<'applicant' | 'respondent' | 'tribunal'>('applicant');
   // 次级参考区默认折叠，让证据清单成为页面唯一焦点
   const [showEvidenceCatalog, setShowEvidenceCatalog] = useState(false);
   const [showEvidenceNotice, setShowEvidenceNotice] = useState(false);
   const [evidenceFilter, setEvidenceFilter] = useState<'all' | 'cross' | 'none'>('all');
+  // 仲裁文书：裁决书核阅 / 结案文书 分类切换（进入页面默认显示结案文书）
+  const [awardSubTab, setAwardSubTab] = useState<'review' | 'closing'>('closing');
   const tabListRef = useRef<HTMLDivElement>(null);
 
   // Tab 顺序数组（用于键盘导航）
@@ -402,6 +496,11 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
 
     e.preventDefault();
     const newTab = tabs[newIndex];
+    // 电子卷宗为独立页面，键盘导航命中时直接跳转
+    if (newTab === 'archive') {
+      onNavigateToSubPage?.('electronicArchive');
+      return;
+    }
     setActiveTab(newTab);
     // 聚焦到新标签
     const btn = tabListRef.current?.querySelector(`[id="tab-${newTab}"]`) as HTMLElement | null;
@@ -561,11 +660,15 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
     ],
   };
 
+  // 反请求标的（反请求事项合计：额外开发成本 300 万 + 整改损失 80 万）
+  const counterClaimAmount = 3800000;
+
   // Mock 证据和质证 数据（三大证据分类：申请人 / 被申请人 / 仲裁庭依职权调取）
   const evidenceCats: EvidenceCategory[] = [
     {
       key: 'applicant',
       title: '申请人证据',
+      short: '申请人证据',
       noticeFile: '质证通知（申请人）.pdf',
       noticeTime: '2026-06-10 15:00',
       noticeUploader: '刘秘书',
@@ -600,6 +703,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
     {
       key: 'respondent',
       title: '被申请人证据',
+      short: '被申请人证据',
       noticeFile: '质证通知（被申请人）.pdf',
       noticeTime: '2026-06-12 10:30',
       noticeUploader: '刘秘书',
@@ -626,6 +730,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
     {
       key: 'tribunal',
       title: '仲裁庭依职权调取证据',
+      short: '依职权调取',
       noticeFile: '质证通知（仲裁庭）.pdf',
       noticeTime: '2026-06-15 09:00',
       noticeUploader: '刘秘书',
@@ -671,6 +776,12 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
 
   const applicants = parties.filter(p => p.type === 'applicant');
   const respondents = parties.filter(p => p.type === 'respondent');
+
+  // 当事人材料：各视图材料模块数量（编号卡片 + 其他附件），用于分段切换右侧计数
+  const casefileCounts: Record<'applicant' | 'respondent', number> = {
+    applicant: claimsModule.sections.length + 1 /* 仲裁请求 */ + 1 /* 被申请人答辩意见 */ + 1 /* 其他附件 */,
+    respondent: counterClaimsModule.sections.length + 1 /* 仲裁反请求 */ + 1 /* 申请人反请求答辩 */ + 1 /* 其他附件 */,
+  };
 
   return (
     <div className="flex-1 bg-slate-50 flex flex-col overflow-hidden animate-slide-in relative">
@@ -718,13 +829,9 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             aria-label="查看待办信息"
             className={`relative flex items-center gap-1.5 text-white border border-white/20 rounded-lg px-2.5 py-1.5 flex-shrink-0 self-start cursor-pointer transition-colors ${showTodoPanel ? 'bg-white/20' : 'hover:bg-white/15'}`}
           >
-            <span className="relative leading-none">
-              <Bell size={16} />
-              <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[16px] px-1 text-center leading-[16px]">
-                {caseTodoCount}
-              </span>
-            </span>
-            <span className="text-xs leading-none">待办</span>
+            <Bell size={16} className="leading-none" />
+            <span className="text-xs leading-none">{caseTodoCount} 待办</span>
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
         </div>
       </div>
@@ -734,7 +841,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
         ref={tabListRef}
         role="tablist"
         aria-label="案件详情标签页"
-        className="bg-white border-b border-slate-100 flex px-2 py-1.5 flex-shrink-0 overflow-x-auto no-scrollbar gap-1 snap-x snap-mandatory"
+        className="bg-white border-b border-slate-100 flex gap-5 px-4 scroll-px-4 flex-shrink-0 overflow-x-auto no-scrollbar snap-x snap-mandatory"
         style={{ WebkitOverflowScrolling: 'touch' }}
         onKeyDown={handleTabKeyDown}
       >
@@ -746,11 +853,18 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             aria-selected={activeTab === tab}
             aria-controls={`tabpanel-${tab}`}
             tabIndex={activeTab === tab ? 0 : -1}
-            onClick={() => setActiveTab(tab)}
-            className={`snap-start  p-2.5 text-center text-base transition-all rounded whitespace-nowrap ${
+            onClick={() => {
+              // 电子卷宗为独立页面，点击后跳出案件详情
+              if (tab === 'archive') {
+                onNavigateToSubPage?.('electronicArchive');
+                return;
+              }
+              setActiveTab(tab);
+            }}
+            className={`snap-start shrink-0 py-3 border-b-2 text-base transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === tab
-                ? 'text-indigo-600 bg-indigo-50 '
-                : 'text-slate-600 hover:bg-slate-50'
+                ? 'border-brand-primary text-indigo-600'
+                : 'border-transparent text-slate-600 hover:text-slate-800'
             }`}
           >
             {tab === 'basic' ? '基本信息' :
@@ -773,7 +887,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             className="space-y-3 animate-fade-in"
           >
             {/* Key Info Grid */}
-            <div className="bg-white rounded-lg border border-slate-100 p-3">
+            <div className="bg-white rounded-lg border border-slate-100 p-3.5">
               <div className="grid grid-cols-2 gap-px bg-slate-100 rounded-lg overflow-hidden">
                 <div className="bg-white p-2.5">
                   <div className="flex items-center gap-1 text-slate-500 mb-1">
@@ -827,17 +941,18 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             </div>
 
             {/* Case Summary with AI watermark */}
-            <div className="bg-white rounded-lg border border-slate-100 p-3 relative overflow-hidden">
-              {/* AI watermark - 卡片右上角 */}
-              <div className="absolute top-2.5 right-2.5 flex items-center gap-1 text-sm text-indigo-400 bg-indigo-50 px-1.5 py-0.5 rounded z-10">
-                <Sparkles size={10} />
-                <span>AI生成，仅供参考</span>
-              </div>
-              <div className="flex items-center gap-1 text-slate-700 font-bold text-base mb-2">
+            <div className="bg-white rounded-lg border border-slate-100">
+              <div className="flex items-center gap-1 px-3.5 py-3 text-slate-900 font-bold text-base">
                 <FileText size={14} />
                 <span>案情摘要</span>
+                {/* AI watermark - 表头右侧，垂直居中 */}
+                <span className="ml-auto flex items-center gap-1 text-sm text-indigo-400 bg-indigo-50 px-1.5 py-0.5 rounded">
+                  <Sparkles size={10} />
+                  <span className="font-normal">AI生成，仅供参考</span>
+                </span>
               </div>
-              <p className="text-base text-slate-600 leading-relaxed">
+              <div className="mx-3.5 border-b border-slate-100"></div>
+              <p className="px-3.5 py-3 text-base text-slate-600 leading-relaxed">
                 {caseItem.description}
               </p>
             </div>
@@ -851,77 +966,144 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             id="tabpanel-casefile"
             role="tabpanel"
             aria-labelledby="tab-casefile"
-            className="space-y-3 animate-fade-in"
+            className="space-y-4 animate-fade-in"
           >
-            {/* 当事人：主当事人默认展开，代理人默认收起 */}
-            <PartyAccordion
-              label="申请人"
-              accent="emerald"
-              main={applicants[0]}
-              agent={applicants[1]}
-              expanded={{ main: !!expandedMain.applicant, agent: !!expandedAgent.applicant }}
-              onToggle={(k) => {
-                if (k === 'main') setExpandedMain(s => ({ ...s, applicant: !s.applicant }));
-                else setExpandedAgent(s => ({ ...s, applicant: !s.applicant }));
-              }}
-              openExtra={() => {}}
-            />
-            <PartyAccordion
-              label="被申请人"
-              accent="red"
-              main={respondents[0]}
-              agent={respondents[1]}
-              expanded={{ main: !!expandedMain.respondent, agent: !!expandedAgent.respondent }}
-              onToggle={(k) => {
-                if (k === 'main') setExpandedMain(s => ({ ...s, respondent: !s.respondent }));
-                else setExpandedAgent(s => ({ ...s, respondent: !s.respondent }));
-              }}
-              openExtra={() => {}}
-            />
-
-            {/* 请求和答辩（默认折叠，带计数） */}
-            <ClaimsModuleGroup
-              title="请求和答辩"
-              accent="red"
-              countLabel={`${claimsModule.requestItems.length} 项请求 · ${claimsModule.replies.length} 份答辩`}
-              open={!!casefileOpen.requests}
-              onToggle={() => setCasefileOpen(s => ({ ...s, requests: !s.requests }))}
-              module={claimsModule}
-            />
-
-            {/* 反请求和答辩（默认折叠，带计数） */}
-            <ClaimsModuleGroup
-              title="反请求和答辩"
-              accent="emerald"
-              countLabel={`${counterClaimsModule.requestItems.length} 项请求 · ${counterClaimsModule.replies.length} 份答辩`}
-              open={!!casefileOpen.counter}
-              onToggle={() => setCasefileOpen(s => ({ ...s, counter: !s.counter }))}
-              module={counterClaimsModule}
-            />
-
-            {/* 其他附件（兜底，默认折叠） */}
-            <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <button
-                onClick={() => setCasefileOpen(s => ({ ...s, other: !s.other }))}
-                aria-expanded={!!casefileOpen.other}
-                className="w-full flex items-center justify-between px-3 py-2.5 cursor-pointer"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="bg-slate-700 text-white text-base px-2 py-0.5 rounded flex-shrink-0">其他附件</span>
-                  <span className="text-sm text-slate-500 truncate">{otherAttachments.length} 份</span>
-                </div>
-                <ChevronDown size={16} className={`text-slate-400 flex-shrink-0 transition-transform ${casefileOpen.other ? 'rotate-180' : ''}`} />
-              </button>
-              {casefileOpen.other && (
-                <div className="border-t border-slate-100 p-3 flex flex-wrap gap-2 animate-fade-in">
-                  {otherAttachments.map(name => (
-                    <span key={name} className="contents">
-                      <AttachmentChip name={name} />
+            {/* 申请人 / 被申请人 材料视图切换 */}
+            <div role="tablist" aria-label="案件材料主体" className="bg-bg-muted p-1 rounded-lg flex text-sm font-medium">
+              {(['applicant', 'respondent'] as const).map((p) => {
+                const active = casefileParty === p;
+                return (
+                  <button
+                    key={p}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setCasefileParty(p)}
+                    className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-md transition-all cursor-pointer ${
+                      active ? 'bg-white text-indigo-600 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-800'
+                    }`}
+                  >
+                    <span className="truncate">{p === 'applicant' ? '申请人材料' : '被申请人材料'}</span>
+                    <span className={`text-xs flex-shrink-0 ${active ? 'text-indigo-400' : 'text-slate-400'}`}>
+                      {casefileCounts[p]}
                     </span>
-                  ))}
-                </div>
-              )}
+                  </button>
+                );
+              })}
             </div>
+
+            {casefileParty === 'applicant' ? (
+              /* ---------- 申请人材料视图 ---------- */
+              <div id="tabpanel-casefile-applicant" className="space-y-3 animate-fade-in">
+                {/* 申请人方当事人与代理人 */}
+                <PartyAccordion
+                  label="申请人"
+                  accent="emerald"
+                  main={applicants[0]}
+                  agent={applicants[1]}
+                  expanded={{ main: !!expandedMain.applicant, agent: !!expandedAgent.applicant }}
+                  onToggle={(k) => {
+                    if (k === 'main') setExpandedMain(s => ({ ...s, applicant: !s.applicant }));
+                    else setExpandedAgent(s => ({ ...s, applicant: !s.applicant }));
+                  }}
+                  openExtra={() => {}}
+                />
+
+                {/* 编号拆解卡片：条款 / 签章 / 事实理由 / 请求事项 / 被申请人答辩 / 其他附件 */}
+                <NumberedSectionCard
+                  index={1}
+                  title="仲裁条款约定情况"
+                  right="管辖权依据"
+                  content={claimsModule.sections[0].content}
+                  attachment={claimsModule.sections[0].attachment}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <NumberedSectionCard
+                  index={2}
+                  title="合同签订主体及签章"
+                  right="已验真"
+                  content={claimsModule.sections[1].content}
+                  attachment={claimsModule.sections[1].attachment}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <NumberedSectionCard
+                  index={3}
+                  title="事实和理由"
+                  content={claimsModule.sections[2].content}
+                  attachment={claimsModule.sections[2].attachment}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <RequestItemsCard
+                  index={4}
+                  title="仲裁请求"
+                  count={`${claimsModule.requestItems.length} 条`}
+                  amount={`请求标的 ${formatCNY(caseItem.disputeAmount)}`}
+                  items={claimsModule.requestItems}
+                />
+                <RepliesCard
+                  index={5}
+                  title="被申请人答辩意见"
+                  count={`${claimsModule.replies.length} 条`}
+                  tone="red"
+                  replies={claimsModule.replies}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <OtherAttachmentsCard
+                  names={otherAttachments}
+                  open={!!casefileOpen.other}
+                  onToggle={() => setCasefileOpen(s => ({ ...s, other: !s.other }))}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+              </div>
+            ) : (
+              /* ---------- 被申请人材料视图 ---------- */
+              <div id="tabpanel-casefile-respondent" className="space-y-3 animate-fade-in">
+                {/* 被申请人方当事人与代理人 */}
+                <PartyAccordion
+                  label="被申请人"
+                  accent="red"
+                  main={respondents[0]}
+                  agent={respondents[1]}
+                  expanded={{ main: !!expandedMain.respondent, agent: !!expandedAgent.respondent }}
+                  onToggle={(k) => {
+                    if (k === 'main') setExpandedMain(s => ({ ...s, respondent: !s.respondent }));
+                    else setExpandedAgent(s => ({ ...s, respondent: !s.respondent }));
+                  }}
+                  openExtra={() => {}}
+                />
+
+                {/* 编号拆解卡片：反请求事实 / 反请求事项 / 申请人反请求答辩 / 其他附件 */}
+                <NumberedSectionCard
+                  index={1}
+                  title="反请求事实和理由"
+                  tone="red"
+                  content={counterClaimsModule.sections[0].content}
+                  attachment={counterClaimsModule.sections[0].attachment}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <RequestItemsCard
+                  index={2}
+                  title="仲裁反请求"
+                  count={`${counterClaimsModule.requestItems.length} 条`}
+                  amount={`反请求标的 ${formatCNY(counterClaimAmount)}`}
+                  tone="red"
+                  items={counterClaimsModule.requestItems}
+                />
+                <RepliesCard
+                  index={3}
+                  title="申请人反请求答辩"
+                  count={`${counterClaimsModule.replies.length} 条`}
+                  tone="emerald"
+                  replies={counterClaimsModule.replies}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+                <OtherAttachmentsCard
+                  names={otherAttachments}
+                  open={!!casefileOpen.other}
+                  onToggle={() => setCasefileOpen(s => ({ ...s, other: !s.other }))}
+                  onView={(name) => setViewingPdf({ name, size: '1.2 MB', pages: 1 })}
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -934,12 +1116,8 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             aria-labelledby="tab-evidence"
             className="space-y-4 animate-fade-in"
           >
-            {/* 证据分类切换（申请人 / 被申请人 / 仲裁庭依职权）：tag 形式，数量随文字右侧 */}
-            <div
-              role="tablist"
-              aria-label="证据分类"
-              className="flex flex-wrap gap-2"
-            >
+            {/* 证据分类切换（申请人 / 被申请人 / 仲裁庭依职权）：分段控件，数量随文字右侧 */}
+            <div role="tablist" aria-label="证据分类" className="bg-bg-muted p-1 rounded-lg flex text-sm font-medium">
               {evidenceCats.map((cat) => {
                 const active = activeEvidenceKey === cat.key;
                 return (
@@ -948,15 +1126,13 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                     role="tab"
                     aria-selected={active}
                     onClick={() => setActiveEvidenceKey(cat.key)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 transition-colors cursor-pointer ${
-                      active
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-600'
-                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                    className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-md transition-all cursor-pointer ${
+                      active ? 'bg-white text-indigo-600 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-800'
                     }`}
                   >
-                    <span className="text-base font-medium">{cat.title}</span>
-                    <span className={`text-sm ${active ? 'text-indigo-400' : 'text-slate-400'}`}>
-                      {cat.catalog.length}项
+                    <span className="truncate">{cat.short}</span>
+                    <span className={`text-xs flex-shrink-0 ${active ? 'text-indigo-400' : 'text-slate-400'}`}>
+                      {cat.crossList.length}
                     </span>
                   </button>
                 );
@@ -971,41 +1147,34 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               );
               const filters = [
                 { key: 'all' as const, label: '全部', count: cat.crossList.length },
-                { key: 'cross' as const, label: '有质证', count: crossCount },
-                { key: 'none' as const, label: '无质证', count: noneCount },
+                { key: 'cross' as const, label: '有质证', count: crossCount }
               ];
               return (
               <div key={cat.key} className="space-y-3">
-                {/* 质证通知（可折叠，样式同证据目录） */}
+                {/* 质证通知（可折叠，表头右侧展示送达时间） */}
                 <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
                   <button
                     onClick={() => setShowEvidenceNotice(v => !v)}
                     aria-expanded={showEvidenceNotice}
-                    className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
+                    className="w-full flex items-center gap-1.5 px-3.5 py-3 cursor-pointer"
                   >
-                    <div className="flex items-center gap-1 text-slate-600 font-medium text-base">
-                      <span>质证通知</span>
-                    </div>
+                    <Megaphone size={14} className="text-slate-500 flex-shrink-0" />
+                    <span className="text-slate-900 font-bold text-base flex-shrink-0">质证通知</span>
                     <ChevronDown
                       size={15}
-                      className={`text-slate-400 transition-transform duration-200 ${showEvidenceNotice ? 'rotate-180' : ''}`}
+                      className={`ml-auto text-slate-400 flex-shrink-0 transition-transform duration-200 ${showEvidenceNotice ? 'rotate-180' : ''}`}
                     />
                   </button>
                   {showEvidenceNotice && (
-                    <div className="border-t border-slate-100 animate-fade-in">
-                      <button
-                        onClick={() => setViewingPdf({ name: cat.noticeFile, size: '1.2 MB', pages: 1 })}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors cursor-pointer"
-                        aria-label={`预览 ${cat.noticeFile}`}
-                      >
-                        <FileText size={15} className="text-red-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-base font-medium text-slate-800 truncate">{cat.noticeFile}</div>
-                          <div className="text-sm text-slate-400 mt-0.5">{cat.noticeTime}</div>
-                        </div>
-                        <ChevronRight size={14} className="text-slate-300 flex-shrink-0" />
-                      </button>
-                    </div>
+                    <>
+                      <div className="mx-3.5 border-b border-slate-100"></div>
+                      <div className="animate-fade-in">
+                        <AttachmentFileRow
+                          name={cat.noticeFile}
+                          onView={() => setViewingPdf({ name: cat.noticeFile, size: '1.2 MB', pages: 1 })}
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
 
@@ -1014,148 +1183,138 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                   <button
                     onClick={() => setShowEvidenceCatalog(v => !v)}
                     aria-expanded={showEvidenceCatalog}
-                    className="w-full flex items-center justify-between px-4 py-3 cursor-pointer"
+                    className="w-full flex items-center gap-1.5 px-3.5 py-3 cursor-pointer"
                   >
-                    <div className="flex items-center gap-1 text-slate-600 font-medium text-base">
-                      <span>证据目录</span>
-                      <span className="text-sm text-slate-400 font-normal">共{cat.catalog.length}项</span>
-                    </div>
+                    <ListChecks size={14} className="text-slate-500 flex-shrink-0" />
+                    <span className="text-slate-900 font-bold text-base flex-shrink-0">证据目录</span>
+                    <span className="text-sm text-slate-400 font-normal flex-shrink-0">{cat.catalog.length}份</span>
                     <ChevronDown
                       size={15}
-                      className={`text-slate-400 transition-transform duration-200 ${showEvidenceCatalog ? 'rotate-180' : ''}`}
+                      className={`ml-auto text-slate-400 flex-shrink-0 transition-transform duration-200 ${showEvidenceCatalog ? 'rotate-180' : ''}`}
                     />
                   </button>
                   {showEvidenceCatalog && (
-                    <div className="border-t border-slate-100 divide-y divide-slate-100 animate-fade-in">
-                      {cat.catalog.map((row) => (
-                        <button
-                          key={row.seq}
-                          onClick={() => setViewingPdf({ name: `${row.name}.pdf`, size: '1.2 MB', pages: row.pages })}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors cursor-pointer"
-                          aria-label={`预览 ${row.name}`}
-                        >
-                          <FileText size={15} className="text-red-400 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-base font-medium text-slate-800 flex items-center gap-2">
-                              <span className="truncate">{row.name}</span>
-                            </div>
-                            <div className="text-sm text-slate-400 mt-0.5">
-                              {row.submitDate}
-                            </div>
+                    <>
+                      <div className="mx-3.5 border-b border-slate-100"></div>
+                      <div className="animate-fade-in">
+                        {cat.catalog.map((row, idx) => (
+                          <div key={row.seq}>
+                            <AttachmentFileRow
+                              name={row.name}
+                              meta={row.submitDate}
+                              onView={() => setViewingPdf({ name: `${row.name}.pdf`, size: '1.2 MB', pages: row.pages })}
+                            />
+                            {idx < cat.catalog.length - 1 && <div className="mx-3.5 border-b border-slate-100"></div>}
                           </div>
-                          <ChevronRight size={14} className="text-slate-300 flex-shrink-0" />
-                        </button>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
 
-                {/* 证据清单（本 Tab 唯一主内容卡） */}
-                <div className="bg-white rounded-lg border border-slate-100 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1.5 text-slate-700 font-bold text-base">
-                      <span>证据清单</span>
+                {/* 证据清单：章节标题 + 单项证据卡片 */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="text-slate-900 font-bold text-base">证据清单</span>
                       <span className="text-sm text-slate-400 font-normal">共{filtered.length}项</span>
                     </div>
+                    {/* 快捷筛选：全部 / 有质证 / 无质证 */}
+                    <div role="tablist" aria-label="质证状态筛选" className="flex flex-wrap justify-end gap-1.5">
+                      {filters.map((f) => {
+                        const active = evidenceFilter === f.key;
+                        return (
+                          <button
+                            key={f.key}
+                            role="tab"
+                            aria-selected={active}
+                            onClick={() => setEvidenceFilter(f.key)}
+                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition-colors cursor-pointer ${
+                              active
+                                ? 'bg-indigo-50 border-indigo-500 text-indigo-600'
+                                : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>{f.label}</span>
+                            <span className={`text-xs ${active ? 'text-indigo-400' : 'text-slate-400'}`}>{f.count}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {/* 快捷筛选：全部 / 有质证 / 无质证 */}
-                  <div role="tablist" aria-label="质证状态筛选" className="flex flex-wrap gap-1.5 mb-3">
-                    {filters.map((f) => {
-                      const active = evidenceFilter === f.key;
-                      return (
-                        <button
-                          key={f.key}
-                          role="tab"
-                          aria-selected={active}
-                          onClick={() => setEvidenceFilter(f.key)}
-                          className={`inline-flex items-center gap-1 rounded border px-2.5 py-1 text-base transition-colors cursor-pointer ${
-                            active
-                              ? 'bg-indigo-50 border-indigo-500 text-indigo-600'
-                              : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50'
-                          }`}
-                        >
-                          <span>{f.label}</span>
-                          <span className={`${active ? 'text-indigo-400' : 'text-slate-400'}`}>{f.count}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="space-y-3">
-                    {filtered.map((ev) => (
-                      <div key={ev.id} className="bg-slate-50/50 rounded-lg p-3"> 
-                        <div className="flex items-start justify-between gap-2">
+
+                  {filtered.map((ev) => (
+                    <div key={ev.id} className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+                      {/* 证据基本信息（表头下划线 + 序号徽章 + 平铺内容，样式同编号徽章卡） */}
+                      <div className="p-3.5 space-y-2">
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="bg-indigo-500 text-white text-xs font-bold w-5 h-5 rounded flex items-center justify-center flex-shrink-0">
+                            <span className={`${toneBadge.brand} text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0`}>
                               {ev.id}
                             </span>
-                            <span className="text-base font-medium text-slate-800">{ev.name}</span>
+                            <h3 className="text-base font-bold text-slate-900 truncate">{ev.name}</h3>
                           </div>
-                          <span className={`flex-shrink-0 text-sm px-2 py-0.5 rounded ${ev.crossExamined ? 'text-amber-600 bg-amber-50 border-amber-100/50' : 'bg-slate-100 text-slate-400'}`}>
-                            {ev.crossExamined ? '有质证' : '无'}
+                          <span className={`flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full border ${
+                            ev.crossExamined
+                              ? 'bg-amber-50 border-amber-100 text-amber-600'
+                              : 'bg-slate-100 border-slate-200 text-slate-500'
+                          }`}>
+                            {ev.crossExamined ? '有质证' : '无质证'}
                           </span>
                         </div>
+
                         {/* 证据内容 */}
-                        <p className="text-base text-slate-600 leading-relaxed mt-2">{ev.content}</p>
+                        <p className="py-1 text-base text-slate-600 leading-normal">
+                          <span className=" text-slate-600">证据内容：</span>{ev.content}
+                        </p>
+
                         {/* 证据附件列表 */}
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
-                          {ev.attachments.map((att) => (
-                            <button
-                              key={att}
-                              onClick={() => setViewingPdf({ name: att, size: '1.2 MB', pages: 1 })}
-                              className="flex items-center gap-1 text-sm text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80 transition-colors"
-                            >
-                              <Paperclip size={12} />
-                              <span>{att}</span>
-                            </button>
-                          ))}
-                        </div>
-                        {/* 质证详情：质证意见 + 质证人 + 质证理由 + 答辩文件 */}
-                        {ev.crossExamined && (
-                          <div className="mt-2.5 border-t border-slate-200 pt-2.5 space-y-1.5  ">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <span className="text-sm px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">质证</span>
-                              {(ev.crossExamined.opinions?.length ?? 0) > 0 && ev.crossExamined.opinions!.map((op) => {
+                        {ev.attachments.length > 0 && (
+                          <div className="space-y-1.5">
+                            <div className="flex flex-wrap gap-1.5">
+                              {ev.attachments.map((att) => (
+                                <AttachmentRow key={att} name={att} onView={() => setViewingPdf({ name: att, size: '1.2 MB', pages: 1 })} />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 质证明细：质证意见 + 质证人 + 质证理由 + 答辩文件（无质证时不展示） */}
+                      {ev.crossExamined && (
+                        <div className="bg-amber-50/40  border border-orange-200/60 rounded-lg p-3 space-y-2 mt-0 m-3.5">
+                          {(ev.crossExamined.opinions?.length ?? 0) > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {ev.crossExamined.opinions!.map((op) => {
                                 const affirm = op.includes('确认');
                                 return (
                                   <span
                                     key={op}
-                                    className={`text-sm px-1.5 py-0.5 rounded ${affirm ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}
+                                    className={`text-sm px-1.5 py-0.5 rounded border ${affirm ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-amber-100/60 border-amber-200 text-amber-700'}`}
                                   >
                                     {op}
                                   </span>
                                 );
                               })}
                             </div>
-                            <div className="flex text-sm leading-relaxed">
-                              {/* <span className="text-slate-400 w-14 flex-shrink-0">质证人</span> */}
-                              <span className="text-slate-700">{ev.crossExamined.examiner}</span>
-                            </div>
-                            <div className="flex text-sm leading-relaxed">
-                              {/* <span className="text-slate-400 w-14 flex-shrink-0">质证理由</span> */}
-                              <p className="text-slate-600 flex-1">{ev.crossExamined.reason}</p>
-                            </div>
-                            {ev.crossExamined.replyFiles.length > 0 && (
-                              <div className="flex text-sm">
-                                {/* <span className="text-slate-400 w-14 flex-shrink-0">答辩文件</span> */}
-                                <div className="flex flex-wrap gap-x-3 gap-y-1 flex-1">
-                                  {ev.crossExamined.replyFiles.map((file) => (
-                                    <button
-                                      key={file}
-                                      onClick={() => setViewingPdf({ name: file, size: '1.2 MB', pages: 1 })}
-                                      className="flex items-center gap-1 text-sm text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100 cursor-pointer hover:bg-indigo-100/80 transition-colors"
-                                    >
-                                      <Paperclip size={12} />
-                                      <span>{file}</span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
+                          )}
+                          <div className="flex items-center gap-1.5 text-base text-amber-900"> 
+                            <span className="truncate">质证人：{ev.crossExamined.examiner}</span>
                           </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                          <p className="text-base text-slate-700 leading-normal">
+                            <span className=" text-amber-900">质证理由：</span>{ev.crossExamined.reason}
+                          </p>
+                          {ev.crossExamined.replyFiles.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 ">
+                              {ev.crossExamined.replyFiles.map((file) => (
+                                <AttachmentRow key={file} name={file} onView={() => setViewingPdf({ name: file, size: '1.2 MB', pages: 1 })} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
               );
@@ -1163,92 +1322,49 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
           </div>
         )}
 
-        {/* 电子卷宗（占位空态） */}
-        {activeTab === 'archive' && (
-          <div
-            key="archive"
-            id="tabpanel-archive"
-            role="tabpanel"
-            aria-labelledby="tab-archive"
-            className="space-y-3 animate-fade-in"
-          >
-            <div className="bg-white rounded-lg border border-slate-100 py-14 px-6 text-center">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 flex items-center justify-center mb-3">
-                <FileText size={26} className="text-indigo-400" />
-              </div>
-              <div className="text-base font-bold text-slate-800">电子卷宗</div>
-              <p className="text-sm text-slate-400 mt-1.5">后续实现</p>
-            </div>
-          </div>
-        )}
-
-        {/* 仲裁文书（上部核阅 + 下部签名） */}
+        {/* 仲裁文书（裁决书核阅 / 结案文书 分类） */}
         {activeTab === 'award' && (
           <div
             key="award"
             id="tabpanel-award"
             role="tabpanel"
             aria-labelledby="tab-award"
-            className="space-y-3 animate-fade-in"
+            className="space-y-4 animate-fade-in"
           >
-            {/* 待办提示徽章：未签裁决书/待核阅（承接被移除的待办入口） */}
-            {(pendingAward || transcriptList.some(t => !t.signed)) && (
-              <div className="flex flex-wrap gap-2">
-                {pendingAward && (
+            {/* 仲裁文书分类切换（裁决书核阅 / 结案文书），进入页面默认结案文书 */}
+            <div role="tablist" aria-label="仲裁文书分类" className="bg-bg-muted p-1 rounded-lg flex text-sm font-medium">
+              {([
+                { key: 'review' as const, label: '裁决书核阅' },
+                { key: 'closing' as const, label: '结案文书' },
+              ]).map((t) => {
+                const active = awardSubTab === t.key;
+                return (
                   <button
-                    onClick={() => setViewingPdf({ name: pendingAward.name, size: pendingAward.size, pages: pendingAward.pages, signed: pendingAward.signed })}
-                    className="flex items-center gap-1.5 text-sm text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-100 cursor-pointer"
+                    key={t.key}
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setAwardSubTab(t.key)}
+                    className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-md transition-all cursor-pointer ${
+                      active ? 'bg-white text-indigo-600 font-bold shadow-sm' : 'text-slate-600 hover:text-slate-800'
+                    }`}
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                    <span>裁决书待签名</span>
+                    <span className="truncate">{t.label}</span>
                   </button>
-                )}
-                {transcriptList.some(t => !t.signed) && (
-                  <span className="flex items-center gap-1.5 text-sm text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    <span>庭审笔录待签名</span>
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* ── 上部：裁决书核阅区（原 review）── */}
-            <div className="space-y-3">
-            {/* Document Overview */}
-            <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-white border-b border-slate-100">
-                <span className="text-base font-bold text-slate-700">文书概览</span>
-              </div>
-              <div className="p-3 space-y-2">
-                <div>
-                  <span className="text-base font-bold text-slate-700">仲裁请求</span>
-                  <p className="text-base text-slate-600 mt-1 leading-relaxed">
-                    1. 支付货款人民币1,000,000元<br/>
-                    2. 支付逾期付款利息（以1,000,000元为基数，自2025年1月1日起至实际清偿之日止，按照LPR计算）<br/>
-                    3. 本案仲裁费用由被申请人承担
-                  </p>
-                </div>
-                <div className="border-t border-dashed border-slate-100 pt-2">
-                  <span className="text-base font-bold text-slate-700">被申请人答辩意见</span>
-                  <p className="text-base text-slate-600 mt-1 leading-relaxed">
-                    被申请人辩称：双方签订的合同中部分条款约定不明，且申请人交付的部分产品存在质量问题，有权拒绝支付相应货款。
-                  </p>
-                </div>
-                <div className="border-t border-dashed border-slate-100 pt-2">
-                  <span className="text-base font-bold text-slate-700">举证和质证</span>
-                  <div className="mt-1 space-y-1 text-base text-slate-600">
-                    <p>• 申请人举证：《采购合同》、送货签收单、增值税发票</p>
-                    <p>• 被申请人质证：对真实性无异议，主张签收单不能证明产品无质量问题</p>
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
+
+            {/* ── 裁决书核阅：核阅流转与草稿 ── */}
+            {awardSubTab === 'review' && (
+            <div className="space-y-3">
+           
 
             {/* 裁决书核阅流转记录 */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
-                <span className="text-base font-bold text-slate-700">核阅流转记录</span>
+              <div className="px-3.5 py-3 flex items-center justify-between">
+                <span className="text-slate-900 font-bold text-base">核阅流转记录</span>
               </div>
+              <div className="mx-3.5 border-b border-slate-100"></div>
               <div className="p-3 space-y-0">
                 {/* Record 1: Secretary initiated */}
                 <div className="flex gap-3 pb-4">
@@ -1310,13 +1426,14 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
 
             {/* Current Document */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
+              <div className="px-3.5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
-                  <span className="text-base font-bold text-slate-700">裁决书草稿_v2.docx</span>
+                  <span className="text-slate-900 font-bold text-base">裁决书草稿_v2.docx</span>
                 </div>
                 <span className="text-sm text-slate-400">更新人：测试秘书</span>
               </div>
+              <div className="mx-3.5 border-b border-slate-100"></div>
               <div className="p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base text-slate-500">历史版本：</span>
@@ -1334,8 +1451,8 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
 
             {/* Upload Document */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="px-3 py-2 bg-white border-b border-slate-100 flex items-center justify-between">
-                <span className="text-base font-bold text-slate-700">上传文书</span>
+              <div className="px-3.5 py-3 flex items-center justify-between">
+                <span className="text-slate-900 font-bold text-base">上传文书</span>
                 <button
                   onClick={() => setShowUploadForm(!showUploadForm)}
                   className="text-base text-indigo-500 cursor-pointer hover:underline flex items-center gap-1"
@@ -1344,6 +1461,9 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                   <span>{showUploadForm ? '收起' : '上传'}</span>
                 </button>
               </div>
+              {showUploadForm && (
+                <div className="mx-3.5 border-b border-slate-100"></div>
+              )}
               {showUploadForm && (
                 <div className="p-3 space-y-3">
                   {/* Remind Target */}
@@ -1445,20 +1565,23 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               )}
             </div>
             </div>
+            )}
 
-            {/* ── 下部：文书签名区（原 signature，含 P0 二次确认与 P1 跳转/降级，完整保留）── */}
+            {/* ── 结案文书：庭审笔录与裁决书签名 ── */}
+            {awardSubTab === 'closing' && (
             <div className="space-y-3">
             {/* 庭审笔录附件 */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
+              <div className="px-3.5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-indigo-500" />
-                  <span className="text-base font-bold text-slate-700">庭审笔录</span>
+                  <span className="text-slate-900 font-bold text-base">庭审笔录</span>
                 </div>
                 <span className="text-sm text-slate-500">
                   已签 {transcriptList.filter(t => t.signed).length} / 待签 {transcriptList.filter(t => !t.signed).length}
                 </span>
               </div>
+              <div className="mx-3.5 border-b border-slate-100"></div>
 
               {/* 庭审笔录 PDF 列表（多条，带签名状态） */}
               <div className="p-3 space-y-2">
@@ -1505,7 +1628,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                     }`}>
                       {pdf.signed ? (
                         <>
-                          <span>预览</span>
+
                           <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                         </>
                       ) : (
@@ -1522,15 +1645,16 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
 
             {/* 仲裁裁决书 - 已签名模块（可能多份，在上） */}
             <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
+              <div className="px-3.5 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileText size={14} className="text-emerald-500" />
-                  <span className="text-base font-bold text-slate-700">裁决书 · 已签名</span>
+                  <span className="text-slate-900 font-bold text-base">裁决书 · 已签名</span>
                 </div>
                 <span className="text-sm px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">
                   已签 {signedAwards.length} 份
                 </span>
               </div>
+              <div className="mx-3.5 border-b border-slate-100"></div>
 
               <div className="p-3 space-y-2">
                 {signedAwards.length > 0 ? (
@@ -1548,7 +1672,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                         </div>
                       </div>
                       <div className="flex items-center gap-1 text-sm flex-shrink-0 text-slate-400">
-                        <span>预览</span>
+                        
                         <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                       </div>
                     </div>
@@ -1565,15 +1689,16 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
             {/* 仲裁裁决书 - 待签名模块（仅 1 份，在下） */}
             {pendingAward && (
               <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2.5 bg-white border-b border-slate-100">
+                <div className="px-3.5 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText size={14} className="text-amber-500" />
-                    <span className="text-base font-bold text-slate-700">裁决书 · 待签名</span>
+                    <span className="text-slate-900 font-bold text-base">裁决书 · 待签名</span>
                   </div>
                   <span className="text-sm px-2 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">
                     待签 1 份
                   </span>
                 </div>
+                <div className="mx-3.5 border-b border-slate-100"></div>
 
                 <div className="p-3 space-y-2">
                   <div
@@ -1588,7 +1713,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                       </div>
                     </div>
                     <div className="flex items-center gap-1 text-sm flex-shrink-0 text-slate-400">
-                      <span>预览</span>
+                   
                       <i className="fa-solid fa-chevron-right text-[10px] group-hover:translate-x-0.5 transition-transform"></i>
                     </div>
                   </div>
@@ -1616,6 +1741,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               </div>
             )}
             </div>
+            )}
           </div>
         )}
       </div>

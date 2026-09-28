@@ -170,7 +170,7 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
           <button
             onClick={() => setShowApproveConfirm(true)}
             disabled={selectedIds.size === 0}
-            className={`rounded-lg text-sm font-medium whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 cursor-pointer transition-all select-none ${
+            className={`rounded-lg text-base font-medium whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 cursor-pointer transition-all select-none ${
               selectedIds.size > 0
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm shadow-indigo-900/30'
                 : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -224,33 +224,33 @@ export default function DeclarationList({ onBack, onSelectItem }: DeclarationLis
                 </div>
 
                 {/* Info rows */}
-                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">
+                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-base text-slate-500">
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{d.claimant}</span>
+                    <span className="text-base text-slate-800 truncate flex-1 text-left">{d.claimant}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-red-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">被申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{d.respondent}</span>
+                    <span className="text-base text-slate-800 truncate flex-1 text-left">{d.respondent}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText size={12} className="text-slate-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
-                    <span className="text-slate-700 flex-1 text-left">{d.secretary}</span>
+                    <span className="text-base text-slate-700 flex-1 text-left">{d.secretary}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText size={12} className="text-indigo-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">仲裁员</span>
-                    <span className="text-slate-700 flex-1 text-left">{d.arbitrator}</span>
+                    <span className="text-base text-slate-700 flex-1 text-left">{d.arbitrator}</span>
                   </div>
 
                   {d.signedDate && (
                     <div className="flex items-center gap-2 pt-1">
                       <FileText size={12} className="text-amber-400 flex-shrink-0" />
                       <span className="text-slate-500 w-14 flex-shrink-0 text-left">签署日期</span>
-                      <span className="text-slate-700 flex-1 text-left">{d.signedDate}</span>
+                      <span className="text-base text-slate-700 flex-1 text-left">{d.signedDate}</span>
                     </div>
                   )}
                 </div>

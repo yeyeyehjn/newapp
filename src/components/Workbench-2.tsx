@@ -264,7 +264,7 @@ export default function Workbench({
                   }}
                   className="h-12 flex flex-col justify-center cursor-pointer group text-left"
                 >
-                  <span className="text-sm font-medium text-slate-900 leading-[18px] line-clamp-2 group-hover:text-indigo-500 transition-colors">
+                  <span className="text-base font-medium text-slate-900 leading-[18px] line-clamp-2 group-hover:text-indigo-500 transition-colors">
                     {news.title}
                   </span>
                 </div>
@@ -360,7 +360,7 @@ export default function Workbench({
                       </div>
 
                       {/* Timeline Details */}
-                        <div className="text-sm text-slate-500 gap-y-1">
+                        <div className="text-base text-slate-500 gap-y-1">
                           <div className="flex items-start gap-0.5 min-w-0 pb-1">
                             <span className="text-slate-400 shrink-0 w-[60px]">申请人</span>
                             <span className="truncate text-slate-700 font-medium">{claimant}</span>

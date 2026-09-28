@@ -33,8 +33,9 @@ import PostponementApprovalDetail from './components/PostponementApprovalDetail'
 import PendingHearingList from './components/PendingHearingList';
 import ArbitrationKnowledge from './components/ArbitrationKnowledge';
 import LoginPage from './components/LoginPage';
+import ElectronicArchive from './components/ElectronicArchive';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -45,6 +46,8 @@ export default function App() {
   
   // Sub-page state for workbench sub-pages
   const [activeSubPage, setActiveSubPage] = useState<SubPageType>(null);
+  // 首页“查看更多”跳转待开庭列表时传入的开庭日期筛选区间
+  const [pendingHearingRange, setPendingHearingRange] = useState<[string, string] | undefined>(undefined);
   
   // Login State（默认已登录，进入项目直接展示首页）
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
@@ -141,7 +144,9 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
+    // 通用子页入口不携带首页“查看更多”附带的开庭日期筛选，仅首页另走 onViewAllHearings 时才筛选
+    if (page === 'pendingHearingList') setPendingHearingRange(undefined);
     setActiveSubPage(page);
   };
 
@@ -374,6 +379,27 @@ export default function App() {
           <CaseDetail
             caseItem={selectedCase}
             onBack={handleBackFromSubPage}
+            onNavigateToSubPage={handleNavigateToSubPage}
+            onSignTranscript={() => {
+              // 未签笔录跳转：优先定位当前案件下的待签笔录详情，找不到则回退到笔录签名列表页，避免静默失败
+              const target = transcriptSignatures.find(
+                (ts) => ts.caseNo === selectedCase?.caseNo && ts.status === 'pending'
+              );
+              if (target) {
+                setSelectedTranscript(target);
+                setActiveSubPage('transcriptSignatureDetail');
+              } else {
+                setActiveSubPage('transcriptSignature');
+              }
+            }}
+          />
+        )}
+
+        {/* Electronic Archive sub-page */}
+        {activeSubPage === 'electronicArchive' && selectedCase && (
+          <ElectronicArchive
+            caseItem={selectedCase}
+            onBack={() => setActiveSubPage('caseDetail')}
           />
         )}
 
@@ -461,6 +487,7 @@ export default function App() {
         {activeSubPage === 'pendingHearingList' && (
           <PendingHearingList
             onBack={handleBackFromSubPage}
+            initialDateRange={pendingHearingRange}
             onSelectItem={(item) => {
               const matchedCase = cases.find(c => c.caseNo === item.caseNo);
               if (matchedCase) {
@@ -506,6 +533,7 @@ export default function App() {
             onNavigateToSubPage={handleNavigateToSubPage}
             onToggleVersion={() => setWorkbenchVersion('v2')}
             onQuickFilter={setQuickFilter}
+            onViewAllHearings={(range) => { setPendingHearingRange(range); setActiveSubPage('pendingHearingList'); }}
           />
         )}
 

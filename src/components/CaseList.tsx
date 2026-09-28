@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, AlertCircle, Building2, FileText, Calendar, User, Coins, SlidersHorizontal, Star, Clock, AlertTriangle } from 'lucide-react';
 import { Case, CaseStatus, ArbitratorRole } from '../types';
+import BottomSheet from './BottomSheet';
 
 interface CaseListProps {
   cases: Case[];
@@ -229,172 +230,165 @@ export default function CaseList({ cases, onSelectCase, selectedStatusFilter: ex
         </div>
       </div>
 
-      {/* Comprehensive Filter Panel */}
-      {showFilterDrawer && (
-        <>
-          {/* Backdrop overlay */}
-          <div
-            className="absolute inset-0 bg-slate-900/30 z-20"
-            onClick={() => setShowFilterDrawer(false)}
-          />
-          {/* Filter Panel */}
-          <div className="bg-white border-b border-indigo-50 px-4 py-3 flex-shrink-0 animate-slide-down shadow-lg z-30 relative space-y-2.5 order-first">
-           
-            {/* Secretary Filter */}
-            <div className="flex items-start gap-3">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                经办秘书
-              </span>
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={selectedSecretary}
-                  onChange={(e) => setSelectedSecretary(e.target.value)}
-                  placeholder="搜索经办秘书姓名"
-                  className="w-full px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
+      {/* Comprehensive Filter Bottom Sheet */}
+      <BottomSheet
+        open={showFilterDrawer}
+        onClose={() => setShowFilterDrawer(false)}
+        title="综合筛选"
+        footer={
+          <div className="flex items-center gap-3">
+            <button
+              onClick={resetFilters}
+              className="flex-1 py-2.5 rounded-lg text-base text-slate-600 bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors"
+            >
+              重置
+            </button>
+            <button
+              onClick={() => setShowFilterDrawer(false)}
+              className="flex-1 py-2.5 rounded-lg text-base text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer transition-colors"
+            >
+              确认
+            </button>
+          </div>
+        }
+      >
+        {/* Secretary Filter */}
+        <div className="flex items-start gap-3 min-w-0">
+          <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            经办秘书
+          </span>
+          <div className="flex-1 min-w-0">
+            <input
+              type="text"
+              value={selectedSecretary}
+              onChange={(e) => setSelectedSecretary(e.target.value)}
+              placeholder="搜索经办秘书姓名"
+              className="w-full px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            />
+          </div>
+        </div>
 
-            {/* Amount Range Filter */}
-            <div className="flex items-start gap-3 mt-2">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                标的区间
-              </span>
-              <div className="flex items-center gap-2 flex-1">
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min={0}
-                    value={amountRange[0] === 0 ? '' : amountRange[0]}
-                    onChange={(e) => setAmountRange([Number(e.target.value) || 0, amountRange[1]])}
-                    placeholder="标的下限"
-                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
-                </div>
-                <span className="text-slate-400 text-sm">-</span>
-                <div className="relative flex-1">
-                  <input
-                    type="number"
-                    min={0}
-                    value={amountRange[1] === 100000 ? '' : amountRange[1]}
-                    onChange={(e) => setAmountRange([amountRange[0], Number(e.target.value) || 100000])}
-                    placeholder="标的上限"
-                    className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                  />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
-                </div>
-              </div>
+        {/* Amount Range Filter */}
+        <div className="flex items-start gap-3 mt-3 min-w-0">
+          <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            标的区间
+          </span>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="relative flex-1 min-w-0">
+              <input
+                type="number"
+                min={0}
+                value={amountRange[0] === 0 ? '' : amountRange[0]}
+                onChange={(e) => setAmountRange([Number(e.target.value) || 0, amountRange[1]])}
+                placeholder="标的下限"
+                className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
             </div>
-
-            {/* Hearing Date Range Filter */}
-            <div className="flex items-start gap-3 mt-2">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                开庭日期
-              </span>
-              <div className="flex items-center gap-2 flex-1">
-                <input
-                  type="date"
-                  value={hearingDateRange[0]}
-                  onChange={(e) => setHearingDateRange([e.target.value, hearingDateRange[1]])}
-                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-                <span className="text-slate-400 text-sm">-</span>
-                <input
-                  type="date"
-                  value={hearingDateRange[1]}
-                  onChange={(e) => setHearingDateRange([hearingDateRange[0], e.target.value])}
-                  className="flex-1 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Role Filter */}
-            <div className="flex items-start gap-3 mt-2">
-              <span className="text-base  text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                类型
-              </span>
-              <div className="flex flex-wrap gap-1.5 flex-1">
-                {roleOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setSelectedRole(opt.value)}
-                    className={`py-1 px-2.5 rounded text-base  transition-all cursor-pointer ${
-                      selectedRole === opt.value
-                        ? 'bg-indigo-600 text-white border border-indigo-600'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Close Method Filter */}
-            <div className="flex items-start gap-3 mt-2">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                结案方式
-              </span>
-              <div className="flex flex-wrap gap-1.5 flex-1">
-                {closeMethodOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setSelectedCloseMethod(opt.value)}
-                    className={`py-1 px-2.5 rounded text-base  transition-all cursor-pointer ${
-                      selectedCloseMethod === opt.value
-                        ? 'bg-indigo-600 text-white border border-indigo-600'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Filter */}
-            <div className="flex items-start gap-3 mt-2">
-              <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
-                快捷筛选
-              </span>
-              <div className="flex flex-wrap gap-1.5 flex-1">
-                {quickFilterOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setQuickFilter(quickFilter === opt.value ? 'none' : opt.value)}
-                    className={`py-1 px-2.5 rounded text-base transition-all cursor-pointer flex items-center gap-1 ${
-                      quickFilter === opt.value
-                        ? 'bg-indigo-600 text-white border border-indigo-600'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
-                    }`}
-                  >
-                    {opt.icon}
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Reset & Confirm Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                onClick={resetFilters}
-                className="px-4 py-1.5 rounded text-base  text-slate-600 bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors"
-              >
-                重置
-              </button>
-              <button
-                onClick={() => setShowFilterDrawer(false)}
-                className="px-4 py-1.5 rounded text-base text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer transition-colors"
-              >
-                确认
-              </button>
+            <span className="text-slate-400 text-sm flex-shrink-0">-</span>
+            <div className="relative flex-1 min-w-0">
+              <input
+                type="number"
+                min={0}
+                value={amountRange[1] === 100000 ? '' : amountRange[1]}
+                onChange={(e) => setAmountRange([amountRange[0], Number(e.target.value) || 100000])}
+                placeholder="标的上限"
+                className="w-full px-2 py-1 pr-7 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-base">万</span>
             </div>
           </div>
-        </>
-      )}
+        </div>
+
+        {/* Hearing Date Range Filter */}
+        <div className="flex items-start gap-3 mt-3 min-w-0">
+          <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            开庭日期
+          </span>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <input
+              type="date"
+              value={hearingDateRange[0]}
+              onChange={(e) => setHearingDateRange([e.target.value, hearingDateRange[1]])}
+              className="flex-1 min-w-0 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            />
+            <span className="text-slate-400 text-sm flex-shrink-0">-</span>
+            <input
+              type="date"
+              value={hearingDateRange[1]}
+              onChange={(e) => setHearingDateRange([hearingDateRange[0], e.target.value])}
+              className="flex-1 min-w-0 px-2 py-1 rounded border border-slate-200 text-base text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Role Filter */}
+        <div className="flex items-start gap-3 mt-3">
+          <span className="text-base  text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            类型
+          </span>
+          <div className="flex flex-wrap gap-1.5 flex-1">
+            {roleOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedRole(opt.value)}
+                className={`py-1 px-2.5 rounded text-base  transition-all cursor-pointer ${
+                  selectedRole === opt.value
+                    ? 'bg-indigo-600 text-white border border-indigo-600'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Close Method Filter */}
+        <div className="flex items-start gap-3 mt-3">
+          <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            结案方式
+          </span>
+          <div className="flex flex-wrap gap-1.5 flex-1">
+            {closeMethodOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSelectedCloseMethod(opt.value)}
+                className={`py-1 px-2.5 rounded text-base  transition-all cursor-pointer ${
+                  selectedCloseMethod === opt.value
+                    ? 'bg-indigo-600 text-white border border-indigo-600'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Filter */}
+        <div className="flex items-start gap-3 mt-3">
+          <span className="text-base text-slate-500 w-16 flex-shrink-0 pt-1.5 text-left">
+            快捷筛选
+          </span>
+          <div className="flex flex-wrap gap-1.5 flex-1">
+            {quickFilterOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setQuickFilter(quickFilter === opt.value ? 'none' : opt.value)}
+                className={`py-1 px-2.5 rounded text-base transition-all cursor-pointer flex items-center gap-1 ${
+                  quickFilter === opt.value
+                    ? 'bg-indigo-600 text-white border border-indigo-600'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-transparent'
+                }`}
+              >
+                {opt.icon}
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </BottomSheet>
 
       {/* Case list items */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -440,31 +434,31 @@ export default function CaseList({ cases, onSelectCase, selectedStatusFilter: ex
                 </div>
 
                 {/* Info rows */}
-                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-sm text-slate-500">
+                <div className="border-t border-dashed border-slate-100 pt-3 space-y-2 text-base text-slate-500">
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-emerald-500 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{c.claimant}</span>
+                    <span className="text-slate-800 truncate flex-1 text-left text-base">{c.claimant}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building2 size={12} className="text-red-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">被申请人</span>
-                    <span className="text-slate-800 truncate flex-1 text-left">{c.respondent}</span>
+                    <span className="text-slate-800 truncate flex-1 text-left text-base">{c.respondent}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Coins size={12} className="text-amber-500 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">争议金额</span>
-                    <span className="text-slate-700 flex-1 text-left">{formatCNY(c.disputeAmount)}</span>
+                    <span className="text-slate-700 flex-1 text-left text-base">{formatCNY(c.disputeAmount)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <User size={12} className="text-slate-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">办案秘书</span>
-                    <span className="text-slate-700 flex-1 text-left">{c.secretary || '—'}</span>
+                    <span className="text-slate-700 flex-1 text-left text-base">{c.secretary || '—'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar size={12} className="text-indigo-400 flex-shrink-0" />
                     <span className="text-slate-500 w-14 flex-shrink-0 text-left">立案时间</span>
-                    <span className="text-slate-700 flex-1 text-left">{c.startDate}</span>
+                    <span className="text-slate-700 flex-1 text-left text-base">{c.startDate}</span>
                   </div>
                 </div>
 

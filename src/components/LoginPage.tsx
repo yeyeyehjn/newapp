@@ -612,7 +612,7 @@ function MethodCard({ icon, title, desc, steps, accent, onClick }: MethodCardPro
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-black text-slate-800">{title}</h3>
+            <h3 className="text-lg font-black text-slate-800">{title}</h3>
             <ChevronRight size={14} className="text-slate-500 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
           </div>
           <p className="text-sm text-slate-500 font-medium mt-0.5 leading-relaxed">{desc}</p>

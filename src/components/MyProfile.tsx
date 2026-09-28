@@ -126,19 +126,19 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
               <h1 className="text-[17px] font-black text-slate-800 tracking-tight leading-none">
                 {profile.name}
               </h1>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-black bg-white/95 text-indigo-600 border border-blue-100/50 shadow-2xs">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-sm  bg-white/95 text-indigo-600 border border-blue-100/50 shadow-2xs">
                 <Award size={10} className="text-indigo-600" />
                 {profile.ranking}
               </span>
             </div>
-            <p className="text-[12.5px] text-slate-500 font-bold truncate mb-2">
+            <p className="text-sm text-slate-500  truncate mb-2">
               广州市社会科学院政治法律研究所
             </p>
             
             {/* Minor specialties badges */}
             <div className="flex flex-wrap gap-1">
               {profile.specialties.map((spec, idx) => (
-                <span key={idx} className="bg-white/80 border border-slate-100 text-[10.5px] font-bold text-indigo-600 px-2 py-0.5 rounded-md shadow-2xs">
+                <span key={idx} className="bg-white/80 border border-slate-100 text-sm  text-indigo-600 px-2 py-0.5 rounded-md shadow-2xs">
                   {spec}
                 </span>
               ))}
@@ -160,7 +160,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
               <Wallet size={15} />
             </div>
             <div className="space-y-0.5">
-              <h3 className="text-sm font-bold text-slate-800 leading-none">酬金单</h3>
+              <h3 className="text-base font-bold text-slate-800 leading-none">酬金单</h3>
               <p className="text-sm text-slate-500 font-medium">查看案件酬金发放明细与报酬规则</p>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <User size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-sm font-bold text-slate-800 leading-none">个人信息</h3>
+                <h3 className="text-base font-bold text-slate-800 leading-none">个人信息</h3>
                 <p className="text-sm text-slate-500 font-medium">姓名、联系方式、地址信息</p>  
               </div>
             </div>
@@ -207,31 +207,31 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <div className="grid grid-cols-2 gap-2.5 pt-2 text-sm">
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
                   <span className="text-sm text-slate-500 block font-medium">中文姓名</span>
-                  <span className="font-bold text-slate-800">{personalInfo.name}</span>
+                  <span className="text-base font-bold text-slate-800">{personalInfo.name}</span>
                 </div>
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
                   <span className="text-sm text-slate-500 block font-medium">聘用职称</span>
-                  <span className="font-bold text-rose-500">{personalInfo.ranking}</span>
+                  <span className="text-base font-bold text-rose-500">{personalInfo.ranking}</span>
                 </div>
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
                   <div className="flex items-center gap-1">
                     <Phone size={10} className="text-slate-400" />
                     <span className="text-sm text-slate-500 font-medium">手机号</span>
                   </div>
-                  <span className="font-bold text-slate-800 truncate">{personalInfo.phone}</span>
+                  <span className="text-base font-bold text-slate-800 truncate">{personalInfo.phone}</span>
                 </div>
                 <div className="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
                   <div className="flex items-center gap-1">
                     <Mail size={10} className="text-slate-400" />
                     <span className="text-sm text-slate-500 font-medium">联系邮箱</span>
                   </div>
-                  <span className="font-bold text-slate-800 truncate">{personalInfo.email}</span>
+                  <span className="text-base font-bold text-slate-800 truncate">{personalInfo.email}</span>
                 </div>
               </div>
               
               {/* Address Section */}
               <div className="space-y-2">
-                <div className="flex items-center gap-1 text-slate-600 font-medium text-sm">
+                <div className="flex items-center gap-1 text-slate-600 font-medium text-base">
                   <MapPin size={12} />
                   <span>地址信息</span>
                 </div>
@@ -247,7 +247,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                     </div>
                     {renderAddressBadge('home', personalInfo.preferredAddress)}
                   </div>
-                  <span className="text-sm text-slate-700 truncate block">{personalInfo.homeAddress}</span>
+                  <span className="text-base text-slate-700 truncate block">{personalInfo.homeAddress}</span>
                 </div>
                 
                 <div 
@@ -261,7 +261,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                     </div>
                     {renderAddressBadge('contact', personalInfo.preferredAddress)}
                   </div>
-                  <span className="text-sm text-slate-700 truncate block">{personalInfo.contactAddress}</span>
+                  <span className="text-base text-slate-700 truncate block">{personalInfo.contactAddress}</span>
                 </div>
                 
                 <div 
@@ -275,7 +275,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                     </div>
                     {renderAddressBadge('other', personalInfo.preferredAddress)}
                   </div>
-                  <span className="text-sm text-slate-700 truncate block">{personalInfo.otherAddress}</span>
+                  <span className="text-base text-slate-700 truncate block">{personalInfo.otherAddress}</span>
                 </div>
               </div>
               
@@ -307,7 +307,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <Building2 size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-sm font-bold text-slate-800 leading-none">工作单位</h3>
+                <h3 className="text-base font-bold text-slate-800 leading-none">工作单位</h3>
                 <p className="text-sm text-slate-500 font-medium">执业/研究单位及当前岗位</p>
               </div>
             </div>
@@ -332,7 +332,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
             <div className="border-t border-slate-100 p-3.5 pt-2 bg-slate-50/30 text-left space-y-2 animate-slide-up">
               <div className="pt-2 space-y-2 text-sm">
                 <div className="bg-white p-3 rounded-lg border border-slate-100 space-y-1.5">
-                  <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm">
+                  <div className="flex items-center gap-2 text-indigo-600 font-bold text-base">
                     <Building2 size={14} />
                     <span className="truncate">{workInfo.company}</span>
                   </div>
@@ -340,11 +340,11 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-slate-500 font-medium block">现任职务</span>
-                      <strong className="text-slate-700 font-bold block truncate">{workInfo.position}</strong>
+                      <strong className="text-base text-slate-700 font-bold block truncate">{workInfo.position}</strong>
                     </div>
                     <div>
                       <span className="text-slate-500 font-medium block">行业资质</span>
-                      <strong className="text-slate-700 font-bold block truncate">{workInfo.qualification}</strong>
+                      <strong className="text-base text-slate-700 font-bold block truncate">{workInfo.qualification}</strong>
                     </div>
                   </div>
                 </div>
@@ -364,7 +364,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <FileText size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-sm font-bold text-slate-800 leading-none">个人履历</h3>
+                <h3 className="text-base font-bold text-slate-800 leading-none">个人履历</h3>
                 <p className="text-sm text-slate-500 font-medium">学术背景、执业年限及学术专著</p>
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                     <span className="text-sm font-bold text-indigo-600 bg-indigo-50 border border-indigo-100/50 px-2 py-0.2 rounded font-mono">
                       2002年 - 2005年
                     </span>
-                    <h4 className="font-bold text-slate-800 text-sm mt-1">西南政法大学 • 法学硕士学位</h4>
+                    <h4 className="font-bold text-slate-800 text-base mt-1">西南政法大学 • 法学硕士学位</h4>
                     <p className="text-sm text-slate-500 mt-0.5">主修商法及民事诉讼，发表多篇法学核心期刊论文。</p>
                   </div>
                   
@@ -394,7 +394,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                     <span className="text-sm font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.2 rounded font-mono">
                       2006年 - 至今
                     </span>
-                    <h4 className="font-bold text-slate-800 text-sm mt-1">深耕巨额重大商事仲裁及民商事司法事务</h4>
+                    <h4 className="font-bold text-slate-800 text-base mt-1">深耕巨额重大商事仲裁及民商事司法事务</h4>
                     <p className="text-sm text-slate-500 mt-0.5">代理各类型涉外股权、重大建设工程和金融合规仲裁及诉讼，总争议金额超数十亿元人民币，并出任多家世界五百强及知名国企特约法律顾问。</p>
                   </div>
                 </div>
@@ -424,7 +424,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                 <CreditCard size={15} />
               </div>
               <div className="space-y-0.5">
-                <h3 className="text-sm font-bold text-slate-800 leading-none">银行账号信息</h3>
+                <h3 className="text-base font-bold text-slate-800 leading-none">银行账号信息</h3>
                 <p className="text-sm text-slate-500 font-medium">本庭办案报酬与津贴发放指定账户</p>
               </div>
             </div>
@@ -456,7 +456,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
                       <span className="text-sm tracking-widest text-indigo-200 uppercase font-bold">仲裁员专款汇账卡</span>
-                      <h4 className="font-bold text-sm text-white truncate">{bankInfo.bank}</h4>
+                      <h4 className="font-bold text-base text-white truncate">{bankInfo.bank}</h4>
                     </div>
                     <span className="text-sm bg-white/20 border border-white/10 text-white px-1.5 py-0.5 rounded font-bold font-mono">
                       {bankInfo.branch}
@@ -465,12 +465,12 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
 
                   <div className="space-y-1">
                     <span className="text-sm text-indigo-200 block">卡号</span>
-                    <span className="text-sm font-bold font-mono tracking-widest block">
+                    <span className="text-base font-bold font-mono tracking-widest block">
                       {bankInfo.accountNo}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-end border-t border-white/10 pt-2 text-sm text-indigo-100 font-medium">
+                  <div className="flex justify-between items-end border-t border-white/10 pt-2 text-base text-indigo-100 font-medium">
                     <span className="truncate">账户户名：<strong className="text-white font-bold">{bankInfo.accountName}</strong></span>
                     <div className="flex items-center gap-1 text-emerald-300">
                       <ShieldCheck size={11} />
@@ -494,7 +494,7 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
             className="w-full bg-white border border-red-100 hover:bg-rose-50 text-red-600 font-bold p-3 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 hover:shadow-sm"
           >
             <LogOut size={14} className="text-red-500" />
-            <span className="text-sm">退出登录</span>
+            <span className="text-base">退出登录</span>
           </button>
           
          

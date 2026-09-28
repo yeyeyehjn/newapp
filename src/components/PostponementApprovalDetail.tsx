@@ -122,7 +122,7 @@ export default function PostponementApprovalDetail({
         <div className="bg-white rounded-xl border border-slate-100 p-4">
           <div className="flex items-center gap-2 mb-3">
             <i className="fa-solid fa-clock-rotate-left text-indigo-500"></i>
-            <span className="text-base font-bold text-slate-800">延期申请信息</span>
+            <span className="text-lg font-bold text-slate-800">延期申请信息</span>
           </div>
 
           <div className="space-y-3 text-base text-left">
@@ -147,7 +147,7 @@ export default function PostponementApprovalDetail({
         <div className="bg-white rounded-xl border border-slate-100 p-4">
           <div className="flex items-center gap-2 mb-4">
             <i className="fa-solid fa-route text-indigo-500"></i>
-            <span className="text-base font-bold text-slate-800">审批流转记录</span>
+            <span className="text-lg font-bold text-slate-800">审批流转记录</span>
           </div>
 
           {/* Timeline */}
@@ -170,7 +170,7 @@ export default function PostponementApprovalDetail({
                       {getStatusLabel(record.status)}
                     </span>
                     {record.comment && (
-                      <span className="text-sm text-slate-500 truncate">{record.comment}</span>
+                      <span className="text-base text-slate-500 truncate">{record.comment}</span>
                     )}
                   </div>
                 </div>
@@ -184,7 +184,7 @@ export default function PostponementApprovalDetail({
           <div className="bg-white rounded-xl border border-slate-100 p-4">
             <div className="flex items-center gap-2 mb-3">
               <i className="fa-solid fa-pen-to-square text-indigo-500"></i>
-              <span className="text-base font-bold text-slate-800">审批备注</span>
+              <span className="text-lg font-bold text-slate-800">审批备注</span>
             </div>
             <textarea
               value={approvalComment}
@@ -224,7 +224,7 @@ export default function PostponementApprovalDetail({
           <div className="bg-white rounded-xl border border-slate-100 p-4">
             <div className="flex items-center gap-2 mb-3">
               <i className={`fa-solid ${approval.status === 'approved' ? 'fa-check-circle text-emerald-500' : 'fa-times-circle text-rose-500'}`}></i>
-              <span className="text-base font-bold text-slate-800">
+              <span className="text-lg font-bold text-slate-800">
                 {approval.status === 'approved' ? '审批已通过' : '审批已驳回'}
               </span>
             </div>

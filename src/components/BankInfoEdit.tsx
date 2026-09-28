@@ -39,7 +39,7 @@ export default function BankInfoEdit({ initialData, onBack, onSave }: BankInfoEd
       {/* Form Content */}
       <div className="flex-1 p-4 space-y-4 text-left">
         <div className="bg-white rounded-lg border border-slate-100 p-4 space-y-4">
-          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <CreditCard size={14} className="text-indigo-500" />
             银行账户信息
           </h3>
@@ -95,13 +95,13 @@ export default function BankInfoEdit({ initialData, onBack, onSave }: BankInfoEd
       <div className="sticky bottom-0 bg-white border-t border-slate-100 p-4 flex gap-3">
         <button
           onClick={onBack}
-          className="flex-1 py-3 rounded-lg bg-slate-100 text-slate-600 font-medium text-sm hover:bg-slate-200 transition-colors"
+          className="flex-1 py-3 rounded-lg bg-slate-100 text-slate-600 font-medium text-base hover:bg-slate-200 transition-colors"
         >
           取消
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 py-3 rounded-lg bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-3 rounded-lg bg-indigo-600 text-white font-medium text-base hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
         >
           <CheckCircle size={16} />
           保存修改

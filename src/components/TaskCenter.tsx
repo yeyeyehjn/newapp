@@ -379,7 +379,7 @@ export default function TaskCenter({
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
                         <span className="text-xs font-mono font-bold text-slate-500 block">{task.caseNo}</span>
-                        <h4 className="text-xs font-black text-slate-705">{task.title}</h4>
+                        <h4 className="text-base font-black text-slate-705">{task.title}</h4>
                       </div>
                       <span className={`text-2xs font-black px-2 py-1 rounded-lg border ${
                         isTaskPending ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
@@ -388,7 +388,7 @@ export default function TaskCenter({
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-455 leading-relaxed">
+                    <p className="text-sm text-slate-455 leading-relaxed">
                       {task.description}
                     </p>
 
@@ -443,7 +443,7 @@ export default function TaskCenter({
                     <div className="flex justify-between items-start">
                       <div className="space-y-0.5">
                         <span className="text-xs font-mono font-bold text-slate-500 block">{task.caseNo}</span>
-                        <h4 className="text-xs font-black text-slate-705">{task.title}</h4>
+                        <h4 className="text-base font-black text-slate-705">{task.title}</h4>
                       </div>
                       <span className={`text-2xs font-black px-2 py-1 rounded-lg border ${
                         isTaskPending ? 'bg-red-50 text-red-500 border-red-100 animate-pulse' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
@@ -452,7 +452,7 @@ export default function TaskCenter({
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-455 leading-relaxed text-justify">
+                    <p className="text-sm text-slate-455 leading-relaxed text-justify">
                       {task.description}
                     </p>
 
@@ -504,7 +504,7 @@ export default function TaskCenter({
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5 max-w-[80%]">
                       <span className="text-2xs text-slate-450 block font-mono">创建时间: {tr.date}</span>
-                      <h4 className="text-sm font-black text-slate-800 leading-snug">{tr.title}</h4>
+                      <h4 className="text-base font-black text-slate-800 leading-snug">{tr.title}</h4>
                     </div>
                     <span className={`text-2xs px-1.5 py-1 rounded font-black border ${
                       tr.signed ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'
@@ -560,7 +560,7 @@ export default function TaskCenter({
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
                       <span className="text-2xs font-mono text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded border border-amber-100">{ext.caseNo}</span>
-                      <h4 className="text-xs font-black text-slate-800 pt-0.5">{ext.title}</h4>
+                      <h4 className="text-base font-black text-slate-800 pt-0.5">{ext.title}</h4>
                     </div>
                     <span className={`text-2xs px-1.5 py-1 rounded font-black border ${
                       ext.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
@@ -573,9 +573,9 @@ export default function TaskCenter({
                     </span>
                   </div>
 
-                  <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-500 leading-normal space-y-1.5 border border-slate-100">
+                  <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-500 leading-normal space-y-1.5 border border-slate-100">
                     <p><strong>申请代理人:</strong> <span className="text-slate-700 font-bold">{ext.applicant}</span></p>
-                    <p className="text-justify text-xs"><strong>延期原因:</strong> {ext.reason}</p>
+                    <p className="text-justify text-sm"><strong>延期原因:</strong> {ext.reason}</p>
                     <p className="text-2xs font-mono text-slate-500">递送时间: {ext.applyDate}</p>
                   </div>
 
@@ -616,7 +616,7 @@ export default function TaskCenter({
               {promises.map(p => (
                 <div key={p.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-4 space-y-3 relative overflow-hidden">
                   <div className="flex justify-between items-start">
-                    <h4 className="text-sm font-black text-slate-800 flex items-center gap-1">
+                    <h4 className="text-base font-black text-slate-800 flex items-center gap-1">
                       <i className="fa-solid fa-scroll text-emerald-600"></i>
                       <span>{p.name}</span>
                     </h4>
@@ -627,7 +627,7 @@ export default function TaskCenter({
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-normal text-justify bg-slate-50/60 p-2.5 rounded-xl border border-slate-100">
+                  <p className="text-sm text-slate-500 leading-normal text-justify bg-slate-50/60 p-2.5 rounded-xl border border-slate-100">
                     {p.desc}
                   </p>
 
@@ -809,8 +809,8 @@ export default function TaskCenter({
               <span className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100/60 px-1 py-0.2 rounded font-black font-mono">
                 TASK WORKFLOW STAGE
               </span>
-              <h3 className="text-sm font-black pt-1">{selectedTask.title}</h3>
-              <p className="text-xs text-slate-500 leading-normal">
+              <h3 className="text-base font-black pt-1">{selectedTask.title}</h3>
+              <p className="text-sm text-slate-500 leading-normal">
                 {selectedTask.description}
               </p>
             </div>
@@ -843,7 +843,7 @@ export default function TaskCenter({
                     </div>
                   )}
 
-                  <div className="whitespace-pre-line font-serif pl-1.5 text-xs">
+                  <div className="whitespace-pre-line font-serif pl-1.5 text-sm">
                     {selectedTask.details?.awardText}
                   </div>
                 </div>
@@ -1009,7 +1009,7 @@ export default function TaskCenter({
                         reviewDocsRead[doc.id] ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-100 hover:border-indigo-300'
                       }`}
                     >
-                      <span className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                      <span className="text-sm font-bold text-slate-700 flex items-center space-x-1.5">
                         <FileText size={12} className={reviewDocsRead[doc.id] ? 'text-emerald-500' : 'text-slate-500'} />
                         <span className={reviewDocsRead[doc.id] ? 'text-emerald-800 font-black' : ''}>{doc.name}</span>
                       </span>
@@ -1085,15 +1085,15 @@ export default function TaskCenter({
           <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-slate-50 mb-3 text-center">
             <div>
               <div className="text-base font-bold text-red-600">{hearingsStats.today}</div>
-              <div className="text-sm text-slate-500 tracking-wider">今日</div>
+              <div className="text-base text-slate-500 tracking-wider">今日</div>
             </div>
             <div className="border-x border-slate-50">
               <div className="text-base font-bold text-amber-500">{hearingsStats.near}</div>
-              <div className="text-sm text-slate-500 tracking-wider">临近</div>
+              <div className="text-base text-slate-500 tracking-wider">临近</div>
             </div>
             <div>
               <div className="text-base font-bold text-green-600">{hearingsStats.scheduled}</div>
-              <div className="text-sm text-slate-500 tracking-wider">已排期</div>
+              <div className="text-base text-slate-500 tracking-wider">已排期</div>
             </div>
           </div>
 
@@ -1128,11 +1128,11 @@ export default function TaskCenter({
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center font-sans">
             <div>
               <div className="text-base font-bold text-teal-600">{pendingPromisesSignaturesCount}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待签署</div>
+              <div className="text-base text-slate-500 tracking-wider">待签署</div>
             </div>
             <div className="border-l border-slate-50">
               <div className="text-base font-bold text-green-600">{promises.filter(p => p.signed).length}</div>
-              <div className="text-sm text-slate-500 tracking-wider">已签署</div>
+              <div className="text-base text-slate-500 tracking-wider">已签署</div>
             </div>
           </div>
         </div>
@@ -1158,11 +1158,11 @@ export default function TaskCenter({
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center">
             <div className="border-r border-slate-50">
               <div className="text-base font-bold text-orange-600">{pendingTranscriptsSignaturesCount}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待签署</div>
+              <div className="text-base text-slate-500 tracking-wider">待签署</div> 
             </div>
             <div>
               <div className="text-base font-bold text-slate-500">{transcripts.filter(t => t.signed).length}</div>
-              <div className="text-sm text-slate-500 tracking-wider">已签署</div>
+              <div className="text-base text-slate-500 tracking-wider">已签署</div>
             </div>
           </div>
         </div>
@@ -1188,11 +1188,11 @@ export default function TaskCenter({
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center font-sans">
             <div>
               <div className="text-base font-bold text-amber-600">{pendingExtensionsRequestsCount}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待审批</div>
+              <div className="text-base text-slate-500 tracking-wider">待审批</div>
             </div>
             <div className="border-l border-slate-50">
               <div className="text-base font-bold text-green-600">{extensions.filter(e => e.status !== 'pending').length}</div>
-              <div className="text-sm text-slate-500 tracking-wider">已审批</div>
+              <div className="text-base text-slate-500 tracking-wider">已审批</div>
             </div>
           </div>
         </div>
@@ -1218,11 +1218,11 @@ export default function TaskCenter({
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-3 text-center">
             <div className="border-r border-slate-50">
               <div className="text-base font-bold text-indigo-600">{signaturesStats.pending}</div>
-              <div className="text-sm text-slate-500 tracking-wider">待签</div>
+              <div className="text-base text-slate-500 tracking-wider">待签</div>
             </div>
             <div>
               <div className="text-base font-bold text-sky-600">{signaturesStats.signed}</div>
-              <div className="text-sm text-slate-500 tracking-wider">本月已签</div>
+              <div className="text-base text-slate-500 tracking-wider">本月已签</div>
             </div>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -1256,11 +1256,11 @@ export default function TaskCenter({
           <div className="grid grid-cols-2 gap-2 py-3 border-t border-slate-50 mb-1 text-center font-sans">
             <div>
               <div className="text-base font-bold text-rose-600">3</div>
-              <div className="text-sm text-slate-500 tracking-wider">待草拟</div>
+              <div className="text-base text-slate-500 tracking-wider">待草拟</div>
             </div>
             <div className="border-l border-slate-50">
               <div className="text-base font-bold text-green-600">8</div>
-              <div className="text-sm text-slate-500 tracking-wider">已提交</div>
+              <div className="text-base text-slate-500 tracking-wider">已提交</div>
             </div>
           </div>
         </div>

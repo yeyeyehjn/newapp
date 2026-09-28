@@ -274,7 +274,7 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
                       <i className={`fa-solid ${cat.icon} text-white text-base`}></i>
                     </div>
                     <div>
-                      <h3 className="text-base  text-white leading-tight">{cat.label}</h3>
+                      <h3 className="text-lg  text-white leading-tight">{cat.label}</h3>
                       <span className="text-[11px] text-white/70 font-medium">{count} 篇文档</span>
                     </div>
                   </div>
@@ -332,7 +332,7 @@ export default function ArbitrationKnowledge({ onBack, userName = '张明' }: Ar
                   className="bg-white rounded-lg border border-slate-100 p-3.5 hover:border-indigo-600/30 hover:shadow-md hover:shadow-blue-500/5 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h4 className="text-base font-bold text-slate-800 group-hover:text-indigo-600 transition-colors leading-snug flex-1 flex items-start gap-1.5">
+                    <h4 className="text-lg font-bold text-slate-800 group-hover:text-indigo-600 transition-colors leading-snug flex-1 flex items-start gap-1.5">
                       <FileText size={14} className="text-indigo-600 mt-0.5 flex-shrink-0" />
                       <span>{article.title}</span>
                     </h4>
@@ -437,7 +437,7 @@ function PdfViewer({ article, userName, onClose }: PdfViewerProps) {
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <i className="fa-solid fa-file-pdf text-red-400 text-lg flex-shrink-0"></i>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold truncate">{article.title}</h3>
+            <h3 className="text-lg font-bold truncate">{article.title}</h3>
             <p className="text-[11px] text-slate-400 flex items-center gap-2">
               <span>{article.source}</span>
               <span>·</span>

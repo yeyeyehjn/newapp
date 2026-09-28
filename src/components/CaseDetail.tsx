@@ -1152,7 +1152,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
               return (
               <div key={cat.key} className="space-y-3">
                 {/* 质证通知（可折叠，表头右侧展示送达时间） */}
-                <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
+                {/* <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">
                   <button
                     onClick={() => setShowEvidenceNotice(v => !v)}
                     aria-expanded={showEvidenceNotice}
@@ -1176,7 +1176,7 @@ export default function CaseDetail({ caseItem, onBack, onNavigateToSubPage, init
                       </div>
                     </>
                   )}
-                </div>
+                </div> */}
 
                 {/* 证据目录（默认折叠，附件行形式） */}
                 <div className="bg-white rounded-lg border border-slate-100 overflow-hidden">

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>穗仲云 · 仲裁员端操作指引</title>
+<link rel="icon" href="guide-assets/favicon2.ico">
+<link rel="shortcut icon" href="guide-assets/favicon2.ico">
+<style>
+  :root{
+    --brand-primary:#0a1f8f;
+    --brand-secondary:#1d4ed8;
+    --info:#4780FF;
+    --info-bg:#e0e7ff;
+    --info-border:#c7d2fe;
+    --brand-auxiliary:#8C5C2E;
+    --brand-auxiliary-bg:#faf3ed;
+    --brand-auxiliary-border:#e8d5c4;
+    --bg-base:#f8fafc;
+    --bg-surface:#ffffff;
+    --bg-muted:#f1f5f9;
+    --text-primary:#0f172a;
+    --text-secondary:#475569;
+    --text-muted:#64748b;
+    --border-default:#e2e8f0;
+    --border-muted:#f1f5f9;
+    --shadow-card:0 1px 2px rgba(15,23,42,.04);
+    --font-sans:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-mono:ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    padding-left:env(safe-area-inset-left);
+    padding-right:env(safe-area-inset-right);
+    background:var(--bg-base);
+    color:var(--text-primary);
+    font-family:var(--font-sans);
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  /* ---------- 浏览器表层 ---------- */
+  ::selection{background:var(--info-bg);color:var(--brand-primary);}
+  a:focus-visible{outline:2px solid var(--brand-secondary);outline-offset:2px;border-radius:8px;}
+
+  /* ---------- 顶栏 ---------- */
+  .topbar{
+    background:var(--bg-surface);
+    border-bottom:1px solid var(--border-default);
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .topbar-inner{
+    max-width:1180px;
+    margin:0 auto;
+    padding:10px 24px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo{height:32px;width:auto;flex:none;display:block;}
+  .brand-title{font-size:16px;font-weight:700;line-height:1.2;}
+  /* 文档身份放右侧：产品在左、指引在右，是手册页眉的常规排法 */
+  .topbar-meta{
+    margin-left:auto;display:flex;align-items:baseline;gap:10px;
+  }
+  .meta-main{font-size:12px;font-weight:600;color:var(--text-secondary);}
+  .meta-sub{font-size:12px;color:var(--text-muted);}
+
+  /* ---------- 布局 ---------- */
+  .layout{
+    max-width:1180px;margin:0 auto;padding:24px;
+    display:grid;grid-template-columns:196px 1fr;gap:28px;align-items:start;
+  }
+  /* 桌面端目录：去掉卡片壳的编辑式侧栏，层级靠细线与留白建立 */
+  .toc{
+    position:sticky;top:70px;
+  }
+  .toc-title{
+    font-size:12px;color:var(--text-muted);
+    font-weight:600;line-height:1.4;
+    padding:0 10px 8px;border-bottom:1px solid var(--border-muted);
+    margin-bottom:6px;
+  }
+  .toc a{
+    display:flex;gap:8px;align-items:center;
+    font-size:14px;line-height:1.4;color:var(--text-secondary);text-decoration:none;
+    padding:7px 10px;border-radius:8px;transition:background .15s,color .15s;
+  }
+  /* 触摸设备上 :hover 会在点按后残留，故仅对支持悬停的设备生效 */
+  @media (hover:hover){
+    .toc a:hover{background:var(--bg-muted);color:var(--brand-primary);}
+    .toc a:hover .idx{color:currentColor;}
+  }
+  .toc a:active{background:var(--bg-muted);}
+  .toc .idx{
+    font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-muted);flex:none;
+  }
+  .toc a.is-active{background:var(--info-bg);color:var(--brand-primary);font-weight:600;}
+  /* 底色变深后，序号继承文字色以满足 4.5:1 对比度 */
+  .toc a:active .idx,.toc a.is-active .idx{color:currentColor;}
+
+  /* 返回目录（仅窄屏显示） */
+  .to-top{
+    display:none;align-items:center;gap:4px;
+    min-height:44px;margin-top:12px;
+    font-size:12px;line-height:1.4;color:var(--text-muted);text-decoration:none;
+  }
+  @media (hover:hover){
+    .to-top:hover{color:var(--brand-primary);}
+  }
+  .to-top:active{color:var(--brand-primary);}
+  .to-top svg{flex:none;}
+
+  /* ---------- 概览 ---------- */
+  .intro{
+    background:var(--bg-surface);
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:22px;
+    box-shadow:var(--shadow-card);
+  }
+  .intro h1{font-size:24px;font-weight:700;margin:0 0 8px;line-height:1.3;}
+  .intro .lead{
+    font-size:14px;line-height:1.75;color:var(--text-secondary);
+    margin:0;text-wrap:pretty;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:10px;line-height:1.4;color:var(--brand-secondary);
+    background:var(--info-bg);border:1px solid var(--info-border);
+    padding:3px 8px;border-radius:999px;
+  }
+  .chip-aux{
+    color:var(--brand-auxiliary);
+    background:var(--brand-auxiliary-bg);
+    border-color:var(--brand-auxiliary-border);
+  }
+
+  /* ---------- 章节 ---------- */
+  section{
+    background:var(--bg-surface);
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    padding:16px 18px 18px;
+    margin-bottom:20px;
+    box-shadow:var(--shadow-card);
+    scroll-margin-top:70px;
+  }
+  .sec-head{
+    display:flex;align-items:center;gap:10px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--border-muted);
+    margin-bottom:14px;
+  }
+  .sec-num{
+    font-family:var(--font-mono);font-size:12px;font-weight:700;
+    line-height:1.4;letter-spacing:.02em;
+    color:#fff;background:var(--brand-primary);
+    padding:2px 7px;border-radius:6px;flex:none;
+  }
+  .sec-head h2{font-size:16px;font-weight:700;line-height:1.4;margin:0;}
+  .sec-head .sec-tip{
+    margin-left:auto;font-size:12px;font-weight:500;line-height:1.4;
+    color:var(--text-muted);text-align:right;
+  }
+
+  /* ---------- 节内分组（一节含多个流程/标签组时） ---------- */
+  .group-head{
+    display:flex;align-items:center;
+    margin:24px 0 12px;
+    padding-bottom:8px;border-bottom:1px solid var(--border-muted);
+  }
+  .sec-head + .group-head{margin-top:0;}
+  .group-head h3{
+    font-size:14px;font-weight:700;line-height:1.4;
+    color:var(--text-primary);margin:0;
+  }
+
+  /* ---------- 截图网格 ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(214px,1fr));
+    gap:14px;
+  }
+  figure{margin:0;display:flex;flex-direction:column;}
+  .shot{
+    border:1px solid var(--border-default);
+    border-radius:12px;
+    overflow:hidden;
+    background:var(--bg-muted);
+    box-shadow:var(--shadow-card);
+  }
+  .shot img{display:block;width:100%;height:auto;}
+  figcaption{
+    display:flex;gap:8px;align-items:flex-start;
+    font-size:14px;line-height:1.65;color:var(--text-secondary);
+    padding:10px 2px 0;
+    text-wrap:pretty;
+  }
+  .step{
+    font-family:var(--font-mono);font-size:12px;font-weight:700;
+    line-height:1.4;letter-spacing:.02em;
+    color:var(--brand-secondary);background:var(--info-bg);
+    padding:1px 5px;border-radius:4px;flex:none;margin-top:2px;
+  }
+  /* 图注语义色（与截图内状态徽章一致） */
+  .k{color:var(--text-primary);font-weight:600;}
+  .kw{color:#b45309;font-weight:600;}
+  .ks{color:#be123c;font-weight:600;}
+  .ko{color:#047857;font-weight:600;}
+  .ka{color:var(--brand-auxiliary);font-weight:600;}
+
+  footer{
+    max-width:1180px;margin:0 auto;padding:0 24px 40px;
+    font-size:10px;color:var(--text-muted);
+  }
+
+  @media (max-width:860px){
+    /* 顶栏让位：滚动时由下方目录胶囊条承担「当前位置」的指示职责 */
+    .topbar{position:static;}
+    .topbar-inner{padding:12px 16px;gap:14px;}
+    .logo{height:26px;}
+    .brand-title{font-size:14px;}
+    .meta-sub{display:none;}
+    /* 关键：单列网格里 sticky 会被自身 grid area 卡住，必须回到常规流 */
+    .layout{display:block;padding:0 16px 16px 16px;}
+    /* 目录：横向滚动的吸附胶囊条，贯穿视口宽度 */
+    .toc{
+      position:sticky;top:0;z-index:20;
+      margin:0 -16px 16px;padding:8px 16px;
+      display:flex;gap:8px;
+      background:var(--bg-surface);
+      border:0;border-bottom:1px solid var(--border-default);border-radius:0;
+      box-shadow:var(--shadow-card);
+      overflow-x:auto;overflow-y:hidden;
+      scroll-snap-type:x proximity;
+      scrollbar-width:none;
+    }
+    .toc::-webkit-scrollbar{display:none;}
+    .toc-title{display:none;}
+    /* 未激活胶囊不带描边：八个等权描边胶囊是视觉噪音，只让当前项显形 */
+    .toc a{
+      flex:0 0 auto;min-height:44px;padding:0 12px;
+      border-radius:999px;white-space:nowrap;scroll-snap-align:start;
+    }
+    /* inset 描边替代 border，避免激活时 1px 尺寸跳动 */
+    .toc a.is-active{
+      background:var(--info-bg);
+      box-shadow:inset 0 0 0 1px var(--info-border);
+      color:var(--brand-primary);
+    }
+    section{scroll-margin-top:72px;}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+    figcaption{font-size:12px;}
+    .to-top{display:inline-flex;}
+  }
+  /* 窄屏逐级卸载：先收右侧身份，再收标题（徽标锁定标内含委员会名，可独立承担） */
+  @media (max-width:600px){
+    .topbar-meta{display:none;}
+  }
+  @media (max-width:480px){
+    .brand-title{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="top">
+  <div class="topbar-inner" style="position: relative;">
+    <img class="logo" src="guide-assets/logo-gzac.png" width="1526" height="177" decoding="async" alt="广州仲裁委员会">
+    <div class="brand-title">穗仲云 · 智能管理平台</div>
+    <div class="topbar-meta">
+      <span class="meta-main">仲裁员端操作指引</span>
+      <span class="meta-sub">共 8 个模块</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ============ 目录 ============ -->
+  <nav class="toc" aria-label="章节目录">
+    <div class="toc-title">目录</div>
+    <a href="#s1" class=""><span class="idx">01</span>登录与身份核验</a>
+    <a href="#s2" class=""><span class="idx">02</span>工作台（首页）</a>
+    <a href="#s3" class=""><span class="idx">03</span>案件：列表与详情</a>
+    <a href="#s4" class=""><span class="idx">04</span>待办中心</a>
+    <a href="#s5" class=""><span class="idx">05</span>文书签署办理</a>
+    <a href="#s6" class=""><span class="idx">06</span>延期审批</a>
+    <a href="#s7" class=""><span class="idx">07</span>统计中心</a>
+    <a href="#s8" class=""><span class="idx">08</span>我的与个人资料</a>
+  </nav>
+
+  <main>
+    <!-- 概览 -->
+    <div class="intro">
+      <h1>穗仲云 · 仲裁员操作指引</h1>
+      <p class="lead">按「登录 → 首页 → 案件 → 待办 → 签署/审批 → 统计 → 我的」动线，用截图说明每一步该点哪里、看什么。</p>
+      <div class="chips">
+        <span class="chip">登录核验</span>
+        <span class="chip">案件查阅</span>
+        <span class="chip">电子卷宗</span>
+        <span class="chip">文书签署</span>
+        <span class="chip">延期审批</span>
+        <span class="chip chip-aux">卷宗查阅</span>
+      </div>
+    </div>
+
+    <!-- ============ 01 登录 ============ -->
+    <section id="s1">
+      <div class="sec-head">
+        <span class="sec-num">01</span>
+        <h2>登录与身份核验</h2>
+        <span class="sec-tip">人脸识别 / 账号密码</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/33-login.png" width="960" height="1840" decoding="async" alt="登录方式选择"></div>
+          <figcaption><span class="step">1</span><span>打开小程序，选择 <span class="k">人脸识别登录</span> 或 <span class="k">账号密码登录</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/34-login-face.png" width="960" height="1840" decoding="async" alt="人脸识别登录第一步"></div>
+          <figcaption><span class="step">2</span><span>人脸识别：输入手机号，获取并填写 6 位验证码，验证成功后进入人脸识别校验。</span></figcaption>
+        </figure>
+       
+        <figure>
+          <div class="shot"><img src="guide-assets/36-login-password.png" width="960" height="1840" decoding="async" alt="账号密码登录"></div>
+          <figcaption><span class="step">3</span><span>账号密码登录：输入用户名与密码，下一步进入双因素校验（邮箱或手机号校验）。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 02 工作台 ============ -->
+    <section id="s2">
+      <div class="sec-head">
+        <span class="sec-num">02</span>
+        <h2>工作台（首页）</h2>
+        <span class="sec-tip">概览 · 通知 · 待开庭</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/01-workbench-top.png" width="960" height="1840" decoding="async" loading="lazy" alt="工作台首页"></div>
+          <figcaption><span class="step">1</span><span>首页顶部：查看在办案件数、延期案件数，委内动态与近 10 天待开庭日程。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/02-workbench-bottom.png" width="960" height="1840" decoding="async" loading="lazy" alt="工作台下滑"></div>
+          <figcaption><span class="step">2</span><span>下滑可见近期待办、常用功能（统计中心 / 我的聘书 / 远程庭审）与仲裁知识。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/24-notifications.png" width="960" height="1840" decoding="async" loading="lazy" alt="消息通知"></div>
+          <figcaption><span class="step">3</span><span>点右上角 <span class="k">消息</span> 查看系统通知。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/25-hearing-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="待开庭提醒"></div>
+          <figcaption><span class="step">4</span><span>点 <span class="k">近 10 天待开庭日程 - 查看更多</span> 进入待开庭提醒，支持搜索与 <span class="k">日历模式</span> 查看全部安排。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 03 案件 ============ -->
+    <section id="s3">
+      <div class="sec-head">
+        <span class="sec-num">03</span>
+        <h2>案件：列表与详情</h2>
+        <span class="sec-tip">五个详情标签</span>
+      </div>
+      <div class="group-head"><h3>案件列表</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/05-case-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件列表"></div>
+          <figcaption><span class="step">1</span><span>「案件」页按 <span class="k">在办案件 / 已结案 / 全部</span> 筛选，卡片显示当事人、争议金额与办案秘书。</span></figcaption>
+        </figure>
+      </div>
+      <div class="group-head"><h3>详情标签 · 案情与证据</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/06-case-detail-basic.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-基本信息"></div>
+          <figcaption><span class="step">2</span><span>「基本信息」：立案 / 组庭日期、争议金额、仲裁费、办案秘书与案情摘要。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/07-case-detail-parties.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-案情及当事人材料"></div>
+          <figcaption><span class="step">3</span><span>「案情及当事人材料」：双方主体信息、仲裁条款约定、合同签订主体及签章。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/08-case-detail-evidence.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-证据和质证"></div>
+          <figcaption><span class="step">4</span><span>「证据和质证」：按证据清单查看真实性 / 合法性 / 关联性质证结论与质证人。</span></figcaption>
+        </figure>
+      </div>
+      <div class="group-head"><h3>详情标签 · 文书与卷宗</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/09-case-detail-docs.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-仲裁文书"></div>
+          <figcaption><span class="step">5</span><span>「仲裁文书 · 结案文书」：<span class="ka">庭审笔录</span>与已签裁决书，待签笔录直接点 <span class="kw">去签名</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/10-case-detail-review.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-裁决书核阅"></div>
+          <figcaption><span class="step">6</span><span>「<span class="ka">裁决书核阅</span>」：查看核阅流转记录、草稿版本历史，并可 <span class="k">查看裁决书全文</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/11-case-detail-archive.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-电子卷宗"></div>
+          <figcaption><span class="step">7</span><span>「<span class="ka">电子卷宗</span>」：按正卷、请求和答辩、证据和质证等分类浏览卷宗文件夹。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 04 待办 ============ -->
+    <section id="s4">
+      <div class="sec-head">
+        <span class="sec-num">04</span>
+        <h2>待办中心</h2>
+        <span class="sec-tip">各类待办总入口</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/03-task-center.png" width="960" height="1840" decoding="async" loading="lazy" alt="待办中心"></div>
+          <figcaption><span class="step">1</span><span>「待办」页汇总待开庭提醒、声明承诺书、笔录签名与延期审批数量。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/04-task-center-bottom.png" width="960" height="1840" decoding="async" loading="lazy" alt="待办中心下半屏"></div>
+          <figcaption><span class="step">2</span><span>继续下滑查看文书签名与草拟裁决书的办理进度。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 05 四类签署 ============ -->
+    <section id="s5">
+      <div class="sec-head">
+        <span class="sec-num">05</span>
+        <h2>文书签署办理</h2>
+        <span class="sec-tip">声明承诺书 / 笔录 / 结案文书 / 草拟裁决</span>
+      </div>
+      <div class="group-head"><h3>声明承诺书</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/12-declaration-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="声明承诺书列表"></div>
+          <figcaption><span class="step">1</span><span><span class="ka">声明承诺书</span> 列表：可按案号搜索，勾选后 <span class="k">一键审批</span>，底部切换待签署 / 已签署。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/13-declaration-sign.png" width="960" height="1840" decoding="async" loading="lazy" alt="声明承诺书签署-主体信息"></div>
+          <figcaption><span class="step">2</span><span>进入签署页先核对仲裁员信息与双方当事人信息。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/14-declaration-sign-bottom.png" width="960" height="1840" decoding="async" loading="lazy" alt="声明承诺书签署-条款与签名"></div>
+          <figcaption><span class="step">3</span><span>阅读<span class="ka">声明条款</span>与保密承诺后，点「手写签名」并 <span class="k">提交确认</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/15-signature-pad.png" width="960" height="1840" decoding="async" loading="lazy" alt="全屏手写签名"></div>
+          <figcaption><span class="step">4</span><span>全屏签名板：在横线处书写，可 <span class="k">清除</span> 重签，确认后返回。</span></figcaption>
+        </figure>
+      </div>
+      <div class="group-head"><h3>笔录签名</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/16-transcript-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="笔录签名列表"></div>
+          <figcaption><span class="step">5</span><span><span class="ka">笔录签名</span> 列表：待办 / 已办切换，卡片显示开庭时间等待签笔录。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/17-transcript-detail.png" width="960" height="1840" decoding="async" loading="lazy" alt="笔录签名详情"></div>
+          <figcaption><span class="step">6</span><span>笔录签名详情：核对案件信息 → 手写签名 → <span class="k">预览文件</span> 后 <span class="k">提交签名</span>。</span></figcaption>
+        </figure>
+      </div>
+      <div class="group-head"><h3>文书签名</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/22-doc-signature-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="文书签名列表"></div>
+          <figcaption><span class="step">7</span><span><span class="ka">文书签名</span> 列表：卡片标注文书类型（仲裁裁决书 / 调解书）与待签状态。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/09-case-detail-docs.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-仲裁文书"></div>
+          <figcaption><span class="step">8</span><span>文书签名详情：<span class="k">预览文件</span> 后 <span class="k">确认签名</span>。</span></figcaption>
+        </figure>
+      </div>
+      <div class="group-head"><h3>草拟裁决书 / 裁决书核阅</h3></div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/23-draft-award-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="草拟裁决书列表"></div>
+          <figcaption><span class="step">9</span><span><span class="ka">草拟裁决书</span> 列表：按待核阅 / 已核阅查看待草拟案件及对应案由。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/10-case-detail-review.png" width="960" height="1840" decoding="async" loading="lazy" alt="案件详情-裁决书核阅"></div>
+          <figcaption><span class="step">10</span><span>核阅详情：查看核阅流转记录、查看核阅文书，并可 <span class="k">上传裁决书初稿</span>。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 06 延期审批 ============ -->
+    <section id="s6">
+      <div class="sec-head">
+        <span class="sec-num">06</span>
+        <h2>延期审批</h2>
+        <span class="sec-tip">同意 / 驳回</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/18-postponement-list.png" width="960" height="1840" decoding="async" loading="lazy" alt="延期审批列表"></div>
+          <figcaption><span class="step">1</span><span>列表卡片可直接 <span class="ks">退回上一级</span> 或 <span class="ko">同意</span>，也可勾选 <span class="k">一键审批</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/19-postponement-detail.png" width="960" height="1840" decoding="async" loading="lazy" alt="延期审批详情"></div>
+          <figcaption><span class="step">2</span><span>详情页查看延期原因、申请延期至、申请时间与<span class="ka">审批流转记录</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/20-postponement-detail-bottom.png" width="960" height="1840" decoding="async" loading="lazy" alt="延期审批操作区"></div>
+          <figcaption><span class="step">3</span><span>填写「审批备注」后，选择 <span class="ks">驳回申请</span> 或 <span class="ko">同意延期</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/21-postponement-confirm.png" width="960" height="1840" decoding="async" loading="lazy" alt="延期审批二次确认"></div>
+          <figcaption><span class="step">4</span><span>提交前弹出二次确认，确认后即可完成本次审批。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 07 统计中心 ============ -->
+    <section id="s7">
+      <div class="sec-head">
+        <span class="sec-num">07</span>
+        <h2>统计中心</h2>
+        <span class="sec-tip">办案数据一览</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/26-stats-center.png" width="960" height="1840" decoding="async" loading="lazy" alt="统计中心-筛选与新收案件"></div>
+          <figcaption><span class="step">1</span><span>支持今年 / 近半年 / 近三个月或自定义日期，环形图展示新收案件与角色构成。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/27-stats-center-bottom.png" width="960" height="1840" decoding="async" loading="lazy" alt="统计中心-办结与案由"></div>
+          <figcaption><span class="step">2</span><span>下滑查看办结案件情况（裁决率 / 调解率 / 撤案率）与办理案件 Top5 案由。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+
+    <!-- ============ 08 我的 ============ -->
+    <section id="s8">
+      <div class="sec-head">
+        <span class="sec-num">08</span>
+        <h2>我的与个人资料</h2>
+        <span class="sec-tip">聘书 · 资料</span>
+      </div>
+      <div class="grid">
+        <figure>
+          <div class="shot"><img src="guide-assets/28-my-profile.png" width="960" height="1840" decoding="async" loading="lazy" alt="我的"></div>
+          <figcaption><span class="step">1</span><span>「更多」页：仲裁员身份信息，以及个人信息、工作单位、银行账号入口。</span></figcaption>
+        </figure>
+        <!-- <figure>
+          <div class="shot"><img src="guide-assets/37-appointment.png" alt="我的聘书"></div>
+          <figcaption><span class="step">2</span><span>「我的聘书」查看电子聘书与授权等级，可导出防伪加密 PDF 聘书附件。</span></figcaption>
+        </figure> -->
+        
+        <figure>
+          <div class="shot"><img src="guide-assets/30-personal-info-edit.png" width="960" height="1840" decoding="async" loading="lazy" alt="个人信息就地展开"></div>
+          <figcaption><span class="step">2</span><span>点「个人信息」就地展开，核对姓名、职称、手机号、邮箱与地址信息。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/31-personal-info-form.png" width="960" height="1840" decoding="async" loading="lazy" alt="编辑个人信息"></div>
+          <figcaption><span class="step">3</span><span>进入「编辑个人信息」修改基本信息与地址，可设置首选地址后 <span class="k">保存修改</span>。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/38-knowledge.png" width="960" height="1840" decoding="async" loading="lazy" alt="仲裁知识"></div>
+          <figcaption><span class="step">4</span><span>「<span class="ka">仲裁知识</span>」按仲裁员须知、审理指引、裁决书及案例分类查阅规范文档。</span></figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="guide-assets/32-logout-confirm.png" width="960" height="1840" decoding="async" loading="lazy" alt="退出登录确认"></div>
+          <figcaption><span class="step">5</span><span>点「退出登录」需二次确认，确认后返回登录页。</span></figcaption>
+        </figure>
+      </div>
+      <a class="to-top" href="#top"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>返回目录</a>
+    </section>
+  </main>
+</div>
+
+<footer>
+  穗仲云 · 广州仲裁委智能管理平台（仲裁员端）图文操作指引。
+</footer>
+
+<script>
+(function(){
+  var bar = document.querySelector('.toc');
+  if(!bar) return;
+  var links = [].slice.call(bar.querySelectorAll('a'));
+  var items = [];
+  links.forEach(function(a){
+    var el = document.getElementById(a.getAttribute('href').slice(1));
+    if(el) items.push({link:a, el:el});
+  });
+  if(!items.length) return;
+
+  var ticking = false, last = null;
+
+  function render(){
+    ticking = false;
+    var narrow = document.documentElement.clientWidth <= 860;
+    var threshold = narrow ? 84 : 80;      // 与 section 的 scroll-margin-top 对齐
+    var current = null;
+    items.forEach(function(it){
+      if(it.el.getBoundingClientRect().top - threshold <= 0) current = it;
+    });
+    if(!current){                           // 停在概览区时不标注任何一节
+      if(last){ links.forEach(function(a){ a.classList.remove('is-active'); }); last = null; }
+      return;
+    }
+    if(current.link === last) return;
+    last = current.link;
+    links.forEach(function(a){ a.classList.remove('is-active'); });
+    current.link.classList.add('is-active');
+    if(!narrow) return;
+    var lr = current.link.getBoundingClientRect(), br = bar.getBoundingClientRect();
+    if(lr.left < br.left + 8 || lr.right > br.right - 8){
+      bar.scrollLeft += (lr.left - br.left) - (br.width - lr.width) / 2;
+    }
+  }
+
+  function onScroll(){ if(!ticking){ ticking = true; window.requestAnimationFrame(render); } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  render();
+})();
+</script>
+
+
+
+</body></html>

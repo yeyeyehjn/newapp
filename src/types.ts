@@ -98,6 +98,15 @@ export interface TranscriptSignature {
   signedAt?: string;
 }
 
+// 办案状态管理：仲裁员可主动暂停/恢复接收新案件
+export interface CaseSuspensionStatus {
+  suspended: boolean; // 是否处于「暂不接案」状态
+  suspendType: string; // 暂停状态（暂停指定 / 暂停当事人选定 / 同步暂停指定和当事人选定）
+  startTime: string;  // 暂停开始日期 YYYY-MM-DD
+  endTime: string;    // 暂停结束日期 YYYY-MM-DD
+  reason: string;     // 暂停理由（快捷理由或自定义输入）
+}
+
 export interface ApprovalFlowRecord {
   operator: string;
   time: string;

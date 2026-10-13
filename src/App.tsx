@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { mockArbitrator, mockCases, mockTasks, mockTranscriptSignatures, mockPostponementApprovals } from './data/mockData';
-import { Case, Task, CaseStatus, TranscriptSignature, PostponementApproval } from './types';
+import { Case, Task, CaseStatus, TranscriptSignature, PostponementApproval, CaseSuspensionStatus } from './types';
 import MiniProgramContainer from './components/MiniProgramContainer';
 import Workbench from './components/Workbench';
 import Workbench2 from './components/Workbench-2';
@@ -19,6 +19,7 @@ import CaseDiscussionPage from './components/CaseDiscussionPage';
 import MyAppointmentPage from './components/MyAppointmentPage';
 import NotificationPage from './components/NotificationPage';
 import RemunerationPage from './components/RemunerationPage';
+import CaseStatusManagePage from './components/CaseStatusManagePage';
 import PersonalInfoEdit from './components/PersonalInfoEdit';
 import WorkInfoEdit from './components/WorkInfoEdit';
 import BankInfoEdit from './components/BankInfoEdit';
@@ -35,7 +36,7 @@ import ArbitrationKnowledge from './components/ArbitrationKnowledge';
 import LoginPage from './components/LoginPage';
 import ElectronicArchive from './components/ElectronicArchive';
 
-type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
+type SubPageType = 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'caseStatusManage' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge' | null;
 
 export default function App() {
   // Navigation State: 0 (首页), 1 (案卷), 2 (待办), 3 (统计 -> 我的)
@@ -92,6 +93,15 @@ export default function App() {
     accountName: mockArbitrator.name
   });
 
+  // 办案状态管理：仲裁员暂停/恢复接案（跨页共享，入口见「更多」页）
+  const [caseStatus, setCaseStatus] = useState<CaseSuspensionStatus>({
+    suspended: false,
+    suspendType: '',
+    startTime: '',
+    endTime: '',
+    reason: ''
+  });
+
   // Callback to mark a task as completed and update case values
   const handleCompleteTask = (taskId: string, extraUpdates?: { caseId: string; nextStatus: CaseStatus }) => {
     // Mark task completed
@@ -144,7 +154,7 @@ export default function App() {
   };
 
   // Navigate to sub-page from workbench
-  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
+  const handleNavigateToSubPage = (page: 'statsCenter' | 'caseDiscussion' | 'appointment' | 'notifications' | 'remuneration' | 'caseStatusManage' | 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'caseDetail' | 'electronicArchive' | 'declarationList' | 'declarationSign' | 'docSignatureList' | 'draftAwardList' | 'transcriptSignature' | 'transcriptSignatureDetail' | 'postponementApproval' | 'postponementApprovalDetail' | 'pendingHearingList' | 'arbitrationKnowledge') => {
     // 通用子页入口不携带首页“查看更多”附带的开庭日期筛选，仅首页另走 onViewAllHearings 时才筛选
     if (page === 'pendingHearingList') setPendingHearingRange(undefined);
     setActiveSubPage(page);
@@ -299,6 +309,15 @@ export default function App() {
         {activeSubPage === 'remuneration' && (
           <RemunerationPage
             onBack={handleBackFromSubPage}
+          />
+        )}
+
+        {activeSubPage === 'caseStatusManage' && (
+          <CaseStatusManagePage
+            caseStatus={caseStatus}
+            onBack={handleBackFromSubPage}
+            onSuspend={(payload) => setCaseStatus({ suspended: true, ...payload })}
+            onResume={() => setCaseStatus({ suspended: false, suspendType: '', startTime: '', endTime: '', reason: '' })}
           />
         )}
 
@@ -591,6 +610,7 @@ export default function App() {
             personalInfo={personalInfo}
             workInfo={workInfo}
             bankInfo={bankInfo}
+            caseStatus={caseStatus}
             onSetPreferredAddress={(type) => setPersonalInfo({...personalInfo, preferredAddress: type})}
           />
         )}

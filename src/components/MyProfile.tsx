@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { 
-  User, Building2, FileText, CreditCard, LogOut, ShieldCheck, 
-  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera, 
-  Phone, Mail, Home, Edit3, Star, Wallet
+import {
+  User, Building2, FileText, CreditCard, LogOut, ShieldCheck,
+  ChevronRight, Award, MapPin, KeyRound, CheckCircle2, Camera,
+  Phone, Mail, Home, Edit3, Star, Wallet, CalendarClock
 } from 'lucide-react';
-import { ArbitratorProfile } from '../types';
+import { ArbitratorProfile, CaseSuspensionStatus } from '../types';
 import { IOSAlert } from './ui/IOSDialog';
 
 export interface PersonalInfo {
@@ -36,14 +36,15 @@ export interface BankInfo {
 interface MyProfileProps {
   profile: ArbitratorProfile;
   onLogout: () => void;
-  onNavigateToEdit: (page: 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'remuneration') => void;
+  onNavigateToEdit: (page: 'personalInfoEdit' | 'workInfoEdit' | 'bankInfoEdit' | 'remuneration' | 'caseStatusManage') => void;
   personalInfo: PersonalInfo;
   workInfo: WorkInfo;
   bankInfo: BankInfo;
+  caseStatus: CaseSuspensionStatus;
   onSetPreferredAddress: (type: 'home' | 'contact' | 'other') => void;
 }
 
-export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, onSetPreferredAddress }: MyProfileProps) {
+export default function MyProfile({ profile, onLogout, onNavigateToEdit, personalInfo, workInfo, bankInfo, caseStatus, onSetPreferredAddress }: MyProfileProps) {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | undefined>(profile.avatar);
@@ -164,10 +165,41 @@ export default function MyProfile({ profile, onLogout, onNavigateToEdit, persona
               <p className="text-sm text-slate-500 font-medium">查看案件酬金发放明细与报酬规则</p>
             </div>
           </div>
-          <ChevronRight 
-            size={14} 
-            className="text-emerald-500 transition-transform duration-300 group-hover:translate-x-0.5" 
+          <ChevronRight
+            size={14}
+            className="text-emerald-500 transition-transform duration-300 group-hover:translate-x-0.5"
           />
+        </div>
+
+        {/* 办案状态管理入口 (Case Status Management Entry Card) */}
+        <div
+          onClick={() => onNavigateToEdit('caseStatusManage')}
+          className="bg-gradient-to-br from-sky-50 to-white rounded-lg border border-sky-100 p-3.5 flex items-center justify-between hover:shadow-md hover:border-sky-200 transition-all cursor-pointer text-left group"
+        >
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-sky-100 border border-sky-200/50 text-sky-600">
+              <CalendarClock size={15} />
+            </div>
+            <div className="space-y-0.5">
+              <h3 className="text-base font-bold text-slate-800 leading-none">办案状态管理</h3>
+              <p className="text-sm text-slate-500 font-medium">暂停或恢复接收新案件的分配</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {caseStatus.suspended ? (
+              <span className="bg-amber-100 text-amber-700 border border-amber-200 text-sm font-medium px-2 py-0.5 rounded-full">
+                暂不接案
+              </span>
+            ) : (
+              <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 text-sm font-medium px-2 py-0.5 rounded-full">
+                正常接案
+              </span>
+            )}
+            <ChevronRight
+              size={14}
+              className="text-sky-500 transition-transform duration-300 group-hover:translate-x-0.5"
+            />
+          </div>
         </div>
 
         {/* SECTION 1: 个人信息 (Personal Info) */}

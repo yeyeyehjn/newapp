@@ -19,6 +19,8 @@ interface ArchiveFolder {
   id: string;
   name: string;
   files: ArchiveFile[];
+  /** 子目录：存在时先展示子目录列表，再进入具体附件 */
+  children?: ArchiveFolder[];
 }
 
 // 文件图标与配色：PDF 红 / Word 蓝 / 图片绿
@@ -27,6 +29,52 @@ const fileIcon: Record<FileKind, string> = {
   word: 'fa-solid fa-file-word text-blue-500',
   image: 'fa-solid fa-file-image text-emerald-500',
 };
+
+// ── 数据：当事人主体材料（四个子目录）──
+const PARTY_FOLDERS: ArchiveFolder[] = [
+  {
+    id: 'm1',
+    name: '申请人',
+    files: [
+      { id: 'm1-1', name: '申请人营业执照.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'm1-2', name: '申请方法定代表人身份证明.pdf', kind: 'pdf', badge: '1页' },
+      { id: 'm1-3', name: '申请人企业信用信息公示报告.pdf', kind: 'pdf', badge: '6页' },
+    ],
+  },
+  {
+    id: 'm2',
+    name: '申请人代理人',
+    files: [
+      { id: 'm2-1', name: '申请人授权委托书.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'm2-2', name: '代理人身份证正反面.jpg', kind: 'image', badge: 'JPG' },
+      { id: 'm2-3', name: '代理人律师执业证.pdf', kind: 'pdf', badge: '3页' },
+    ],
+  },
+  {
+    id: 'm3',
+    name: '被申请人',
+    files: [
+      { id: 'm3-1', name: '被申请人营业执照.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'm3-2', name: '被申请方法定代表人身份证明.pdf', kind: 'pdf', badge: '1页' },
+    ],
+  },
+  {
+    id: 'm4',
+    name: '被申请人代理人',
+    files: [
+      { id: 'm4-1', name: '被申请人授权委托书.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'm4-2', name: '代理人身份证明及工作证明.pdf', kind: 'pdf', badge: '2页' },
+    ],
+  },
+];
+
+// ── 数据：送达回证、公告、邮单 ──
+const SONGDA_FILES: ArchiveFile[] = [
+  { id: 'sd1', name: '送达回证（申请人）.pdf', kind: 'pdf', badge: '2页' },
+  { id: 'sd2', name: '送达回证（被申请人）.pdf', kind: 'pdf', badge: '2页' },
+  { id: 'sd3', name: '仲裁公告.pdf', kind: 'pdf', badge: '1页' },
+  { id: 'sd4', name: 'EMS邮单及投递查询记录.pdf', kind: 'pdf', badge: '4页' },
+];
 
 // ── 数据：正卷目录 ──
 const ZHENGJUAN_FOLDERS: ArchiveFolder[] = [
@@ -54,6 +102,12 @@ const ZHENGJUAN_FOLDERS: ArchiveFolder[] = [
     ],
   },
   {
+    id: 'z4a',
+    name: '当事人主体材料',
+    files: [],
+    children: PARTY_FOLDERS,
+  },
+  {
     id: 'z5',
     name: '申请人、被申请人举证材料',
     files: [
@@ -67,6 +121,11 @@ const ZHENGJUAN_FOLDERS: ArchiveFolder[] = [
   { id: 'z6', name: '询问、调查资料', files: [] },
   { id: 'z7', name: '质证笔录、庭审笔录、调解笔录', files: [] },
   { id: 'z8', name: '各种质证意见、各种情况说明、代理词', files: [] },
+  {
+    id: 'z8a',
+    name: '送达回证、公告、邮单',
+    files: SONGDA_FILES,
+  },
   { id: 'z9', name: '其他材料', files: [] },
 ];
 
@@ -133,19 +192,37 @@ const QITA_FILES: ArchiveFile[] = [
   { id: 'o4', name: '缴费凭证.pdf', kind: 'pdf', badge: '1页' },
 ];
 
+// 递归汇总目录内附件（含子目录），用于件数计数与「查看全部」
+const collectFolderFiles = (folder: ArchiveFolder): ArchiveFile[] =>
+  folder.children ? folder.children.flatMap(collectFolderFiles) : folder.files;
+
 // 文件夹行：文件夹图标 + 名称 → 附件数量 + 箭头
-function FolderRow({ folder, onOpen }: { key?: Key; folder: ArchiveFolder; onOpen: () => void }) {
+function FolderRow({
+  folder,
+  onOpen,
+  index,
+}: {
+  key?: Key;
+  folder: ArchiveFolder;
+  onOpen: () => void;
+  index?: number;
+}) {
   return (
     <button
       onClick={onOpen}
       className="w-full p-3 flex items-center justify-between text-left hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
     >
       <div className="flex items-center gap-3 min-w-0">
+        {index !== undefined && (
+          <span className="text-sm font-mono text-slate-400 flex-shrink-0">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+        )}
         <i className="fa-solid fa-folder text-amber-500 text-lg flex-shrink-0" aria-hidden="true"></i>
         <span className="text-base font-medium text-slate-800 truncate">{folder.name}</span>
       </div>
       <div className="flex items-center gap-1.5 text-slate-400 flex-shrink-0">
-        <span className="text-sm">{folder.files.length} 份附件</span>
+        <span className="text-sm">{collectFolderFiles(folder).length} 份附件</span>
         <ChevronRight size={14} className="text-slate-300" />
       </div>
     </button>
@@ -207,10 +284,11 @@ interface ElectronicArchiveProps {
 export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiveProps) {
   const [activeTab, setActiveTab] = useState<ArchiveTabKey>('zhengjuan');
   const [openFolder, setOpenFolder] = useState<ArchiveFolder | null>(null);
+  const [openSubFolder, setOpenSubFolder] = useState<ArchiveFolder | null>(null);
   const [preview, setPreview] = useState<{ files: ArchiveFile[]; index: number } | null>(null);
 
-  const allZhengjuanFiles = ZHENGJUAN_FOLDERS.flatMap((folder) => folder.files);
-  const allQingqiuFiles = QINGQIU_FOLDERS.flatMap((folder) => folder.files);
+  const allZhengjuanFiles = ZHENGJUAN_FOLDERS.flatMap(collectFolderFiles);
+  const allQingqiuFiles = QINGQIU_FOLDERS.flatMap(collectFolderFiles);
   const allZhengjuFiles = ZHENGJU_FOLDERS.flatMap((folder) => folder.files);
 
   const tabs: { key: ArchiveTabKey; label: string; count: number }[] = [
@@ -219,6 +297,17 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
     { key: 'zhengju', label: '证据和质证', count: ZHENGJU_FOLDERS.length },
     { key: 'qita', label: '其他材料', count: QITA_FILES.length },
   ];
+
+  // 打开目录时重置下钻层级
+  const openArchiveFolder = (folder: ArchiveFolder) => {
+    setOpenFolder(folder);
+    setOpenSubFolder(null);
+  };
+
+  const closeArchiveFolder = () => {
+    setOpenFolder(null);
+    setOpenSubFolder(null);
+  };
 
   const openPreview = (files: ArchiveFile[], index: number) => {
     if (files.length === 0) return;
@@ -285,7 +374,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
               <span className="text-sm text-slate-500">卷宗（共 {ZHENGJUAN_FOLDERS.length} 个文件夹）</span>
               <button
                 onClick={() =>
-                  setOpenFolder({ id: 'all', name: '正卷附件', files: allZhengjuanFiles })
+                  openArchiveFolder({ id: 'all', name: '正卷附件', files: allZhengjuanFiles })
                 }
                 className="flex items-center gap-1 text-sm text-indigo-600 font-medium cursor-pointer"
               >
@@ -296,7 +385,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
             <div className="bg-white rounded-lg border border-slate-100 ">
               {ZHENGJUAN_FOLDERS.map((folder, idx) => (
                 <div key={folder.id}>
-                  <FolderRow folder={folder} onOpen={() => setOpenFolder(folder)} />
+                  <FolderRow folder={folder} onOpen={() => openArchiveFolder(folder)} />
                   {idx < ZHENGJUAN_FOLDERS.length - 1 && <div className="mx-3.5 border-b border-slate-100"></div>}
                 </div>
               ))}
@@ -311,7 +400,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
               <span className="text-sm text-slate-500">请求与答辩（共 {QINGQIU_FOLDERS.length} 个文件夹）</span>
               <button
                 onClick={() =>
-                  setOpenFolder({ id: 'all-qingqiu', name: '请求与答辩附件', files: allQingqiuFiles })
+                  openArchiveFolder({ id: 'all-qingqiu', name: '请求与答辩附件', files: allQingqiuFiles })
                 }
                 className="flex items-center gap-1 text-sm text-indigo-600 font-medium cursor-pointer"
               >
@@ -322,7 +411,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
             <div className="bg-white rounded-lg border border-slate-100 ">
               {QINGQIU_FOLDERS.map((folder, idx) => (
                 <div key={folder.id}>
-                  <FolderRow folder={folder} onOpen={() => setOpenFolder(folder)} />
+                  <FolderRow folder={folder} onOpen={() => openArchiveFolder(folder)} />
                   {idx < QINGQIU_FOLDERS.length - 1 && <div className="mx-3.5 border-b border-slate-100"></div>}
                 </div>
               ))}
@@ -337,7 +426,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
               <span className="text-sm text-slate-500">证据和质证（共 {ZHENGJU_FOLDERS.length} 个文件夹）</span>
               <button
                 onClick={() =>
-                  setOpenFolder({ id: 'all-zhengju', name: '证据和质证附件', files: allZhengjuFiles })
+                  openArchiveFolder({ id: 'all-zhengju', name: '证据和质证附件', files: allZhengjuFiles })
                 }
                 className="flex items-center gap-1 text-sm text-indigo-600 font-medium cursor-pointer"
               >
@@ -348,7 +437,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
             <div className="bg-white rounded-lg border border-slate-100 ">
               {ZHENGJU_FOLDERS.map((folder, idx) => (
                 <div key={folder.id}>
-                  <FolderRow folder={folder} onOpen={() => setOpenFolder(folder)} />
+                  <FolderRow folder={folder} onOpen={() => openArchiveFolder(folder)} />
                   {idx < ZHENGJU_FOLDERS.length - 1 && <div className="mx-3.5 border-b border-slate-100"></div>}
                 </div>
               ))}
@@ -383,8 +472,8 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
       {/* 文件夹附件面板 */}
       <BottomSheet
         open={openFolder !== null}
-        onClose={() => setOpenFolder(null)}
-        title={openFolder?.name}
+        onClose={closeArchiveFolder}
+        title={openSubFolder ? openSubFolder.name : openFolder?.name}
         maxHeight="105vh"
         footer={
           <button className="w-full py-2 bg-indigo-50 text-indigo-600 font-bold text-base rounded-lg border border-indigo-100 flex items-center justify-center gap-1.5 hover:bg-indigo-100 transition-colors cursor-pointer">
@@ -393,10 +482,38 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
           </button>
         }
       >
-        <FileGrid
-          files={openFolder?.files ?? []}
-          onOpen={(index) => openPreview(openFolder?.files ?? [], index)}
-        />
+        {openSubFolder ? (
+          <div className="space-y-2.5">
+            <button
+              onClick={() => setOpenSubFolder(null)}
+              aria-label={`返回${openFolder?.name ?? '目录'}`}
+              className="flex items-center gap-1 py-1 text-sm text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+            >
+              <ChevronLeft size={14} />
+              返回{openFolder?.name}
+            </button>
+            <FileGrid
+              files={openSubFolder.files}
+              onOpen={(index) => openPreview(openSubFolder.files, index)}
+            />
+          </div>
+        ) : openFolder?.children ? (
+          <div className="bg-white rounded-lg border border-slate-100">
+            {openFolder.children.map((child, idx) => (
+              <div key={child.id}>
+                <FolderRow folder={child} index={idx} onOpen={() => setOpenSubFolder(child)} />
+                {idx < (openFolder.children?.length ?? 0) - 1 && (
+                  <div className="mx-3.5 border-b border-slate-100"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <FileGrid
+            files={openFolder?.files ?? []}
+            onOpen={(index) => openPreview(openFolder?.files ?? [], index)}
+          />
+        )}
       </BottomSheet>
 
       {/* 全屏预览 */}

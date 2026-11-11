@@ -68,6 +68,29 @@ const PARTY_FOLDERS: ArchiveFolder[] = [
   },
 ];
 
+// ── 数据：举证材料（三个子目录）──
+const JUBAN_FOLDERS: ArchiveFolder[] = [
+  {
+    id: 'z5a',
+    name: '申请人',
+    files: [
+      { id: 'z5a-1', name: '07_申请人证据目录.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'z5a-2', name: '09_送货单与对账明细.pdf', kind: 'pdf', badge: '12页' },
+      { id: 'z5a-3', name: '11_银行转账凭证.pdf', kind: 'pdf', badge: '6页' },
+    ],
+  },
+  {
+    id: 'z5b',
+    name: '被申请人',
+    files: [{ id: 'z5b-1', name: '08_被申请人证据目录.pdf', kind: 'pdf', badge: '2页' }],
+  },
+  {
+    id: 'z5c',
+    name: '仲裁庭',
+    files: [{ id: 'z5c-1', name: '10_现场勘验照片汇总.jpg', kind: 'image', badge: 'JPG' }],
+  },
+];
+
 // ── 数据：送达回证、公告、邮单 ──
 const SONGDA_FILES: ArchiveFile[] = [
   { id: 'sd1', name: '送达回证（申请人）.pdf', kind: 'pdf', badge: '2页' },
@@ -110,13 +133,8 @@ const ZHENGJUAN_FOLDERS: ArchiveFolder[] = [
   {
     id: 'z5',
     name: '申请人、被申请人举证材料',
-    files: [
-      { id: 'z5-1', name: '07_申请人证据目录.pdf', kind: 'pdf', badge: '2页' },
-      { id: 'z5-2', name: '08_被申请人证据目录.pdf', kind: 'pdf', badge: '2页' },
-      { id: 'z5-3', name: '09_送货单与对账明细.pdf', kind: 'pdf', badge: '12页' },
-      { id: 'z5-4', name: '10_现场勘验照片汇总.jpg', kind: 'image', badge: 'JPG' },
-      { id: 'z5-5', name: '11_银行转账凭证.pdf', kind: 'pdf', badge: '6页' },
-    ],
+    files: [],
+    children: JUBAN_FOLDERS,
   },
   { id: 'z6', name: '询问、调查资料', files: [] },
   { id: 'z7', name: '质证笔录、庭审笔录、调解笔录', files: [] },
@@ -133,27 +151,27 @@ const ZHENGJUAN_FOLDERS: ArchiveFolder[] = [
 const QINGQIU_FOLDERS: ArchiveFolder[] = [
   {
     id: 'q1',
-    name: '申请人仲裁请求材料',
+    name: '仲裁申请书',
     files: [
-      { id: 'q1-1', name: '仲裁请求事项清单.pdf', kind: 'pdf', badge: '3页' },
-      { id: 'q1-2', name: '请求金额计算说明.docx', kind: 'word', badge: 'DOCX' },
+      { id: 'q1-1', name: '仲裁申请书（盖章本）.pdf', kind: 'pdf', badge: '5页' },
+      { id: 'q1-2', name: '仲裁请求事项及金额计算说明.docx', kind: 'word', badge: 'DOCX' },
     ],
   },
   {
     id: 'q2',
-    name: '被申请人答辩材料',
+    name: '仲裁协议',
     files: [
-      { id: 'q2-1', name: '答辩意见.pdf', kind: 'pdf', badge: '5页' },
-      { id: 'q2-2', name: '答辩证据清单.pdf', kind: 'pdf', badge: '2页' },
-      { id: 'q2-3', name: '授权委托书.docx', kind: 'word', badge: 'DOCX' },
+      { id: 'q2-1', name: '买卖合同补充协议（含仲裁条款）.docx', kind: 'word', badge: 'DOCX' },
+      { id: 'q2-2', name: '仲裁协议确认函.pdf', kind: 'pdf', badge: '1页' },
     ],
   },
   {
     id: 'q3',
-    name: '反请求及答辩材料',
+    name: '答辩状及附件',
     files: [
-      { id: 'q3-1', name: '仲裁反请求申请书.pdf', kind: 'pdf', badge: '4页' },
-      { id: 'q3-2', name: '反请求答辩意见.pdf', kind: 'pdf', badge: '3页' },
+      { id: 'q3-1', name: '答辩状.pdf', kind: 'pdf', badge: '4页' },
+      { id: 'q3-2', name: '答辩证据清单.pdf', kind: 'pdf', badge: '2页' },
+      { id: 'q3-3', name: '授权委托书.docx', kind: 'word', badge: 'DOCX' },
     ],
   },
 ];
@@ -162,25 +180,9 @@ const QINGQIU_FOLDERS: ArchiveFolder[] = [
 const ZHENGJU_FOLDERS: ArchiveFolder[] = [
   {
     id: 'e1',
-    name: '申请人举证材料',
-    files: [
-      { id: 'e1-1', name: '申请人证据目录.pdf', kind: 'pdf', badge: '2页' },
-      { id: 'e1-2', name: '买卖合同及补充协议.pdf', kind: 'pdf', badge: '18页' },
-      { id: 'e1-3', name: '送货单与对账明细.pdf', kind: 'pdf', badge: '12页' },
-    ],
-  },
-  {
-    id: 'e2',
-    name: '被申请人举证材料',
-    files: [
-      { id: 'e2-1', name: '被申请人证据目录.pdf', kind: 'pdf', badge: '2页' },
-      { id: 'e2-2', name: '付款凭证汇总.pdf', kind: 'pdf', badge: '7页' },
-    ],
-  },
-  {
-    id: 'e3',
-    name: '仲裁庭依职权调取证据',
-    files: [{ id: 'e3-1', name: '现场勘验笔录.pdf', kind: 'pdf', badge: '6页' }],
+    name: '申请人、被申请人举证材料',
+    files: [],
+    children: JUBAN_FOLDERS,
   },
 ];
 
@@ -289,7 +291,7 @@ export default function ElectronicArchive({ caseItem, onBack }: ElectronicArchiv
 
   const allZhengjuanFiles = ZHENGJUAN_FOLDERS.flatMap(collectFolderFiles);
   const allQingqiuFiles = QINGQIU_FOLDERS.flatMap(collectFolderFiles);
-  const allZhengjuFiles = ZHENGJU_FOLDERS.flatMap((folder) => folder.files);
+  const allZhengjuFiles = ZHENGJU_FOLDERS.flatMap(collectFolderFiles);
 
   const tabs: { key: ArchiveTabKey; label: string; count: number }[] = [
     { key: 'zhengjuan', label: '正卷', count: ZHENGJUAN_FOLDERS.length },
